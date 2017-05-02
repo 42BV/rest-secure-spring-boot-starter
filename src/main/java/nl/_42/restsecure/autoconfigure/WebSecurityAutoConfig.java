@@ -17,6 +17,7 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.annotation.web.configurers.ExpressionUrlAuthorizationConfigurer;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -29,8 +30,8 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import nl._42.restsecure.autoconfigure.component.GenericErrorHandler;
-import nl._42.restsecure.autoconfigure.iface.AbstractUserDetailsService;
+import nl._42.restsecure.autoconfigure.components.GenericErrorHandler;
+import nl._42.restsecure.autoconfigure.userdetails.AbstractUserDetailsService;
 
 @Configuration
 @AutoConfigureAfter(WebMvcAutoConfiguration.class)
@@ -51,12 +52,21 @@ public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
     private AbstractUserDetailsService userDetailsService;
     @Autowired
     private PasswordEncoder passwordEncoder;
+    
+    @Autowired(required = false)
+    private RequestAuthorizationCustomizer authCustomizer;
+    @Autowired(required = false)
+    private HttpSecurityCustomizer httpCustomizer;
+    @Autowired(required = false)
+    private AuthenticationManagerBuilderCustomizer authBuilderCustomizer;
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        // add extension point
         auth.userDetailsService(userDetailsService)
             .passwordEncoder(passwordEncoder);
+        if (authBuilderCustomizer != null) {
+            authBuilderCustomizer.customize(auth);
+        }
     }
     
     @Bean
@@ -67,29 +77,47 @@ public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
     
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        // add extension point
-        http.addFilterBefore(authenticationFilter(), AnonymousAuthenticationFilter.class)
-                .authorizeRequests()
-                    .antMatchers("/authentication").permitAll()
-                    .antMatchers("/authentication/handshake").permitAll()
-                    // add extension point
-                    .anyRequest().fullyAuthenticated()
-                    .and().anonymous().authorities(asList())
-                .and()
-                    .exceptionHandling()
-                        .accessDeniedHandler(accessDeniedHandler())
-                        .authenticationEntryPoint(accessDeniedHandler())
-                .and()
-                    .logout()
-                        .logoutRequestMatcher(new AntPathRequestMatcher("/authentication", DELETE.name()))
-                        .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler())
-                .and()
-                    .csrf()
-                        .csrfTokenRepository(csrfTokenRepository())
-                .and()
-                    .addFilterAfter(new XsrfHeaderFilter(), CsrfFilter.class);
+        ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry urlRegistry = http
+            .addFilterBefore(authenticationFilter(), AnonymousAuthenticationFilter.class)
+            .authorizeRequests()
+                .antMatchers("/authentication").permitAll()
+                .antMatchers("/authentication/handshake").permitAll();
+        customize(urlRegistry)
+                .anyRequest().fullyAuthenticated()
+            .and()
+                .anonymous()
+                    .authorities(asList())
+            .and()
+                .exceptionHandling()
+                    .accessDeniedHandler(accessDeniedHandler())
+                    .authenticationEntryPoint(accessDeniedHandler())
+            .and()
+                .logout()
+                    .logoutRequestMatcher(new AntPathRequestMatcher("/authentication", DELETE.name()))
+                    .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler())
+            .and()
+                .csrf()
+                    .csrfTokenRepository(csrfTokenRepository())
+            .and()
+                .addFilterAfter(new XsrfHeaderFilter(), CsrfFilter.class);
+        customize(http);
     }
 
+    private ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry customize(
+            ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry urlRegistry) {
+        if (authCustomizer != null) {
+            return authCustomizer.customize(urlRegistry);
+        }
+        return urlRegistry;
+    }
+    
+    private HttpSecurity customize(HttpSecurity http) {
+        if (httpCustomizer != null) {
+            return httpCustomizer.customize(http);
+        }
+        return http;
+    }
+    
     private RestAuthenticationFilter authenticationFilter() throws Exception {
         AntPathRequestMatcher matcher = new AntPathRequestMatcher("/authentication", POST.name());
         return new RestAuthenticationFilter(errorHandler, matcher, authenticationManagerBean(), objectMapper);

@@ -21,7 +21,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import nl._42.restsecure.autoconfigure.component.GenericErrorHandler;
+import nl._42.restsecure.autoconfigure.components.GenericErrorHandler;
 
 class RestAuthenticationFilter extends OncePerRequestFilter {
 

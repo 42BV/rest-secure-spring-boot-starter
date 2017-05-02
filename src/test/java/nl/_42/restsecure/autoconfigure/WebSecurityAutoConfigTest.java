@@ -23,10 +23,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.crypto.password.StandardPasswordEncoder;
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
 
-import nl._42.restsecure.autoconfigure.component.WebMvcErrorHandler;
-import nl._42.restsecure.autoconfigure.iface.AbstractUserDetailsService;
-import nl._42.restsecure.autoconfigure.iface.AccountExpiredResolver;
-import nl._42.restsecure.autoconfigure.iface.RegisteredUser;
+import nl._42.restsecure.autoconfigure.components.WebMvcErrorHandler;
+import nl._42.restsecure.autoconfigure.userdetails.AbstractUserDetailsService;
+import nl._42.restsecure.autoconfigure.userdetails.AccountExpiredResolver;
+import nl._42.restsecure.autoconfigure.userdetails.RegisteredUser;
 
 public class WebSecurityAutoConfigTest {
 

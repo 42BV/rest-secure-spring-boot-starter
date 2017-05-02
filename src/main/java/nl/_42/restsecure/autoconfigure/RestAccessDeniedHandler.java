@@ -15,7 +15,7 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.csrf.MissingCsrfTokenException;
 
-import nl._42.restsecure.autoconfigure.component.GenericErrorHandler;
+import nl._42.restsecure.autoconfigure.components.GenericErrorHandler;
 
 class RestAccessDeniedHandler implements AccessDeniedHandler, AuthenticationEntryPoint {
 

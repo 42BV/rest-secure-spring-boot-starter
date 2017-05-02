@@ -1,4 +1,4 @@
-package nl._42.restsecure.autoconfigure.iface;
+package nl._42.restsecure.autoconfigure.userdetails;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;

@@ -1,4 +1,4 @@
-package nl._42.restsecure.autoconfigure.component;
+package nl._42.restsecure.autoconfigure.components;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

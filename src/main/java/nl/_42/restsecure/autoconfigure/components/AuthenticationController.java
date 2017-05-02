@@ -1,4 +1,4 @@
-package nl._42.restsecure.autoconfigure.component;
+package nl._42.restsecure.autoconfigure.components;
 
 import static java.util.stream.Collectors.toSet;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import nl._42.restsecure.autoconfigure.iface.RegisteredUser;
+import nl._42.restsecure.autoconfigure.userdetails.RegisteredUser;
 
 @RestController
 @RequestMapping("/authentication")

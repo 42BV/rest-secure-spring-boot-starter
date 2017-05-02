@@ -1,6 +1,6 @@
-package nl._42.restsecure.autoconfigure.component;
+package nl._42.restsecure.autoconfigure.components;
 
-import nl._42.restsecure.autoconfigure.iface.RegisteredUser;
+import nl._42.restsecure.autoconfigure.userdetails.RegisteredUser;
 
 public interface AuthenticationResultProvider {
 

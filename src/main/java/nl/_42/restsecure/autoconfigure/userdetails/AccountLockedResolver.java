@@ -1,4 +1,4 @@
-package nl._42.restsecure.autoconfigure.iface;
+package nl._42.restsecure.autoconfigure.userdetails;
 
 public interface AccountLockedResolver<T extends RegisteredUser> {
 
