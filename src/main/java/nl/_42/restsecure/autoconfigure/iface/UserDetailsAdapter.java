@@ -10,16 +10,16 @@ import org.springframework.security.core.userdetails.UserDetails;
 public class UserDetailsAdapter implements UserDetails {
 
     private final RegisteredUser user;
-    private final AccountExpiredRepository accountExpiredRepo;
-    private final AccountLockedRepository accountLockedRepo;
-    private final CredentialsExpiredRepository credentialsExpiredRepo;
-    private final UserEnabledRepository userEnabledRepo;
+    private final AccountExpiredResolver accountExpiredRepo;
+    private final AccountLockedResolver accountLockedRepo;
+    private final CredentialsExpiredResolver credentialsExpiredRepo;
+    private final UserEnabledResolver userEnabledRepo;
     
     public UserDetailsAdapter(RegisteredUser user, 
-            AccountExpiredRepository accountExpiredRepo, 
-            AccountLockedRepository accountLockedRepo, 
-            CredentialsExpiredRepository credentialsExpiredRepo, 
-            UserEnabledRepository userEnabledRepo) {
+            AccountExpiredResolver accountExpiredRepo, 
+            AccountLockedResolver accountLockedRepo, 
+            CredentialsExpiredResolver credentialsExpiredRepo, 
+            UserEnabledResolver userEnabledRepo) {
         this.user = user;
         this.accountExpiredRepo = accountExpiredRepo;
         this.accountLockedRepo = accountLockedRepo;

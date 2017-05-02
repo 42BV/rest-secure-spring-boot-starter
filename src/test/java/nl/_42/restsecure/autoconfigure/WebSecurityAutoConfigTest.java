@@ -23,10 +23,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.crypto.password.StandardPasswordEncoder;
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
 
-import nl._42.restsecure.autoconfigure.WebSecurityAutoConfigTest.CustomUser;
 import nl._42.restsecure.autoconfigure.component.WebMvcErrorHandler;
 import nl._42.restsecure.autoconfigure.iface.AbstractUserDetailsService;
-import nl._42.restsecure.autoconfigure.iface.AccountExpiredRepository;
+import nl._42.restsecure.autoconfigure.iface.AccountExpiredResolver;
 import nl._42.restsecure.autoconfigure.iface.RegisteredUser;
 
 public class WebSecurityAutoConfigTest {
@@ -84,8 +83,8 @@ public class WebSecurityAutoConfigTest {
     
     static class ConfigWithCustomAccountExpiredRepository extends ConfigWithUserDetailsService {
         @Bean
-        public AccountExpiredRepository<CustomUser> accountExpiredRepository() {
-            return new AccountExpiredRepository<CustomUser>() {
+        public AccountExpiredResolver<CustomUser> accountExpiredRepository() {
+            return new AccountExpiredResolver<CustomUser>() {
 
                 @Override
                 public boolean isAccountNonExpired(CustomUser user) {

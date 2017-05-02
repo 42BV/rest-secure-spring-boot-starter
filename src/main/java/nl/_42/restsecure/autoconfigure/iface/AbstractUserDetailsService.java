@@ -8,13 +8,13 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 public abstract class AbstractUserDetailsService implements UserDetailsService {
 
     @Autowired(required = false)
-    private AccountExpiredRepository accountExpiredRepo;
+    private AccountExpiredResolver accountExpiredRepo;
     @Autowired(required = false)
-    private AccountLockedRepository accountLockedRepo;
+    private AccountLockedResolver accountLockedRepo;
     @Autowired(required = false)
-    private CredentialsExpiredRepository credentialsExpiredRepo;
+    private CredentialsExpiredResolver credentialsExpiredRepo;
     @Autowired(required = false)
-    private UserEnabledRepository enabledRepo;
+    private UserEnabledResolver enabledRepo;
     
     protected abstract RegisteredUser findUserByUsername(String username);
     
