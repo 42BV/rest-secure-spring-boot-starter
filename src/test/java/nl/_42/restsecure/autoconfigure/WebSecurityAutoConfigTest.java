@@ -10,6 +10,7 @@ import static org.springframework.boot.test.util.EnvironmentTestUtils.addEnviron
 import java.util.List;
 
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.boot.autoconfigure.web.HttpMessageConvertersAutoConfiguration;
@@ -22,6 +23,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.crypto.password.StandardPasswordEncoder;
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
+
+import com.atlassian.crowd.service.AuthenticationManager;
+import com.atlassian.crowd.service.cache.CacheAwareAuthenticationManager;
 
 import nl._42.restsecure.autoconfigure.components.WebMvcErrorHandler;
 import nl._42.restsecure.autoconfigure.userdetails.AbstractUserDetailsService;
@@ -45,7 +49,7 @@ public class WebSecurityAutoConfigTest {
         PasswordEncoder passwordEncoder = context.getBean(PasswordEncoder.class);
         assertEquals(BCryptPasswordEncoder.class, passwordEncoder.getClass());
         WebMvcErrorHandler errorHandler = context.getBean(WebMvcErrorHandler.class);
-        assertNotNull(errorHandler);
+        assertNotNull(errorHandler);        
         AbstractUserDetailsService userDetailsService = context.getBean(AbstractUserDetailsService.class);
         UserDetails user = userDetailsService.loadUserByUsername("jaja");
         assertTrue(user.isAccountNonExpired());
@@ -68,7 +72,14 @@ public class WebSecurityAutoConfigTest {
         assertTrue(user.isAccountNonLocked());
     }
     
-    @Configuration
+    @Test
+    public void autoConfig_shouldConfigureSecurity_withCrowd() {
+        loadApplicationContext();
+        AuthenticationManager authManager = context.getBean(AuthenticationManager.class);
+        Assert.assertEquals(CacheAwareAuthenticationManager.class, authManager.getClass());
+    }
+    
+    @Configuration    
     static class ConfigWithUserDetailsService {
         @Bean
         public AbstractUserDetailsService userDetailsService() {

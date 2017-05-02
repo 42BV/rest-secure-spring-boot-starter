@@ -79,6 +79,12 @@
             <artifactId>spring-boot-starter-security</artifactId>
             <optional>true</optional>
         </dependency>
+        <dependency>
+            <groupId>com.atlassian.crowd</groupId>
+            <artifactId>crowd-integration-springsecurity</artifactId>
+            <version>2.7.2</version>
+            <optional>true</optional>
+        </dependency>
 
         <!-- TEST dependencies -->
         <dependency>

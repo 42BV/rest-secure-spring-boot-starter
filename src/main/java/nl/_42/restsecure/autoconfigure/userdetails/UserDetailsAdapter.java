@@ -9,6 +9,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 public class UserDetailsAdapter implements UserDetails {
 
+    public static final String ROLE_PREFIX = "ROLE_";
+    
     private final RegisteredUser user;
     private final AccountExpiredResolver accountExpiredRepo;
     private final AccountLockedResolver accountLockedRepo;
@@ -30,7 +32,7 @@ public class UserDetailsAdapter implements UserDetails {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return user.getRoles().stream()
-                .map(role -> new SimpleGrantedAuthority("ROLE_" + role.toString()))
+                .map(role -> new SimpleGrantedAuthority(ROLE_PREFIX + role.toString()))
                 .collect(Collectors.toSet());
     }
 
