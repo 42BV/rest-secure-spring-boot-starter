@@ -1,6 +1,6 @@
 package nl._42.restsecure.autoconfigure.iface;
 
-public interface AccountExpiredRepository {
+public interface AccountExpiredRepository<T> {
 
-    <T extends RegisteredUser> boolean isAccountNonExpired(T user);
+    boolean isAccountNonExpired(T user);
 }

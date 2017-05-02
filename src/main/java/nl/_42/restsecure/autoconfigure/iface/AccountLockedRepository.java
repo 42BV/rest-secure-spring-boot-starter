@@ -1,6 +1,6 @@
 package nl._42.restsecure.autoconfigure.iface;
 
-public interface AccountLockedRepository {
+public interface AccountLockedRepository<T> {
 
-    <T extends RegisteredUser> boolean isAccountNonLocked(T user);
+    boolean isAccountNonLocked(T user);
 }

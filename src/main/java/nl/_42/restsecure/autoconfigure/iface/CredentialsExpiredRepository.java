@@ -1,6 +1,6 @@
 package nl._42.restsecure.autoconfigure.iface;
 
-public interface CredentialsExpiredRepository {
+public interface CredentialsExpiredRepository<T> {
 
-    <T extends RegisteredUser> boolean isCredentialsNonExpired(T user);
+    boolean isCredentialsNonExpired(T user);
 }

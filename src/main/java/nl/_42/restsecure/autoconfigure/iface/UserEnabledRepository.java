@@ -1,6 +1,6 @@
 package nl._42.restsecure.autoconfigure.iface;
 
-public interface UserEnabledRepository {
+public interface UserEnabledRepository<T> {
 
-    <T extends RegisteredUser> boolean isEnabled(T user);
+    boolean isEnabled(T user);
 }
