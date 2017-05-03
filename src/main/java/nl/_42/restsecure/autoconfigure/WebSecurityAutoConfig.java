@@ -1,17 +1,13 @@
 package nl._42.restsecure.autoconfigure;
 
 import static java.util.Arrays.asList;
-import static java.util.ResourceBundle.getBundle;
-import static java.util.stream.Collectors.toSet;
 import static nl._42.restsecure.autoconfigure.userdetails.UserDetailsAdapter.ROLE_PREFIX;
 import static org.springframework.http.HttpMethod.DELETE;
 import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.security.core.context.SecurityContextHolder.MODE_INHERITABLETHREADLOCAL;
 
-import java.util.AbstractMap.SimpleEntry;
-import java.util.Map.Entry;
-import java.util.MissingResourceException;
-import java.util.ResourceBundle;
+import java.io.IOException;
+import java.util.Properties;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,10 +15,12 @@ import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnResource;
 import org.springframework.boot.autoconfigure.web.WebMvcAutoConfiguration;
+import org.springframework.context.ResourceLoaderAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportResource;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
@@ -89,7 +87,8 @@ public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
         } else if (crowdAuthenticationProvider != null) {
             auth.authenticationProvider(crowdAuthenticationProvider);
         } else {
-            throw new IllegalStateException("Cannot configure security; either an AbstractUserDetailsService bean must be provided or Crowd must be on the classpath.");
+            throw new IllegalStateException("Cannot configure security; either an AbstractUserDetailsService bean must be provided "
+                    + "or crowd-integration-springsecurity.jar with crowd.properties must be on the classpath .");
         }
         if (authBuilderCustomizer != null) {
             authBuilderCustomizer.customize(auth);
@@ -160,10 +159,10 @@ public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
         return repository;
     }
     
-    @ConditionalOnResource(resources = "applicationContext-CrowdClient.xml")
+    @ConditionalOnResource(resources = {"applicationContext-CrowdClient.xml", "crowd.properties"})
     @ImportResource("classpath:/applicationContext-CrowdClient.xml")
     @Configuration
-    public static class CrowdBeans {
+    public static class CrowdBeans implements ResourceLoaderAware {
         
         @Autowired
         private HttpAuthenticator httpAuthenticator;
@@ -173,6 +172,7 @@ public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
         private CacheAwareAuthenticationManager crowdAuthenticationManager;
         @Autowired
         private UserManager userManager;
+        private ResourceLoader resourceLoader;
         
         @Bean
         public AuthenticationProvider crowdAuthenticationProvider() throws Exception {
@@ -184,7 +184,7 @@ public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
             crowdUserDetailsService.setAuthenticationManager(crowdAuthenticationManager);
             crowdUserDetailsService.setGroupMembershipManager(groupMembershipManager);
             crowdUserDetailsService.setUserManager(userManager);
-            Set<Entry<String, String>> roleMappings = loadCrowdGroupToRoleMappings();
+            Set roleMappings = loadCrowdGroupToRoleMappings();
             if (roleMappings != null) {
                 crowdUserDetailsService.setGroupToAuthorityMappings(roleMappings);
             } else {
@@ -193,15 +193,20 @@ public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
             return crowdUserDetailsService;
         }
         
-        private Set<Entry<String, String>> loadCrowdGroupToRoleMappings() {
+        private Set loadCrowdGroupToRoleMappings() {
             try {
-                ResourceBundle roleMappings = getBundle("crowd-group-to-role");
-                return roleMappings.keySet().stream()
-                    .map(key -> new SimpleEntry<String, String>(key, ROLE_PREFIX + roleMappings.getString(key)))
-                    .collect(toSet());
-            } catch (MissingResourceException mre) {
+                Properties roleMappings = new Properties();
+                roleMappings.load(resourceLoader.getResource("classpath:crowd-group-to-role.properties").getInputStream());
+                roleMappings.replaceAll((k, v) -> ROLE_PREFIX + v);
+                return roleMappings.entrySet();
+            } catch (IOException ioe) {
                 return null;
             }
+        }
+
+        @Override
+        public void setResourceLoader(ResourceLoader resourceLoader) {
+            this.resourceLoader = resourceLoader;
         }
     }
 }
