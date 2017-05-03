@@ -1,6 +1,7 @@
 package nl._42.restsecure.autoconfigure;
 
 import static java.util.Arrays.asList;
+import static java.util.stream.Collectors.toList;
 import static nl._42.restsecure.autoconfigure.userdetails.UserDetailsAdapter.ROLE_PREFIX;
 import static org.springframework.http.HttpMethod.DELETE;
 import static org.springframework.http.HttpMethod.POST;
@@ -10,6 +11,8 @@ import java.io.IOException;
 import java.util.Properties;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -21,13 +24,16 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportResource;
 import org.springframework.core.io.ResourceLoader;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.authentication.configurers.provisioning.InMemoryUserDetailsManagerConfigurer;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.annotation.web.configurers.ExpressionUrlAuthorizationConfigurer;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -57,6 +63,8 @@ import nl._42.restsecure.autoconfigure.userdetails.AbstractUserDetailsService;
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
 
+    private final Logger log = LoggerFactory.getLogger(WebSecurityAutoConfig.class);
+    
     static {
         SecurityContextHolder.setStrategyName(MODE_INHERITABLETHREADLOCAL);
     }
@@ -75,23 +83,35 @@ public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
     @Autowired(required = false)
     private HttpSecurityCustomizer httpCustomizer;
     @Autowired(required = false)
-    private AuthenticationManagerBuilderCustomizer authBuilderCustomizer;
+    private InMemoryUsersStore inMemoryUsersStore;
     
     @Autowired(required = false)
     private AuthenticationProvider crowdAuthenticationProvider;
     
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        if (userDetailsService != null) {
-            auth.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder);    
-        } else if (crowdAuthenticationProvider != null) {
-            auth.authenticationProvider(crowdAuthenticationProvider);
+        if (inMemoryUsersStore == null) {
+            if (userDetailsService != null) {
+                auth.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder);
+            }
+            if (crowdAuthenticationProvider != null) {
+                auth.authenticationProvider(crowdAuthenticationProvider);
+            } 
+            if (userDetailsService == null && crowdAuthenticationProvider == null) {
+                throw new IllegalStateException("Cannot configure security; either an AbstractUserDetailsService bean must be provided "
+                        + "or crowd-integration-springsecurity.jar with crowd.properties must be on the classpath .");
+            }
         } else {
-            throw new IllegalStateException("Cannot configure security; either an AbstractUserDetailsService bean must be provided "
-                    + "or crowd-integration-springsecurity.jar with crowd.properties must be on the classpath .");
-        }
-        if (authBuilderCustomizer != null) {
-            authBuilderCustomizer.customize(auth);
+            log.warn("Now loading users with plaintext passwords in memory to build an authentication store, DO NOT USE THIS IN A PRODUCTION ENVIRONMENT!");
+            InMemoryUserDetailsManagerConfigurer<AuthenticationManagerBuilder> configurer = auth.inMemoryAuthentication();
+            inMemoryUsersStore.users().forEach(user -> {
+                configurer.withUser(user.getUsername())
+                    .password(user.getPassword())
+                    .authorities(user.getRoles()
+                            .stream()
+                            .map(role -> new SimpleGrantedAuthority(ROLE_PREFIX + role))
+                            .collect(toList()));
+            });
         }
     }
     
@@ -99,6 +119,12 @@ public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
     @ConditionalOnMissingBean(PasswordEncoder.class)
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    @Override
+    public AuthenticationManager authenticationManagerBean() throws Exception {
+        return super.authenticationManagerBean();
     }
     
     @Override

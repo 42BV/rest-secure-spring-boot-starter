@@ -6,11 +6,11 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.springframework.boot.test.util.EnvironmentTestUtils.addEnvironment;
+import static org.springframework.test.util.ReflectionTestUtils.getField;
 
 import java.util.List;
 
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.boot.autoconfigure.web.HttpMessageConvertersAutoConfiguration;
@@ -18,14 +18,19 @@ import org.springframework.boot.autoconfigure.web.WebMvcAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.mock.web.MockServletContext;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.ProviderManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.crypto.password.StandardPasswordEncoder;
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
 
-import com.atlassian.crowd.service.AuthenticationManager;
-import com.atlassian.crowd.service.cache.CacheAwareAuthenticationManager;
+import com.atlassian.crowd.integration.springsecurity.RemoteCrowdAuthenticationProvider;
 
 import nl._42.restsecure.autoconfigure.components.WebMvcErrorHandler;
 import nl._42.restsecure.autoconfigure.userdetails.AbstractUserDetailsService;
@@ -57,13 +62,6 @@ public class WebSecurityAutoConfigTest {
     }
     
     @Test
-    public void autoConfig_shouldConfigureSecurity_withProvidedPasswordEncoder() {
-        loadApplicationContext(ConfigWithCustomPasswordEncoder.class);
-        PasswordEncoder passwordEncoder = context.getBean(PasswordEncoder.class);
-        assertEquals(StandardPasswordEncoder.class, passwordEncoder.getClass());
-    }
-    
-    @Test
     public void autoConfig_shouldConfigureSecurity_withCustomAccountExpiredRepo() {
         loadApplicationContext(ConfigWithCustomAccountExpiredRepository.class);
         AbstractUserDetailsService userDetailsService = context.getBean(AbstractUserDetailsService.class);
@@ -75,8 +73,36 @@ public class WebSecurityAutoConfigTest {
     @Test
     public void autoConfig_shouldConfigureSecurity_withCrowd() {
         loadApplicationContext();
+        AuthenticationManager delegatingManager = context.getBean(AuthenticationManager.class);
+        AuthenticationManagerBuilder authManagerBuilder = (AuthenticationManagerBuilder) getField(delegatingManager, "delegateBuilder");
+        ProviderManager authManager = (ProviderManager) getField(authManagerBuilder.getObject(), "parent");
+        assertEquals(1, authManager.getProviders().size());
+        assertEquals(RemoteCrowdAuthenticationProvider.class, authManager.getProviders().get(0).getClass());        
+    }
+    
+    @Test
+    public void authenticate_shouldSucceed_withNoOpPasswordEncoder() {
+        loadApplicationContext(ConfigWithCustomPasswordEncoder.class);
         AuthenticationManager authManager = context.getBean(AuthenticationManager.class);
-        Assert.assertEquals(CacheAwareAuthenticationManager.class, authManager.getClass());
+        Authentication auth = authManager.authenticate(new UsernamePasswordAuthenticationToken("user", "password"));
+        assertEquals("custom", auth.getName());
+        assertEquals("ROLE_ADMIN", auth.getAuthorities().iterator().next().getAuthority());
+    }
+    
+    @Test
+    public void authenticate_shouldSucceed_withInMemoryUserStore() {
+        loadApplicationContext(ConfigWithInMemoryUserStore.class);
+        AuthenticationManager authManager = context.getBean(AuthenticationManager.class);
+        Authentication auth = authManager.authenticate(new UsernamePasswordAuthenticationToken("piet", "secret"));
+        assertEquals("piet", auth.getName());
+        assertEquals("ROLE_USER", auth.getAuthorities().iterator().next().getAuthority());
+    }
+    
+    @Test(expected = BadCredentialsException.class)
+    public void authenticate_shouldFail_withDefaultPasswordEncoder() {
+        loadApplicationContext(ConfigWithUserDetailsService.class);
+        AuthenticationManager authManager = context.getBean(AuthenticationManager.class);
+        authManager.authenticate(new UsernamePasswordAuthenticationToken("user", "password"));
     }
     
     @Configuration    
@@ -89,6 +115,13 @@ public class WebSecurityAutoConfigTest {
                     return new CustomUser();
                 }
             };
+        }
+    }
+        
+    static class ConfigWithCustomPasswordEncoder extends ConfigWithUserDetailsService {
+        @Bean
+        public PasswordEncoder passwordEncoder() {
+            return NoOpPasswordEncoder.getInstance();
         }
     }
     
@@ -106,6 +139,36 @@ public class WebSecurityAutoConfigTest {
         }
     }
 
+    @Configuration
+    static class ConfigWithInMemoryUserStore {
+        @Bean
+        public InMemoryUsersStore userStore() {
+            return new InMemoryUsersStore() {
+
+                @Override
+                public List<RegisteredUser> users() {
+                    return asList(new RegisteredUser() {
+                        @Override
+                        public String getUsername() {
+                            return "piet";
+                        }
+                        
+                        @Override
+                        public List<String> getRoles() {
+                            return asList("USER");
+                        }
+                        
+                        @Override
+                        public String getPassword() {
+                            return "secret";
+                        }
+                    });
+                }
+                
+            };
+        }
+    }
+    
     public static class CustomUser implements RegisteredUser {
 
         @Override
@@ -115,7 +178,7 @@ public class WebSecurityAutoConfigTest {
 
         @Override
         public String getPassword() {
-            return "*****";
+            return "password";
         }
 
         @Override
@@ -125,13 +188,6 @@ public class WebSecurityAutoConfigTest {
         
         public boolean accountNonExpired() {
             return false;
-        }
-    }
-    
-    static class ConfigWithCustomPasswordEncoder extends ConfigWithUserDetailsService {
-        @Bean
-        public PasswordEncoder passwordEncoder() {
-            return new StandardPasswordEncoder();
         }
     }
     
