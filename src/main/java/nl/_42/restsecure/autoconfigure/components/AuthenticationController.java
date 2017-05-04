@@ -16,28 +16,28 @@ import nl._42.restsecure.autoconfigure.userdetails.RegisteredUser;
 public class AuthenticationController {
 
     @Autowired(required = false)
-    private AuthenticationResultProvider authenticationResultProvider;
+    private AuthenticationResultProvider<RegisteredUser> authenticationResultProvider;
     
     @RequestMapping(method = POST)
-    AbstractAuthenticationResult authenticate(@CurrentUser RegisteredUser user, CsrfToken csrfToken) {
+    AbstractAuthenticationResult<?> authenticate(@CurrentUser RegisteredUser user, CsrfToken csrfToken) {
         return getCurrentlyLoggedInUser(user, csrfToken);
     }
 
     @RequestMapping(path = "/current", method = RequestMethod.GET)
-    AbstractAuthenticationResult current(@CurrentUser RegisteredUser user, CsrfToken csrfToken) {
+    AbstractAuthenticationResult<?> current(@CurrentUser RegisteredUser user, CsrfToken csrfToken) {
         return getCurrentlyLoggedInUser(user, csrfToken);
     }
 
     @RequestMapping(path = "/handshake", method = RequestMethod.GET)
-    AbstractAuthenticationResult handshake(CsrfToken csrfToken) {
-        return new AbstractAuthenticationResult(csrfToken.getToken()) {};
+    AbstractAuthenticationResult<?> handshake(CsrfToken csrfToken) {
+        return new AbstractAuthenticationResult<AbstractUserResult>(csrfToken.getToken()) {};
     }
     
-    private AbstractAuthenticationResult getCurrentlyLoggedInUser(RegisteredUser user, CsrfToken csrfToken) {
+    private AbstractAuthenticationResult<?> getCurrentlyLoggedInUser(RegisteredUser user, CsrfToken csrfToken) {
         if (authenticationResultProvider != null) {
             return authenticationResultProvider.toAuthenticationResult(user, csrfToken.getToken());
         }
         AbstractUserResult userResult = new AbstractUserResult(user.getUsername(), user.getRolesAsString().stream().collect(toSet())) {};
-        return new AbstractAuthenticationResult(userResult, csrfToken.getToken()) {};
+        return new AbstractAuthenticationResult<AbstractUserResult>(userResult, csrfToken.getToken()) {};
     }
 }
