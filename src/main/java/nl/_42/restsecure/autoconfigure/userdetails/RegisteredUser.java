@@ -8,5 +8,5 @@ public interface RegisteredUser {
     
     String getPassword();
     
-    List<String> getRoles();
+    List<String> getRolesAsString();
 }

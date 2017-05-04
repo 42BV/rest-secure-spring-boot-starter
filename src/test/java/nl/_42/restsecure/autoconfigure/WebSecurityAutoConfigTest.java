@@ -154,7 +154,7 @@ public class WebSecurityAutoConfigTest {
                         }
                         
                         @Override
-                        public List<String> getRoles() {
+                        public List<String> getRolesAsString() {
                             return asList("USER");
                         }
                         
@@ -182,7 +182,7 @@ public class WebSecurityAutoConfigTest {
         }
 
         @Override
-        public List<String> getRoles() {
+        public List<String> getRolesAsString() {
             return asList("ADMIN");
         }
         

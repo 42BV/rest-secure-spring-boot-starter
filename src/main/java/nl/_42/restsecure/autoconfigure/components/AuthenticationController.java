@@ -37,7 +37,7 @@ public class AuthenticationController {
         if (authenticationResultProvider != null) {
             return authenticationResultProvider.toAuthenticationResult(user, csrfToken.getToken());
         }
-        AbstractUserResult userResult = new AbstractUserResult(user.getUsername(), user.getRoles().stream().collect(toSet())) {};
+        AbstractUserResult userResult = new AbstractUserResult(user.getUsername(), user.getRolesAsString().stream().collect(toSet())) {};
         return new AbstractAuthenticationResult(userResult, csrfToken.getToken()) {};
     }
 }

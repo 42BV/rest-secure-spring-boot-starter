@@ -30,6 +30,7 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.authentication.configurers.provisioning.InMemoryUserDetailsManagerConfigurer;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.annotation.web.configurers.ExpressionUrlAuthorizationConfigurer;
@@ -86,6 +87,8 @@ public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
     private InMemoryUsersStore inMemoryUsersStore;
     @Autowired(required = false)
     private CustomAuthenticationProviders customAuthenticationProviders;
+    @Autowired(required = false)
+    private WebSecurityCustomizer webSecurityCustomizer;
     
     @Autowired(required = false)
     private AuthenticationProvider crowdAuthenticationProvider;
@@ -112,7 +115,7 @@ public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
             inMemoryUsersStore.users().forEach(user -> {
                 configurer.withUser(user.getUsername())
                     .password(user.getPassword())
-                    .authorities(user.getRoles()
+                    .authorities(user.getRolesAsString()
                             .stream()
                             .map(role -> new SimpleGrantedAuthority(ROLE_PREFIX + role))
                             .collect(toList()));
@@ -130,6 +133,13 @@ public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
     @Override
     public AuthenticationManager authenticationManagerBean() throws Exception {
         return super.authenticationManagerBean();
+    }
+    
+    @Override
+    public void configure(WebSecurity web) throws Exception {
+        if (webSecurityCustomizer != null) {
+            webSecurityCustomizer.configure(web);
+        }
     }
     
     @Override
@@ -168,7 +178,7 @@ public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
         return urlRegistry;
     }
     
-    private HttpSecurity customize(HttpSecurity http) {
+    private HttpSecurity customize(HttpSecurity http) throws Exception {
         if (httpCustomizer != null) {
             return httpCustomizer.customize(http);
         }

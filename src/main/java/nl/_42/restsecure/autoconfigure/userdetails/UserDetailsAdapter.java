@@ -31,11 +31,15 @@ public class UserDetailsAdapter implements UserDetails {
     
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return user.getRoles().stream()
+        return user.getRolesAsString().stream()
                 .map(role -> new SimpleGrantedAuthority(ROLE_PREFIX + role.toString()))
                 .collect(Collectors.toSet());
     }
 
+    public RegisteredUser getUser() {
+        return user;
+    }
+    
     @Override
     public String getPassword() {
         return user.getPassword();
