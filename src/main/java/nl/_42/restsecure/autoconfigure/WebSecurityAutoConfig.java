@@ -84,6 +84,8 @@ public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
     private HttpSecurityCustomizer httpCustomizer;
     @Autowired(required = false)
     private InMemoryUsersStore inMemoryUsersStore;
+    @Autowired(required = false)
+    private CustomAuthenticationProviders customAuthenticationProviders;
     
     @Autowired(required = false)
     private AuthenticationProvider crowdAuthenticationProvider;
@@ -96,10 +98,13 @@ public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
             }
             if (crowdAuthenticationProvider != null) {
                 auth.authenticationProvider(crowdAuthenticationProvider);
-            } 
-            if (userDetailsService == null && crowdAuthenticationProvider == null) {
-                throw new IllegalStateException("Cannot configure security; either an AbstractUserDetailsService bean must be provided "
-                        + "or crowd-integration-springsecurity.jar with crowd.properties must be on the classpath .");
+            }
+            if (customAuthenticationProviders != null) {
+                customAuthenticationProviders.get().forEach(auth::authenticationProvider);
+            }
+            if (userDetailsService == null && crowdAuthenticationProvider == null && customAuthenticationProviders == null) {
+                throw new IllegalStateException("Cannot configure security; either an AbstractUserDetailsService- or CustomAuthenticationProviders bean must be provided "
+                        + "or crowd-integration-springsecurity.jar with crowd.properties must be on the classpath.");
             }
         } else {
             log.warn("Now loading users with plaintext passwords in memory to build an authentication store, DO NOT USE THIS IN A PRODUCTION ENVIRONMENT!");
