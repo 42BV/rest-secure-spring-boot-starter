@@ -12,21 +12,21 @@ public class UserDetailsAdapter<T extends RegisteredUser> implements UserDetails
     public static final String ROLE_PREFIX = "ROLE_";
     
     private final T user;
-    private final AccountExpiredResolver<T> accountExpiredRepo;
-    private final AccountLockedResolver<T> accountLockedRepo;
-    private final CredentialsExpiredResolver<T> credentialsExpiredRepo;
-    private final UserEnabledResolver<T> userEnabledRepo;
+    private final AccountExpiredResolver<T> accountExpiredResolver;
+    private final AccountLockedResolver<T> accountLockedResolver;
+    private final CredentialsExpiredResolver<T> credentialsExpiredResolver;
+    private final UserEnabledResolver<T> userEnabledResolver;
     
     public UserDetailsAdapter(T user, 
-            AccountExpiredResolver<T> accountExpiredRepo, 
-            AccountLockedResolver<T> accountLockedRepo, 
-            CredentialsExpiredResolver<T> credentialsExpiredRepo, 
-            UserEnabledResolver<T> userEnabledRepo) {
+            AccountExpiredResolver<T> accountExpiredResolver, 
+            AccountLockedResolver<T> accountLockedResolver, 
+            CredentialsExpiredResolver<T> credentialsExpiredResolver, 
+            UserEnabledResolver<T> userEnabledResolver) {
         this.user = user;
-        this.accountExpiredRepo = accountExpiredRepo;
-        this.accountLockedRepo = accountLockedRepo;
-        this.credentialsExpiredRepo = credentialsExpiredRepo;
-        this.userEnabledRepo = userEnabledRepo;
+        this.accountExpiredResolver = accountExpiredResolver;
+        this.accountLockedResolver = accountLockedResolver;
+        this.credentialsExpiredResolver = credentialsExpiredResolver;
+        this.userEnabledResolver = userEnabledResolver;
     }
     
     @Override
@@ -52,22 +52,22 @@ public class UserDetailsAdapter<T extends RegisteredUser> implements UserDetails
 
     @Override
     public boolean isAccountNonExpired() {
-        return accountExpiredRepo == null ? true : accountExpiredRepo.isAccountNonExpired(user);
+        return accountExpiredResolver == null ? true : accountExpiredResolver.isAccountNonExpired(user);
     }
 
     @Override
     public boolean isAccountNonLocked() {
-        return accountLockedRepo == null ? true : accountLockedRepo.isAccountNonLocked(user);
+        return accountLockedResolver == null ? true : accountLockedResolver.isAccountNonLocked(user);
     }
 
     @Override
     public boolean isCredentialsNonExpired() {
-        return credentialsExpiredRepo == null ? true : credentialsExpiredRepo.isCredentialsNonExpired(user);
+        return credentialsExpiredResolver == null ? true : credentialsExpiredResolver.isCredentialsNonExpired(user);
     }
 
     @Override
     public boolean isEnabled() {
-        return userEnabledRepo == null ? true : userEnabledRepo.isEnabled(user);
+        return userEnabledResolver == null ? true : userEnabledResolver.isEnabled(user);
     }
 
 }

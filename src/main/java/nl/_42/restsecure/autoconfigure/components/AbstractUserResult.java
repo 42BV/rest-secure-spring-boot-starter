@@ -9,7 +9,7 @@ public abstract class AbstractUserResult {
     private final String username;
     private final Set<String> roles;
     
-    AbstractUserResult(String username, Set<String> roles) {
+    protected AbstractUserResult(String username, Set<String> roles) {
         this.username = username;
         this.roles = roles;
     }

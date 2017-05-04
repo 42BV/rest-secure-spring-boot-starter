@@ -56,6 +56,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import nl._42.restsecure.autoconfigure.components.GenericErrorHandler;
 import nl._42.restsecure.autoconfigure.userdetails.AbstractUserDetailsService;
+import nl._42.restsecure.autoconfigure.userdetails.RegisteredUser;
 
 @Configuration
 @AutoConfigureAfter(WebMvcAutoConfiguration.class)
@@ -75,7 +76,7 @@ public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
     @Autowired
     private GenericErrorHandler errorHandler;
     @Autowired(required = false)
-    private AbstractUserDetailsService userDetailsService;
+    private AbstractUserDetailsService<? extends RegisteredUser> userDetailsService;
     @Autowired
     private PasswordEncoder passwordEncoder;
     

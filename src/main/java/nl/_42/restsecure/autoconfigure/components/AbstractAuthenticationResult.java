@@ -11,7 +11,7 @@ public abstract class AbstractAuthenticationResult {
         this(null, csrfToken);
     }
 
-    AbstractAuthenticationResult(AbstractUserResult currentUser, String csrfToken) {
+    protected AbstractAuthenticationResult(AbstractUserResult currentUser, String csrfToken) {
         this.currentUser = currentUser;
         this.csrfToken = csrfToken;
     }
