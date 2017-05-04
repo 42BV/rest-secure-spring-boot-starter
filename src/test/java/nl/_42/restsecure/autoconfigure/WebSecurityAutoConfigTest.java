@@ -55,7 +55,7 @@ public class WebSecurityAutoConfigTest {
         assertEquals(BCryptPasswordEncoder.class, passwordEncoder.getClass());
         WebMvcErrorHandler errorHandler = context.getBean(WebMvcErrorHandler.class);
         assertNotNull(errorHandler);        
-        AbstractUserDetailsService userDetailsService = context.getBean(AbstractUserDetailsService.class);
+        AbstractUserDetailsService<CustomUser> userDetailsService = context.getBean(AbstractUserDetailsService.class);
         UserDetails user = userDetailsService.loadUserByUsername("jaja");
         assertTrue(user.isAccountNonExpired());
         assertTrue(user.isAccountNonLocked());
@@ -64,7 +64,7 @@ public class WebSecurityAutoConfigTest {
     @Test
     public void autoConfig_shouldConfigureSecurity_withCustomAccountExpiredRepo() {
         loadApplicationContext(ConfigWithCustomAccountExpiredRepository.class);
-        AbstractUserDetailsService userDetailsService = context.getBean(AbstractUserDetailsService.class);
+        AbstractUserDetailsService<CustomUser> userDetailsService = context.getBean(AbstractUserDetailsService.class);
         UserDetails user = userDetailsService.loadUserByUsername("jaja");
         assertFalse(user.isAccountNonExpired());
         assertTrue(user.isAccountNonLocked());
@@ -108,10 +108,10 @@ public class WebSecurityAutoConfigTest {
     @Configuration    
     static class ConfigWithUserDetailsService {
         @Bean
-        public AbstractUserDetailsService userDetailsService() {
-            return new AbstractUserDetailsService() {                
+        public AbstractUserDetailsService<CustomUser> userDetailsService() {
+            return new AbstractUserDetailsService<CustomUser>() {                
                 @Override
-                public RegisteredUser findUserByUsername(String username) {
+                public CustomUser findUserByUsername(String username) {
                     return new CustomUser();
                 }
             };

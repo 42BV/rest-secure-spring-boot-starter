@@ -7,21 +7,21 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-public class UserDetailsAdapter implements UserDetails {
+public class UserDetailsAdapter<T extends RegisteredUser> implements UserDetails {
 
     public static final String ROLE_PREFIX = "ROLE_";
     
-    private final RegisteredUser user;
-    private final AccountExpiredResolver accountExpiredRepo;
-    private final AccountLockedResolver accountLockedRepo;
-    private final CredentialsExpiredResolver credentialsExpiredRepo;
-    private final UserEnabledResolver userEnabledRepo;
+    private final T user;
+    private final AccountExpiredResolver<T> accountExpiredRepo;
+    private final AccountLockedResolver<T> accountLockedRepo;
+    private final CredentialsExpiredResolver<T> credentialsExpiredRepo;
+    private final UserEnabledResolver<T> userEnabledRepo;
     
-    public UserDetailsAdapter(RegisteredUser user, 
-            AccountExpiredResolver accountExpiredRepo, 
-            AccountLockedResolver accountLockedRepo, 
-            CredentialsExpiredResolver credentialsExpiredRepo, 
-            UserEnabledResolver userEnabledRepo) {
+    public UserDetailsAdapter(T user, 
+            AccountExpiredResolver<T> accountExpiredRepo, 
+            AccountLockedResolver<T> accountLockedRepo, 
+            CredentialsExpiredResolver<T> credentialsExpiredRepo, 
+            UserEnabledResolver<T> userEnabledRepo) {
         this.user = user;
         this.accountExpiredRepo = accountExpiredRepo;
         this.accountLockedRepo = accountLockedRepo;
@@ -36,7 +36,7 @@ public class UserDetailsAdapter implements UserDetails {
                 .collect(Collectors.toSet());
     }
 
-    public RegisteredUser getUser() {
+    public T getUser() {
         return user;
     }
     

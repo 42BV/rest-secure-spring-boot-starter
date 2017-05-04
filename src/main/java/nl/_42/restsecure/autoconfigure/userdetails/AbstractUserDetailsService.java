@@ -5,25 +5,25 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
-public abstract class AbstractUserDetailsService implements UserDetailsService {
+public abstract class AbstractUserDetailsService<T extends RegisteredUser> implements UserDetailsService {
 
     @Autowired(required = false)
-    private AccountExpiredResolver accountExpiredRepo;
+    private AccountExpiredResolver<T> accountExpiredRepo;
     @Autowired(required = false)
-    private AccountLockedResolver accountLockedRepo;
+    private AccountLockedResolver<T> accountLockedRepo;
     @Autowired(required = false)
-    private CredentialsExpiredResolver credentialsExpiredRepo;
+    private CredentialsExpiredResolver<T> credentialsExpiredRepo;
     @Autowired(required = false)
-    private UserEnabledResolver enabledRepo;
+    private UserEnabledResolver<T>  enabledRepo;
     
-    protected abstract RegisteredUser findUserByUsername(String username);
+    protected abstract T findUserByUsername(String username);
     
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        RegisteredUser user = findUserByUsername(username);
+        T user = findUserByUsername(username);
         if (user == null) {
             throw new UsernameNotFoundException("Username: '" + username + "' not found.");
         }
-        return new UserDetailsAdapter(user, accountExpiredRepo, accountLockedRepo, credentialsExpiredRepo, enabledRepo);
+        return new UserDetailsAdapter<T>(user, accountExpiredRepo, accountLockedRepo, credentialsExpiredRepo, enabledRepo);
     }
 }
