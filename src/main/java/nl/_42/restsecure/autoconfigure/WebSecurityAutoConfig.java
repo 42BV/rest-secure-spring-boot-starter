@@ -77,8 +77,6 @@ public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
     private GenericErrorHandler errorHandler;
     @Autowired(required = false)
     private AbstractUserDetailsService<? extends RegisteredUser> userDetailsService;
-    @Autowired
-    private PasswordEncoder passwordEncoder;
     
     @Autowired(required = false)
     private RequestAuthorizationCustomizer authCustomizer;
@@ -98,7 +96,7 @@ public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         if (inMemoryUsersStore == null) {
             if (userDetailsService != null) {
-                auth.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder);
+                auth.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder());
             }
             if (crowdAuthenticationProvider != null) {
                 auth.authenticationProvider(crowdAuthenticationProvider);
