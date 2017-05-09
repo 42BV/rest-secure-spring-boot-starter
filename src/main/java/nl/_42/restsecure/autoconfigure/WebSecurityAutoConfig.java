@@ -1,6 +1,5 @@
 package nl._42.restsecure.autoconfigure;
 
-import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
 import static nl._42.restsecure.autoconfigure.userdetails.UserDetailsAdapter.ROLE_PREFIX;
 import static org.springframework.http.HttpMethod.DELETE;
@@ -52,7 +51,6 @@ import com.atlassian.crowd.integration.springsecurity.user.CrowdUserDetailsServi
 import com.atlassian.crowd.service.GroupMembershipManager;
 import com.atlassian.crowd.service.UserManager;
 import com.atlassian.crowd.service.cache.CacheAwareAuthenticationManager;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import nl._42.restsecure.autoconfigure.components.GenericErrorHandler;
 import nl._42.restsecure.autoconfigure.userdetails.AbstractUserDetailsService;
@@ -71,8 +69,6 @@ public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
         SecurityContextHolder.setStrategyName(MODE_INHERITABLETHREADLOCAL);
     }
 
-    @Autowired
-    private ObjectMapper objectMapper;
     @Autowired
     private GenericErrorHandler errorHandler;
     @Autowired(required = false)
@@ -151,9 +147,6 @@ public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
         customize(urlRegistry)
                 .anyRequest().fullyAuthenticated()
             .and()
-                .anonymous()
-                    .authorities(asList())
-            .and()
                 .exceptionHandling()
                     .accessDeniedHandler(accessDeniedHandler())
                     .authenticationEntryPoint(accessDeniedHandler())
@@ -186,7 +179,7 @@ public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
     
     private RestAuthenticationFilter authenticationFilter() throws Exception {
         AntPathRequestMatcher matcher = new AntPathRequestMatcher("/authentication", POST.name());
-        return new RestAuthenticationFilter(errorHandler, matcher, authenticationManagerBean(), objectMapper);
+        return new RestAuthenticationFilter(errorHandler, matcher, authenticationManagerBean());
     }
 
     private RestAccessDeniedHandler accessDeniedHandler() {
