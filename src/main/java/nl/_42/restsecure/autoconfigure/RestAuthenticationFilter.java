@@ -24,7 +24,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import nl._42.restsecure.autoconfigure.components.GenericErrorHandler;
+import nl._42.restsecure.autoconfigure.components.errorhandling.GenericErrorHandler;
 
 public class RestAuthenticationFilter extends OncePerRequestFilter {
 

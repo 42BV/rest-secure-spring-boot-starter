@@ -1,4 +1,4 @@
-package nl._42.restsecure.autoconfigure.components;
+package nl._42.restsecure.autoconfigure.components.errorhandling;
 
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;

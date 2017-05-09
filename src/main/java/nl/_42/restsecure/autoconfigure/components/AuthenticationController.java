@@ -1,7 +1,9 @@
 package nl._42.restsecure.autoconfigure.components;
 
-import static java.util.stream.Collectors.toSet;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
+
+import java.util.HashSet;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.web.csrf.CsrfToken;
@@ -19,25 +21,49 @@ public class AuthenticationController {
     private AuthenticationResultProvider authenticationResultProvider;
     
     @RequestMapping(method = POST)
-    AbstractAuthenticationResult<?> authenticate(@CurrentUser RegisteredUser user, CsrfToken csrfToken) {
+    AuthenticationResult authenticate(@CurrentUser RegisteredUser user, CsrfToken csrfToken) {
         return getCurrentlyLoggedInUser(user, csrfToken);
     }
 
     @RequestMapping(path = "/current", method = RequestMethod.GET)
-    AbstractAuthenticationResult<?> current(@CurrentUser RegisteredUser user, CsrfToken csrfToken) {
+    AuthenticationResult current(@CurrentUser RegisteredUser user, CsrfToken csrfToken) {
         return getCurrentlyLoggedInUser(user, csrfToken);
     }
 
     @RequestMapping(path = "/handshake", method = RequestMethod.GET)
-    AbstractAuthenticationResult<?> handshake(CsrfToken csrfToken) {
-        return new AbstractAuthenticationResult<AbstractUserResult>(csrfToken.getToken()) {};
+    AuthenticationResult handshake(CsrfToken csrfToken) {
+        return new AuthenticationResult() {
+            @Override
+            public RegisteredUserResult getCurrentUser() {
+                return null;
+            }
+            @Override
+            public String getCsrfToken() {
+                return csrfToken.getToken();
+            }};
     }
     
-    private AbstractAuthenticationResult<?> getCurrentlyLoggedInUser(RegisteredUser user, CsrfToken csrfToken) {
+    private AuthenticationResult getCurrentlyLoggedInUser(RegisteredUser user, CsrfToken csrfToken) {
         if (authenticationResultProvider != null) {
-            return authenticationResultProvider.toAuthenticationResult(user, csrfToken.getToken());
+            return authenticationResultProvider.toAuthenticationResult(user, csrfToken);
         }
-        AbstractUserResult userResult = new AbstractUserResult(user.getUsername(), user.getRolesAsString().stream().collect(toSet())) {};
-        return new AbstractAuthenticationResult<AbstractUserResult>(userResult, csrfToken.getToken()) {};
+        RegisteredUserResult userResult = new RegisteredUserResult() {
+            @Override
+            public String getUsername() {
+                return user.getUsername();
+            }
+            @Override
+            public Set<String> getRoles() {
+                return new HashSet<>(user.getRolesAsString());
+            }};
+        return new AuthenticationResult() {
+            @Override
+            public RegisteredUserResult getCurrentUser() {
+                return userResult;
+            }
+            @Override
+            public String getCsrfToken() {
+                return csrfToken.getToken();
+            }};
     }
 }

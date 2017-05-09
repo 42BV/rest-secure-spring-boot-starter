@@ -52,13 +52,14 @@ import com.atlassian.crowd.service.GroupMembershipManager;
 import com.atlassian.crowd.service.UserManager;
 import com.atlassian.crowd.service.cache.CacheAwareAuthenticationManager;
 
-import nl._42.restsecure.autoconfigure.components.GenericErrorHandler;
+import nl._42.restsecure.autoconfigure.components.AuthenticationController;
+import nl._42.restsecure.autoconfigure.components.errorhandling.GenericErrorHandler;
 import nl._42.restsecure.autoconfigure.userdetails.AbstractUserDetailsService;
 import nl._42.restsecure.autoconfigure.userdetails.RegisteredUser;
 
 @Configuration
 @AutoConfigureAfter(WebMvcAutoConfiguration.class)
-@ComponentScan(basePackageClasses = GenericErrorHandler.class)
+@ComponentScan(basePackageClasses = AuthenticationController.class)
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {

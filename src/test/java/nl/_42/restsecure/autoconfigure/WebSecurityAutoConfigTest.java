@@ -32,7 +32,7 @@ import org.springframework.web.context.support.AnnotationConfigWebApplicationCon
 
 import com.atlassian.crowd.integration.springsecurity.RemoteCrowdAuthenticationProvider;
 
-import nl._42.restsecure.autoconfigure.components.WebMvcErrorHandler;
+import nl._42.restsecure.autoconfigure.components.errorhandling.WebMvcErrorHandler;
 import nl._42.restsecure.autoconfigure.userdetails.AbstractUserDetailsService;
 import nl._42.restsecure.autoconfigure.userdetails.AccountExpiredResolver;
 import nl._42.restsecure.autoconfigure.userdetails.RegisteredUser;

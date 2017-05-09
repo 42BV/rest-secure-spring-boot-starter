@@ -1,4 +1,4 @@
-package nl._42.restsecure.autoconfigure.components;
+package nl._42.restsecure.autoconfigure.components.errorhandling;
 
 public class GenericErrorResult {
 

@@ -1,4 +1,4 @@
-package nl._42.restsecure.autoconfigure.components;
+package nl._42.restsecure.autoconfigure.components.errorhandling;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
