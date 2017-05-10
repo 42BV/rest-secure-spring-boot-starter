@@ -7,9 +7,9 @@ Spring boot autoconfig for spring security in a REST environment
 - Auto-configures Spring Web Security with a customized UserDetailsService for internal users storage or with crowd-integration-springsecurity for external crowd authentication.
 - Spring Method Security is enabled: You can make use of `@PreAuthorize` and `@PostAuthorize`.
 - Customizable authentication endpoints provided:
--- POST /authentication - to be able to login clients should do a POST to this endpoint with a json request body like `{ username: '', password: ''}`ß.
--- GET /authentication/handshake - to obtain the current csrf token
--- GET /authentication/current - to obtain the current logged in user
+   * POST /authentication - to be able to login clients should do a POST to this endpoint with a json request body like `{ username: '', password: ''}`ß.
+   * GET /authentication/handshake - to obtain the current csrf token
+   * GET /authentication/current - to obtain the current logged in user
 
 ## Usage
 
@@ -46,7 +46,7 @@ public class User extends BaseEntity implements RegisteredUser {
 @Service
 class SpringUserDetailsService extends AbstractUserDetailsService<User> {
     @Autowired
-    private final UserRepository userRepository;ß
+    private final UserRepository userRepository;
     @Override
     protected User findUserByUsername(String username) {
         return userRepository.findByEmailIgnoreCase(username);
@@ -179,15 +179,15 @@ public RequestAuthorizationCustomizer requestAuthorizationCustomizer() {
 
 4. Customizing the authentication endpoints:
 - The 3 default authentication endpoints will return the following json by default:
--- POST /authentication and GET /authentication/current:
-```json
+   * POST /authentication and GET /authentication/current:
+```
 {
     currentUser: { username: 'peter@email.com', roles: ['USER']},
     csrfToken: 'KbyUmhTLMpYj7CD2di7JKP1P3qmLlkPt'
 }
 ```
--- GET /authentication/handshake
-```json
+   * GET /authentication/handshake
+```
 {
     currentUser: null,
     csrfToken: 'KbyUmhTLMpYj7CD2di7JKP1P3qmLlkPt'
@@ -240,16 +240,18 @@ public WebSecurityCustomizer webSecurityCustomizer() {
 
 7. Errorhandling:
 - An `@ExceptionHandler` method for handling the method security `AccessDeniedExcption` is added to a `@RestControllerAdvice` with `@Order(0)`. This way all custom `@ControllerAdvice` with `@ExceptionHandler` methods with default order will be processed hereafter. The http response will have a http status 403 with a json body:
-`{ errroCode: 'SERVER.ACCESS_DENIED_ERROR'}`
+```
+{ errroCode: 'SERVER.ACCESS_DENIED_ERROR'}
+```
 If you want to handle this exception yourself, you can provide an `@ExceptionHandler` method within your custom `@ControllerAdvice` annotated with `@Order` with a higher precedence (value less that zero!):
 - Following error situations are not (yet) customizable:
--- Authentication errors during login and authentication errors when trying to access a restricted url:
+   * Authentication errors during login and authentication errors when trying to access a restricted url:
 Http status: 401
 Response body: `{ errorCode: 'SERVER.AUTHENTICATE_ERROR'}`
--- Authorization errors when trying to access a url that needs a specific authority:
+   * Authorization errors when trying to access a url that needs a specific authority:
 Http status: 403
 Response body: `{ errorCode: 'SERVER.ACCESS_DENIED_ERROR'}`
--- Csrf token missing due to session timeout:
+   * Csrf token missing due to session timeout:
 Http status: 401
 Response body: `{ errorCode: 'SERVER.SESSION_TIMEOUT_ERROR'}`
 
