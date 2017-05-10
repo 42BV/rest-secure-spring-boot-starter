@@ -7,9 +7,9 @@ Spring boot autoconfig for spring security in a REST environment
 - Auto-configures Spring Web Security with a customized UserDetailsService for internal users storage or with crowd-integration-springsecurity for external crowd authentication.
 - Spring Method Security is enabled: You can make use of `@PreAuthorize` and `@PostAuthorize`.
 - Customizable authentication endpoints provided:
-   * POST /authentication - to be able to login clients should do a POST to this endpoint with a json request body like `{ username: '', password: ''}`ß.
-   * GET /authentication/handshake - to obtain the current csrf token
-   * GET /authentication/current - to obtain the current logged in user
+   * POST `/authentication` - to be able to login clients should provide a json request body like `{ username: 'user@email.com', password: 'secret'}`.
+   * GET `/authentication/handshake` - to obtain the current csrf token
+   * GET `/authentication/current` - to obtain the current logged in user
 
 ## Usage
 
@@ -22,7 +22,7 @@ Spring boot autoconfig for spring security in a REST environment
     <version>0.1.0</version>
 </dependency>
 ```
-2a. If you want to configure for an internal users storage:
+2. If you want to configure for an internal users storage:
  - Make your custom User domain object implement the `RegisteredUser` interface:
  ```java
 @Entity
@@ -67,7 +67,7 @@ public class UserEnabledResolverImpl implements UserEnabledResolver<User> {
  - By default, a `BcryptPasswordEncoder` bean is added to the security config for password matching. Use this bean when you are encrypting passwords for your User domain object.
 If you want to override this bean, you can provide a custom `PasswordEncoder` implementation by adding it to your Spring `ApplicationContext`.
 
-2b. If you want to configure for an external crowd authentication:
+3. If you want to configure for an external crowd authentication:
  - Add the crowd-integration-springsecurity dependency to your pom.xml:
 ```xml
 <dependency>
@@ -76,7 +76,7 @@ If you want to override this bean, you can provide a custom `PasswordEncoder` im
     <version>2.7.2</version>
 </dependency>
 ```
- - Provide your application with a `crowd.properties` by adding it to the classpath. For more information on this file see: https://confluence.atlassian.com/crowd/integrating-crowd-with-spring-security-174752019.html chapter 2.3
+ - Provide your application with a `crowd.properties` by adding it to the classpath. For more information on this file see: [Atlassian documentation](https://confluence.atlassian.com/crowd/integrating-crowd-with-spring-security-174752019.html) chapter 2.3.
  - If you want to map crowd groups to your custom application user roles you can provide your application with a `crowd-group-to-role.properties` by adding it to the classpath:
  ```
  crowd-admin-group = ADMIN
@@ -85,7 +85,7 @@ If you want to override this bean, you can provide a custom `PasswordEncoder` im
 ## Customization
 
 1. Adding custom filters:
-- Use HttpSecurityCustomizer to add your custom filters to the `SpringSecurityFilterChain` and customize the `HttpSecurity`ß object in general:
+- Use HttpSecurityCustomizer to add your custom filters to the `SpringSecurityFilterChain` and customize the `HttpSecurity` object in general:
 ```java
     @Bean
     public HttpSecurityCustomizer httpSecurityCustomizer() {
@@ -102,9 +102,9 @@ If you want to override this bean, you can provide a custom `PasswordEncoder` im
         };
     }
 ```
-- Using the login-form json after the `RestAuthenticationFilter`: 
-The restsecure autoconfig puts a `RestAuthenticationFilter` just before the Spring Security's `AnonymousAuthenticationFilter`. 
-If you put a custom filter in between them (like the rememberMeFilter in the example above), you cannot read the request inputStream anymore when the request was a POST form login. This due to the fact that the `RestAuthenticationFilter` already has been reading the request inputStream to extract the usercredentials. To be able to access this information in subsequent filters, the `RestAuthenticationFilter` puts the request body as a request attribute after reading. You can retreive the request body like this:
+- Using the login request body json after the `RestAuthenticationFilter`: 
+ The restsecure autoconfig puts a `RestAuthenticationFilter` just before the Spring Security's `AnonymousAuthenticationFilter`. 
+ If you put a custom filter in between them (like the rememberMeFilter in the example above), you cannot read the request inputStream anymore when the request was a POST form login. This due to the fact that the `RestAuthenticationFilter` already has been reading the request inputStream to extract the usercredentials. To be able to access this information in subsequent filters, the `RestAuthenticationFilter` puts the request body as a request attribute after reading. You can retreive the request body like this:
 ```java
 import static nl._42.restsecure.autoconfigure.RestAuthenticationFilter.LOGIN_FORM_JSON;
 
@@ -246,12 +246,12 @@ public WebSecurityCustomizer webSecurityCustomizer() {
 If you want to handle this exception yourself, you can provide an `@ExceptionHandler` method within your custom `@ControllerAdvice` annotated with `@Order` with a higher precedence (value less that zero!):
 - Following error situations are not (yet) customizable:
    * Authentication errors during login and authentication errors when trying to access a restricted url:
-Http status: 401
+Http status: 401  
 Response body: `{ errorCode: 'SERVER.AUTHENTICATE_ERROR'}`
    * Authorization errors when trying to access a url that needs a specific authority:
-Http status: 403
+Http status: 403  
 Response body: `{ errorCode: 'SERVER.ACCESS_DENIED_ERROR'}`
    * Csrf token missing due to session timeout:
-Http status: 401
+Http status: 401  
 Response body: `{ errorCode: 'SERVER.SESSION_TIMEOUT_ERROR'}`
 
