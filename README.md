@@ -102,9 +102,10 @@ If you want to override this bean, you can provide a custom `PasswordEncoder` im
         };
     }
 ```
-- Using the login request body json after the `RestAuthenticationFilter`: 
- The restsecure autoconfig puts a `RestAuthenticationFilter` just before the Spring Security's `AnonymousAuthenticationFilter`. 
- If you put a custom filter in between them (like the rememberMeFilter in the example above), you cannot read the request inputStream anymore when the request was a POST form login. This due to the fact that the `RestAuthenticationFilter` already has been reading the request inputStream to extract the usercredentials. To be able to access this information in subsequent filters, the `RestAuthenticationFilter` puts the request body as a request attribute after reading. You can retreive the request body like this:
+- Using the login request body json after the `RestAuthenticationFilter`:  
+The restsecure autoconfig puts a `RestAuthenticationFilter` just before the Spring Security's `AnonymousAuthenticationFilter`.  
+If you put a custom filter in between them (like the rememberMeFilter in the example above), you cannot read the request inputStream anymore when the request was a POST form login. This due to the fact that the `RestAuthenticationFilter` already has been reading the request inputStream to extract the usercredentials.  
+To be able to access this information in subsequent filters, the `RestAuthenticationFilter` puts the request body as a request attribute after reading. You can retreive the request body like this:
 ```java
 import static nl._42.restsecure.autoconfigure.RestAuthenticationFilter.LOGIN_FORM_JSON;
 
@@ -245,13 +246,13 @@ public WebSecurityCustomizer webSecurityCustomizer() {
 ```
 If you want to handle this exception yourself, you can provide an `@ExceptionHandler` method within your custom `@ControllerAdvice` annotated with `@Order` with a higher precedence (value less that zero!):
 - Following error situations are not (yet) customizable:
-   * Authentication errors during login and authentication errors when trying to access a restricted url:
+   * Authentication errors during login and authentication errors when trying to access a restricted url:  
 Http status: 401  
 Response body: `{ errorCode: 'SERVER.AUTHENTICATE_ERROR'}`
-   * Authorization errors when trying to access a url that needs a specific authority:
+   * Authorization errors when trying to access a url that needs a specific authority:  
 Http status: 403  
 Response body: `{ errorCode: 'SERVER.ACCESS_DENIED_ERROR'}`
-   * Csrf token missing due to session timeout:
+   * Csrf token missing due to session timeout:  
 Http status: 401  
 Response body: `{ errorCode: 'SERVER.SESSION_TIMEOUT_ERROR'}`
 
