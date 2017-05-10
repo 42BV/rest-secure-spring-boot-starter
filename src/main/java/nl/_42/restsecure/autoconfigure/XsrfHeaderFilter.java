@@ -13,6 +13,10 @@ import javax.servlet.http.HttpServletResponse;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+/**
+ * If no 'XSRF-TOKEN' cookie is found on the current request or if its value does not match the CsrfToken value in the CsrfTokenRepository 
+ * a new one is created and put on the http response.
+ */
 public class XsrfHeaderFilter extends OncePerRequestFilter {
 
     public static final String COOKIE_XSRF_TOKEN = "XSRF-TOKEN";

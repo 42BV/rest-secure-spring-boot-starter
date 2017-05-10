@@ -4,6 +4,7 @@ import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 
 import java.io.IOException;
 
+import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -26,6 +27,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import nl._42.restsecure.autoconfigure.components.errorhandling.GenericErrorHandler;
 
+/**
+ * Handles the login POST request. Tries to Authenticate the given user credentials using the auto configured {@link AuthenticationManager}.
+ * Expects the request body to contain json like:
+ * <code>{ username: 'user@email.com', password: 'secret' }</code> 
+ * 
+ * After a successful login, sets the read json as request attribute. This to enable subsequent {@link Filter}'s to obtain this information.
+ */
 public class RestAuthenticationFilter extends OncePerRequestFilter {
 
     public static final String LOGIN_FORM_JSON = "loginFormJson";

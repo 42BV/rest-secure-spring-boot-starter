@@ -17,6 +17,7 @@ import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnResource;
 import org.springframework.boot.autoconfigure.web.WebMvcAutoConfiguration;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.ResourceLoaderAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -57,6 +58,14 @@ import nl._42.restsecure.autoconfigure.components.errorhandling.GenericErrorHand
 import nl._42.restsecure.autoconfigure.userdetails.AbstractUserDetailsService;
 import nl._42.restsecure.autoconfigure.userdetails.RegisteredUser;
 
+/**
+ * Auto-configures Spring Web Security with a customized UserDetailsService for internal users storage or with crowd-integration-springsecurity for external crowd authentication.
+ * Spring Method Security is enabled: You can make use of `@PreAuthorize` and `@PostAuthorize`.
+ * Customizable authentication endpoints provided:
+ * POST `/authentication` - to be able to login clients should provide a json request body like `{ username: 'user@email.com', password: 'secret'}`.
+ * GET `/authentication/handshake` - to obtain the current csrf token
+ * GET `/authentication/current` - to obtain the current logged in user
+ */
 @Configuration
 @AutoConfigureAfter(WebMvcAutoConfiguration.class)
 @ComponentScan(basePackageClasses = AuthenticationController.class)
@@ -89,6 +98,9 @@ public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
     @Autowired(required = false)
     private AuthenticationProvider crowdAuthenticationProvider;
     
+    /**
+     * {@inheritDoc}
+     */
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         if (inMemoryUsersStore == null) {
@@ -119,18 +131,28 @@ public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
         }
     }
     
+    /**
+     * Adds a {@link BCryptPasswordEncoder} to the {@link ApplicationContext} if no {@link PasswordEncoder} bean is found already.
+     * @return PasswordEncoder
+     */
     @Bean
     @ConditionalOnMissingBean(PasswordEncoder.class)
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Bean
     @Override
     public AuthenticationManager authenticationManagerBean() throws Exception {
         return super.authenticationManagerBean();
     }
     
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void configure(WebSecurity web) throws Exception {
         if (webSecurityCustomizer != null) {
@@ -138,6 +160,9 @@ public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
         }
     }
     
+    /**
+     * {@inheritDoc}
+     */
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry urlRegistry = http
@@ -193,6 +218,10 @@ public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
         return repository;
     }
     
+    /**
+     * Autoconfigures Crowd when a crowd-integration-springsecurity jar and a crowd.properties are found on the application's classpath.
+     * When a crowd-group-to-role.properties is found on the application's classpath, these mappings will be used by the {@link CrowdUserDetailsService}
+     */
     @ConditionalOnResource(resources = {"applicationContext-CrowdClient.xml", "crowd.properties"})
     @ImportResource("classpath:/applicationContext-CrowdClient.xml")
     @Configuration

@@ -17,6 +17,9 @@ import org.springframework.security.web.csrf.MissingCsrfTokenException;
 
 import nl._42.restsecure.autoconfigure.components.errorhandling.GenericErrorHandler;
 
+/**
+ * Handles all authentication- and authorization exceptions that can occur in the http web environment. 
+ */
 class RestAccessDeniedHandler implements AccessDeniedHandler, AuthenticationEntryPoint {
 
     private static final String SERVER_AUTHENTICATE_ERROR = "SERVER.AUTHENTICATE_ERROR";
