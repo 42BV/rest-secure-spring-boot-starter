@@ -4,7 +4,12 @@ Spring boot autoconfig for spring security in a REST environment
 
 ## Features
 
-Auto-configures Spring Security with a customized UserDetailsService for internal users storage or with crowd-integration-springsecurity for external crowd authentication.
+- Auto-configures Spring Web Security with a customized UserDetailsService for internal users storage or with crowd-integration-springsecurity for external crowd authentication.
+- Spring Method Security is enabled: You can make use of `@PreAuthorize` and `@PostAuthorize`.
+- Customizable authentication endpoints provided:
+-- POST /authentication - to be able to login clients should do a POST to this endpoint with a json request body like `{ username: '', password: ''}`ß.
+-- GET /authentication/handshake - to obtain the current csrf token
+-- GET /authentication/current - to obtain the current logged in user
 
 ## Usage
 
@@ -80,15 +85,171 @@ If you want to override this bean, you can provide a custom `PasswordEncoder` im
 ## Customization
 
 1. Adding custom filters:
-- Use HttpSecurityCustomizer
-- Using the login-form json after the `RestAuthenticationFilter`
+- Use HttpSecurityCustomizer to add your custom filters to the `SpringSecurityFilterChain` and customize the `HttpSecurity`ß object in general:
+```java
+    @Bean
+    public HttpSecurityCustomizer httpSecurityCustomizer() {
+        return new HttpSecurityCustomizer() {
+            @Override
+            public HttpSecurity customize(HttpSecurity http) throws Exception {
+                http.addFilterBefore(rememberMeFilter(), AnonymousAuthenticationFilter.class)
+                        .addFilterBefore(rememberMeAuthenticationFilter(), AnonymousAuthenticationFilter.class)
+                        .addFilterAfter(httpLogFilter(), AnonymousAuthenticationFilter.class)
+                        .logout()
+                        .addLogoutHandler(rememberMeServices());
+                return http;
+            }
+        };
+    }
+```
+- Using the login-form json after the `RestAuthenticationFilter`: 
+The restsecure autoconfig puts a `RestAuthenticationFilter` just before the Spring Security's `AnonymousAuthenticationFilter`. 
+If you put a custom filter in between them (like the rememberMeFilter in the example above), you cannot read the request inputStream anymore when the request was a POST form login. This due to the fact that the `RestAuthenticationFilter` already has been reading the request inputStream to extract the usercredentials. To be able to access this information in subsequent filters, the `RestAuthenticationFilter` puts the request body as a request attribute after reading. You can retreive the request body like this:
+```java
+import static nl._42.restsecure.autoconfigure.RestAuthenticationFilter.LOGIN_FORM_JSON;
 
+class RememberMeFilter extends OncePerRequestFilter {
+    private final AntPathRequestMatcher matcher;
+    private final ObjectMapper objectMapper;
+    private final RememberMeServices rememberMeServices;
+    RememberMeFilter(AntPathRequestMatcher matcher, ObjectMapper objectMapper, RememberMeServices rememberMeServices) {
+        this.matcher = matcher;
+        this.objectMapper = objectMapper;
+        this.rememberMeServices = rememberMeServices;
+    }
+    @Override
+    public void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
+        if (matcher.matches(request)) {
+            LoginForm form = objectMapper.readValue((String)request.getAttribute(LOGIN_FORM_JSON), LoginForm.class);
+            if (form.rememberMe) {
+                Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+                rememberMeServices.loginSuccess(request, response, authentication);
+            }
+        }
+        chain.doFilter(request, response);
+    }
+}
+```
+- Note that the `RestAuthenticationFilter` must be able to read form the inputStream when the request is a POST login. So make sure you do not add filters before this one that read the request inputStream or no login credentials can be read to be able to authenticate!
+ 
 2. Using the in-memory users store for testing purposes:
-
+- In case you are configuring for external Crowd authentication, you may want to make use of an in-memory authentication provider when testing in a local environment. You can do this by implementing the `InMemoryUsersStore` and adding it to the Spring `ApplicationContext` for a local test profile:
+```java
+@Bean
+public InMemoryUsersStore userStore() {
+    return new InMemoryUsersStore() {
+        @Override
+        public List<RegisteredUser> users() {
+            return asList(new RegisteredUser() {
+                @Override
+                public String getUsername() {
+                    return "piet";
+                }        
+                @Override
+                public List<String> getRolesAsString() {
+                    return asList("USER");
+                }
+                @Override
+                public String getPassword() {
+                    return "secret";
+                }
+            });
+        }
+    };
+}
+```
 3. Configuring request url authorization:
+- By default the authentication endpoints are configured accessible for any request, all other url's require full authentication. You may want to add url patterns in between these. Implement `RequestAuthorizationCustomizer` and add it as a `Bean` to the Spring `ApplicationContext`:
+```java
+@Bean
+public RequestAuthorizationCustomizer requestAuthorizationCustomizer() {
+    return new RequestAuthorizationCustomizer() {
+        @Override
+        public ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry customize(
+                ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry urlRegistry) {
+            return urlRegistry
+                .antMatchers(GET, "/authentication/current").not().anonymous()
+                .antMatchers(GET, "/constraints").not().anonymous()
+                .antMatchers(GET, "/enums").not().anonymous()
+                .antMatchers(GET, "/participations").not().anonymous();
+        }
+    };
+}
+```
 
 4. Customizing the authentication endpoints:
+- The 3 default authentication endpoints will return the following json by default:
+-- POST /authentication and GET /authentication/current:
+```json
+{
+    currentUser: { username: 'peter@email.com', roles: ['USER']},
+    csrfToken: 'KbyUmhTLMpYj7CD2di7JKP1P3qmLlkPt'
+}
+```
+-- GET /authentication/handshake
+```json
+{
+    currentUser: null,
+    csrfToken: 'KbyUmhTLMpYj7CD2di7JKP1P3qmLlkPt'
+}
+```
+Note that depending on your application's jackson configuration the currentUser appears as null or is completely left out of the json.
+- The above json returned can be customized by implementing the `AuthenticationResultProvider<T>` and adding it as `Bean` to the Spring `ApplicationContext`.
+Note on example below: `CustomAuthenticationResult` implements `AuthenticationResult` and `UserFullResult` implements `RegisteredUserResult`.
+```java
+@Component
+public class CustomAuthenticationResultProvider implements AuthenticationResultProvider<User> {
+    @Autowired
+    private BeanMapper beanMapper;
+    @Override
+    public AuthenticationResult toAuthenticationResult(User user, CsrfToken csrfToken) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        boolean restorable = authentication instanceof LoginAsAuthentication;
+        boolean fullyAuthenticated = authentication instanceof UsernamePasswordAuthenticationToken;
+        return new CustomAuthenticationResult(beanMapper.map(user, UserFullResult.class), csrfToken.getToken(), restorable, fullyAuthenticated); 
+    }
+}
+```
 
 5. Adding custom `AuthenticationProvider`'s:
+- If you want to add an extra `AutenticationProvider` to the security config, implement the `CustomAuthenticationProviders` interface and add it as `Bean` to the Spring `ApplicationContext`:
+```java
+@Bean
+public CustomAuthenticationProviders customAuthenticationProviders() {
+    return new CustomAuthenticationProviders() {
+        @Override
+        public List<AuthenticationProvider> get() {
+            return asList(rememberMeAuthenticationProvider());
+        }
+    };
+}
+```
 
 6. Using the `WebSecurityCustomizer`:
+```java
+@Bean
+public WebSecurityCustomizer webSecurityCustomizer() {
+    return new WebSecurityCustomizer() {
+        @Override
+        public void configure(WebSecurity web) throws Exception {
+            web.ignoring().antMatchers("/system/**");
+        }            
+    };
+}
+```
+
+7. Errorhandling:
+- An `@ExceptionHandler` method for handling the method security `AccessDeniedExcption` is added to a `@RestControllerAdvice` with `@Order(0)`. This way all custom `@ControllerAdvice` with `@ExceptionHandler` methods with default order will be processed hereafter. The http response will have a http status 403 with a json body:
+`{ errroCode: 'SERVER.ACCESS_DENIED_ERROR'}`
+If you want to handle this exception yourself, you can provide an `@ExceptionHandler` method within your custom `@ControllerAdvice` annotated with `@Order` with a higher precedence (value less that zero!):
+- Following error situations are not (yet) customizable:
+-- Authentication errors during login and authentication errors when trying to access a restricted url:
+Http status: 401
+Response body: `{ errorCode: 'SERVER.AUTHENTICATE_ERROR'}`
+-- Authorization errors when trying to access a url that needs a specific authority:
+Http status: 403
+Response body: `{ errorCode: 'SERVER.ACCESS_DENIED_ERROR'}`
+-- Csrf token missing due to session timeout:
+Http status: 401
+Response body: `{ errorCode: 'SERVER.SESSION_TIMEOUT_ERROR'}`
+

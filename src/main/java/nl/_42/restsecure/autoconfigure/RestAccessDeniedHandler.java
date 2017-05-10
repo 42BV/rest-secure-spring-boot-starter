@@ -30,7 +30,7 @@ class RestAccessDeniedHandler implements AccessDeniedHandler, AuthenticationEntr
     }
 
     /**
-     * Handles CSRF failures
+     * Handles CSRF- and URL authority matching failures.
      * {@inheritDoc}
      */
     @Override
