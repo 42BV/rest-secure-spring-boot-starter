@@ -14,7 +14,7 @@ public interface InMemoryUsersStore {
 
     /**
      * Returns all users with name and plaintext password to be loaded into the in memory authentication store.
-     * @return List<RegisteredUser>
+     * @return List
      */
     List<RegisteredUser> users();
 }

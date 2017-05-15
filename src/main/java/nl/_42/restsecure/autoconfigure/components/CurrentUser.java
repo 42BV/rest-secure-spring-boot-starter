@@ -7,6 +7,15 @@ import java.lang.annotation.Target;
 
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
+import nl._42.restsecure.autoconfigure.userdetails.AbstractUserDetailsService;
+import nl._42.restsecure.autoconfigure.userdetails.RegisteredUser;
+
+/**
+ * Use this annotation on a controller method parameter to resolve the current logged in user.
+ * Type of this parameter must be your custom user type implementing {@link RegisteredUser}.
+ * Only works when implementing a custom {@link AbstractUserDetailsService} 
+ * because crowd userdetails cannot be transformed into {@link RegisteredUser}.
+ */
 @Target({ ElementType.PARAMETER })
 @Retention(RetentionPolicy.RUNTIME)
 @AuthenticationPrincipal(errorOnInvalidType = true, expression = "user")
