@@ -34,12 +34,12 @@ public class AuthenticationController {
     
     @RequestMapping(method = POST)
     AuthenticationResult authenticate(@AuthenticationPrincipal(errorOnInvalidType = true) UserDetails userDetails, CsrfToken csrfToken) {
-        return getCurrentlyLoggedInUser(userDetails, csrfToken);
+        return transform(userDetails, csrfToken);
     }
 
     @RequestMapping(path = "/current", method = RequestMethod.GET)
     AuthenticationResult current(@AuthenticationPrincipal(errorOnInvalidType = true) UserDetails userDetails, CsrfToken csrfToken) {
-        return getCurrentlyLoggedInUser(userDetails, csrfToken);
+        return transform(userDetails, csrfToken);
     }
 
     @RequestMapping(path = "/handshake", method = RequestMethod.GET)
@@ -55,7 +55,7 @@ public class AuthenticationController {
             }};
     }
     
-    private AuthenticationResult getCurrentlyLoggedInUser(UserDetails userDetails, CsrfToken csrfToken) {
+    private AuthenticationResult transform(UserDetails userDetails, CsrfToken csrfToken) {
         if (authenticationResultProvider != null && userDetails instanceof UserDetailsAdapter<?>) {
             UserDetailsAdapter<RegisteredUser> userAdapter = (UserDetailsAdapter<RegisteredUser>)userDetails;
             return authenticationResultProvider.toAuthenticationResult(userAdapter.getUser(), csrfToken);
