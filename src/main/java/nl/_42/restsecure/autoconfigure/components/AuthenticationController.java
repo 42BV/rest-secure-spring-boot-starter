@@ -1,8 +1,6 @@
 package nl._42.restsecure.autoconfigure.components;
 
 import static java.util.stream.Collectors.toSet;
-import static nl._42.restsecure.autoconfigure.userdetails.UserDetailsAdapter.ROLE_PREFIX;
-import static org.apache.commons.lang3.StringUtils.stripStart;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
 import java.util.Set;
@@ -10,15 +8,12 @@ import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import nl._42.restsecure.autoconfigure.userdetails.RegisteredUser;
-import nl._42.restsecure.autoconfigure.userdetails.UserDetailsAdapter;
 
 /**
  * This controller implements the default /authentication and /authentication/handshake endpoints.
@@ -33,13 +28,13 @@ public class AuthenticationController {
     private AuthenticationResultProvider authenticationResultProvider;
     
     @RequestMapping(method = POST)
-    AuthenticationResult authenticate(@AuthenticationPrincipal(errorOnInvalidType = true) UserDetails userDetails, CsrfToken csrfToken) {
-        return transform(userDetails, csrfToken);
+    AuthenticationResult authenticate(@CurrentUser RegisteredUser user, CsrfToken csrfToken) {
+        return transform(user, csrfToken);
     }
 
     @RequestMapping(path = "/current", method = RequestMethod.GET)
-    AuthenticationResult current(@AuthenticationPrincipal(errorOnInvalidType = true) UserDetails userDetails, CsrfToken csrfToken) {
-        return transform(userDetails, csrfToken);
+    AuthenticationResult current(@CurrentUser RegisteredUser user, CsrfToken csrfToken) {
+        return transform(user, csrfToken);
     }
 
     @RequestMapping(path = "/handshake", method = RequestMethod.GET)
@@ -55,22 +50,18 @@ public class AuthenticationController {
             }};
     }
     
-    private AuthenticationResult transform(UserDetails userDetails, CsrfToken csrfToken) {
-        if (authenticationResultProvider != null && userDetails instanceof UserDetailsAdapter<?>) {
-            UserDetailsAdapter<RegisteredUser> userAdapter = (UserDetailsAdapter<RegisteredUser>)userDetails;
-            return authenticationResultProvider.toAuthenticationResult(userAdapter.getUser(), csrfToken);
+    private AuthenticationResult transform(RegisteredUser user, CsrfToken csrfToken) {
+        if (authenticationResultProvider != null) {
+            return authenticationResultProvider.toAuthenticationResult(user, csrfToken);
         }
         RegisteredUserResult userResult = new RegisteredUserResult() {
             @Override
             public String getUsername() {
-                return userDetails.getUsername();
+                return user.getUsername();
             }
             @Override
             public Set<String> getRoles() {
-                return userDetails.getAuthorities()
-                        .stream()
-                        .map(auth -> stripStart(auth.getAuthority(), ROLE_PREFIX))
-                        .collect(toSet());
+                return user.getRolesAsString().stream().collect(toSet());
             }};
         return new AuthenticationResult() {
             @Override

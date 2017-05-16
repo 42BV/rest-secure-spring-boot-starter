@@ -1,8 +1,12 @@
 package nl._42.restsecure.autoconfigure;
 
+import static java.util.stream.Collectors.toList;
+import static nl._42.restsecure.autoconfigure.userdetails.UserDetailsAdapter.ROLE_PREFIX;
+import static org.apache.commons.lang3.StringUtils.stripStart;
 import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 
 import java.io.IOException;
+import java.util.List;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -18,6 +22,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -26,6 +31,8 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import nl._42.restsecure.autoconfigure.components.errorhandling.GenericErrorHandler;
+import nl._42.restsecure.autoconfigure.userdetails.RegisteredUser;
+import nl._42.restsecure.autoconfigure.userdetails.UserDetailsAdapter;
 
 /**
  * Handles the login POST request. Tries to Authenticate the given user credentials using the auto configured {@link AuthenticationManager}.
@@ -61,6 +68,7 @@ public class RestAuthenticationFilter extends OncePerRequestFilter {
             UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(form.username, form.password);
             try {
                 Authentication authentication = authenticationManager.authenticate(token);
+                authentication = convertIfNecessary(authentication);
                 SecurityContextHolder.getContext().setAuthentication(authentication);
                 request.setAttribute(LOGIN_FORM_JSON, loginFormJson);
                 chain.doFilter(request, response);
@@ -70,6 +78,33 @@ public class RestAuthenticationFilter extends OncePerRequestFilter {
         } else {
             chain.doFilter(request, response);
         }
+    }
+
+    private Authentication convertIfNecessary(Authentication authentication) {
+        if (!(authentication.getPrincipal() instanceof UserDetailsAdapter<?>)) {
+            RegisteredUser user = new RegisteredUser() {
+                @Override
+                public String getUsername() {
+                    return authentication.getName();
+                }
+                @Override
+                public List<String> getRolesAsString() {
+                    return authentication.getAuthorities()
+                            .stream()
+                            .map(ga -> stripStart(ga.getAuthority(), ROLE_PREFIX))
+                            .collect(toList());
+                }
+                @Override
+                public String getPassword() {
+                    return ((UserDetails) authentication.getPrincipal()).getPassword();
+                }
+            };
+            return new UsernamePasswordAuthenticationToken(
+                    new UserDetailsAdapter<RegisteredUser>(user), 
+                    authentication.getCredentials(),
+                    authentication.getAuthorities());
+        }
+        return authentication;
     }
 
     private void handleLoginFailure(HttpServletResponse response, AuthenticationException ae) throws IOException {

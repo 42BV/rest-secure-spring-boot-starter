@@ -22,6 +22,7 @@ public class UserDetailsAdapter<T extends RegisteredUser> implements UserDetails
             AccountLockedResolver<T> accountLockedResolver, 
             CredentialsExpiredResolver<T> credentialsExpiredResolver, 
             UserEnabledResolver<T> userEnabledResolver) {
+        super();
         this.user = user;
         this.accountExpiredResolver = accountExpiredResolver;
         this.accountLockedResolver = accountLockedResolver;
@@ -29,6 +30,10 @@ public class UserDetailsAdapter<T extends RegisteredUser> implements UserDetails
         this.userEnabledResolver = userEnabledResolver;
     }
     
+    public UserDetailsAdapter(T user) {
+        this(user, null, null, null, null);
+    }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return user.getRolesAsString().stream()

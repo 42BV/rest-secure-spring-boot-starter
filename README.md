@@ -10,7 +10,7 @@ Spring boot autoconfig for spring security in a REST environment
    * POST `/authentication` - to be able to login clients should provide a json request body like `{ username: 'user@email.com', password: 'secret'}`.
    * GET `/authentication/handshake` - to obtain the current csrf token
    * GET `/authentication/current` - to obtain the current logged in user
-- If a customized UserDetailsService is implemented, the @CurrentUser annotation may be used to annotate controller method argument to inject the current custom user.
+- The @CurrentUser annotation may be used to annotate a controller method argument to inject the current custom user.
 - This autoconfiguration removes the concern of a so called "role prefix". Your domain roles are not mandatory to have this. E.g. User domain objects will have an ADMIN role instead of ROLE_ADMIN.
 
 ## Usage
@@ -83,7 +83,7 @@ If you want to override this bean, you can provide a custom `PasswordEncoder` im
  ```
  crowd-admin-group = ADMIN
  ```
-  
+
 ## Customization
 
 1. Adding custom filters:
@@ -210,6 +210,21 @@ public class CustomAuthenticationResultProvider implements AuthenticationResultP
         boolean restorable = authentication instanceof LoginAsAuthentication;
         boolean fullyAuthenticated = authentication instanceof UsernamePasswordAuthenticationToken;
         return new CustomAuthenticationResult(beanMapper.map(user, UserFullResult.class), csrfToken.getToken(), restorable, fullyAuthenticated); 
+    }
+}
+```
+- When using Crowd as Authentication method, the user argument will always be of type `RegisteredUser`:
+```java
+@Component
+public class CustomAuthenticationResultProvider implements AuthenticationResultProvider<RegisteredUser> {
+    @Autowired
+    private BeanMapper beanMapper;
+    @Autowired
+    private MyCustomUserService myCustomUserService;
+    @Override
+    public AuthenticationResult toAuthenticationResult(RegisteredUser crowdUser, CsrfToken csrfToken) {
+        User user = myCustomUserService.findByEmail(crowdUser.getUsername());
+        return new CustomAuthenticationResult(beanMapper.map(user, UserFullResult.class), csrfToken.getToken()); 
     }
 }
 ```
