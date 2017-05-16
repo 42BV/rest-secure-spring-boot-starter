@@ -55,14 +55,14 @@ class SpringUserDetailsService extends AbstractUserDetailsService<User> {
     }
 }
 ```
- - If your custom User domain object has properties for "accountExpired", "accountLocked", "credentialsExpired" or "userEnabled", 
-you must implement the corresponding resolver and add it as a `Bean` to your Spring `ApplicationContext`:
+ - If your custom User domain object has custom properties for "accountExpired", "accountLocked", "credentialsExpired" or "userEnabled", 
+you must override the corresponding default RegisteredUser methods:
 ```java
-@Component
-public class UserEnabledResolverImpl implements UserEnabledResolver<User> {
+public class User implements RegisteredUser {
+    private boolean active;
     @Override
-    public boolean isEnabled(User user) {
-        return user.isActive();
+    public boolean isEnabled() {
+        return active;
     }
 }
 ```

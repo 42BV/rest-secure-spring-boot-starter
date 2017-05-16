@@ -2,7 +2,6 @@ package nl._42.restsecure.autoconfigure;
 
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.springframework.boot.test.util.EnvironmentTestUtils.addEnvironment;
@@ -34,7 +33,6 @@ import com.atlassian.crowd.integration.springsecurity.RemoteCrowdAuthenticationP
 
 import nl._42.restsecure.autoconfigure.components.errorhandling.WebMvcErrorHandler;
 import nl._42.restsecure.autoconfigure.userdetails.AbstractUserDetailsService;
-import nl._42.restsecure.autoconfigure.userdetails.AccountExpiredResolver;
 import nl._42.restsecure.autoconfigure.userdetails.RegisteredUser;
 
 public class WebSecurityAutoConfigTest {
@@ -58,15 +56,6 @@ public class WebSecurityAutoConfigTest {
         AbstractUserDetailsService<CustomUser> userDetailsService = context.getBean(AbstractUserDetailsService.class);
         UserDetails user = userDetailsService.loadUserByUsername("jaja");
         assertTrue(user.isAccountNonExpired());
-        assertTrue(user.isAccountNonLocked());
-    }
-    
-    @Test
-    public void autoConfig_shouldConfigureSecurity_withCustomAccountExpiredRepo() {
-        loadApplicationContext(ConfigWithCustomAccountExpiredRepository.class);
-        AbstractUserDetailsService<CustomUser> userDetailsService = context.getBean(AbstractUserDetailsService.class);
-        UserDetails user = userDetailsService.loadUserByUsername("jaja");
-        assertFalse(user.isAccountNonExpired());
         assertTrue(user.isAccountNonLocked());
     }
     
@@ -122,20 +111,6 @@ public class WebSecurityAutoConfigTest {
         @Bean
         public PasswordEncoder passwordEncoder() {
             return NoOpPasswordEncoder.getInstance();
-        }
-    }
-    
-    static class ConfigWithCustomAccountExpiredRepository extends ConfigWithUserDetailsService {
-        @Bean
-        public AccountExpiredResolver<CustomUser> accountExpiredRepository() {
-            return new AccountExpiredResolver<CustomUser>() {
-
-                @Override
-                public boolean isAccountNonExpired(CustomUser user) {
-                    return user.accountNonExpired();
-                }
-
-            };
         }
     }
 

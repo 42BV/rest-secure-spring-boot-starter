@@ -1,20 +1,18 @@
 package nl._42.restsecure.autoconfigure.userdetails;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Bean;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
+/**
+ * Implement this abstract class to configure for local user authentication storage.
+ * Add your implementation as {@link Bean} to the {@link ApplicationContext}.
+ *
+ * @param <T> the user type that implements {@link RegisteredUser}.
+ */
 public abstract class AbstractUserDetailsService<T extends RegisteredUser> implements UserDetailsService {
-
-    @Autowired(required = false)
-    private AccountExpiredResolver<T> accountExpiredRepo;
-    @Autowired(required = false)
-    private AccountLockedResolver<T> accountLockedRepo;
-    @Autowired(required = false)
-    private CredentialsExpiredResolver<T> credentialsExpiredRepo;
-    @Autowired(required = false)
-    private UserEnabledResolver<T>  enabledRepo;
     
     protected abstract T findUserByUsername(String username);
     
@@ -24,6 +22,6 @@ public abstract class AbstractUserDetailsService<T extends RegisteredUser> imple
         if (user == null) {
             throw new UsernameNotFoundException("Username: '" + username + "' not found.");
         }
-        return new UserDetailsAdapter<T>(user, accountExpiredRepo, accountLockedRepo, credentialsExpiredRepo, enabledRepo);
+        return new UserDetailsAdapter<T>(user);
     }
 }

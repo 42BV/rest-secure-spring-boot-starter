@@ -12,6 +12,10 @@ import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+/**
+ * REST errorhandler that sets given http status and writes given errorCode as json object to the http response.
+ * Json example: { errorCode: 'server.error'}
+ */
 @Component
 public class GenericErrorHandler {
 
