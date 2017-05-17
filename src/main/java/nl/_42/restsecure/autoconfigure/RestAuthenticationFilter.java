@@ -27,7 +27,6 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import nl._42.restsecure.autoconfigure.components.errorhandling.GenericErrorHandler;
@@ -42,11 +41,12 @@ import nl._42.restsecure.autoconfigure.userdetails.UserDetailsAdapter;
  * After a successful login, sets the read json as request attribute. This to enable subsequent {@link Filter}'s to obtain this information.
  */
 public class RestAuthenticationFilter extends OncePerRequestFilter {
-
+    
     public static final String LOGIN_FORM_JSON = "loginFormJson";
-    private static final Logger LOGGER = LoggerFactory.getLogger(RestAuthenticationFilter.class);
-    private static final String SERVER_LOGIN_FAILED_ERROR = "SERVER.LOGIN_FAILED_ERROR";
+    public static final String SERVER_LOGIN_FAILED_ERROR = "SERVER.LOGIN_FAILED_ERROR";
 
+    private final Logger log = LoggerFactory.getLogger(RestAuthenticationFilter.class);
+    
     private final GenericErrorHandler errorHandler;
     private final AntPathRequestMatcher matcher;
     private final AuthenticationManager authenticationManager;
@@ -57,7 +57,6 @@ public class RestAuthenticationFilter extends OncePerRequestFilter {
         this.matcher = matcher;
         this.authenticationManager = authenticationManager;
         this.objectMapper = new ObjectMapper();
-        this.objectMapper.disable(JsonParser.Feature.AUTO_CLOSE_SOURCE);
     }
 
     @Override
@@ -82,6 +81,7 @@ public class RestAuthenticationFilter extends OncePerRequestFilter {
 
     private Authentication convertIfNecessary(Authentication authentication) {
         if (!(authentication.getPrincipal() instanceof UserDetailsAdapter<?>)) {
+            log.info("Converting the Authentication principal to UserDetailsAdapter to enable @CurrentUser annotation.");
             RegisteredUser user = new RegisteredUser() {
                 @Override
                 public String getUsername() {
@@ -109,7 +109,7 @@ public class RestAuthenticationFilter extends OncePerRequestFilter {
 
     private void handleLoginFailure(HttpServletResponse response, AuthenticationException ae) throws IOException {
         errorHandler.respond(response, UNAUTHORIZED, SERVER_LOGIN_FAILED_ERROR);
-        LOGGER.warn("Login failure", ae.getMessage());
+        log.warn("Login failure", ae.getMessage());
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)

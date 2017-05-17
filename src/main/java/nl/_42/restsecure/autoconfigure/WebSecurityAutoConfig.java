@@ -5,8 +5,10 @@ import static nl._42.restsecure.autoconfigure.userdetails.UserDetailsAdapter.ROL
 import static org.springframework.http.HttpMethod.DELETE;
 import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.security.core.context.SecurityContextHolder.MODE_INHERITABLETHREADLOCAL;
+import static org.springframework.util.Assert.notEmpty;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
@@ -14,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnResource;
 import org.springframework.boot.autoconfigure.web.WebMvcAutoConfiguration;
@@ -105,13 +108,18 @@ public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         if (inMemoryUsersStore == null) {
             if (userDetailsService != null) {
+                log.info("Found userDetailService in ApplicationContext; configuring for local authentication store.");
                 auth.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder());
             }
             if (crowdAuthenticationProvider != null) {
+                log.info("Found crowd authenticationProvider in ApplicationContext; configuring for crowd authentication store.");
                 auth.authenticationProvider(crowdAuthenticationProvider);
             }
             if (customAuthenticationProviders != null) {
-                customAuthenticationProviders.get().forEach(auth::authenticationProvider);
+                List<AuthenticationProvider> providers = customAuthenticationProviders.get();
+                notEmpty(providers, "CustomAuthenticationProviders bean must return at least one AuthenticationProvider.");
+                log.info("Found customAuthenticationProviders bean in ApplicationContext; adding {} custom providers to web security.", providers.size());
+                providers.forEach(auth::authenticationProvider);
             }
             if (userDetailsService == null && crowdAuthenticationProvider == null && customAuthenticationProviders == null) {
                 throw new IllegalStateException("Cannot configure security; either an AbstractUserDetailsService- or CustomAuthenticationProviders bean must be provided "
@@ -136,8 +144,10 @@ public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
      * @return PasswordEncoder
      */
     @Bean
+    @ConditionalOnBean(AbstractUserDetailsService.class)
     @ConditionalOnMissingBean(PasswordEncoder.class)
     public PasswordEncoder passwordEncoder() {
+        log.info("Adding default BCryptPasswordEncoder to ApplicationContext.");
         return new BCryptPasswordEncoder();
     }
 
@@ -156,7 +166,10 @@ public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
     @Override
     public void configure(WebSecurity web) throws Exception {
         if (webSecurityCustomizer != null) {
+            log.info("Found WebSecurityCustomizer bean in ApplicationContext, custom configuring of WebSecurity object started.");
             webSecurityCustomizer.configure(web);
+        } else {
+            log.info("No WebSecurityCustomizer bean found in ApplicationContext, no custom configuring of WebSecurity object.");
         }
     }
     
@@ -191,14 +204,20 @@ public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
     private ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry customize(
             ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry urlRegistry) {
         if (authCustomizer != null) {
+            log.info("Found RequestAuthorization bean in ApplicationContext, custom configuring of urlRegistry object started.");
             return authCustomizer.customize(urlRegistry);
+        } else {
+            log.info("No RequestAuthorization bean found in ApplicationContext, no custom configuring of urlRegistry object.");
         }
         return urlRegistry;
     }
     
     private HttpSecurity customize(HttpSecurity http) throws Exception {
         if (httpCustomizer != null) {
+            log.info("Found HttpSecurityCustomizer bean in ApplicationContext, custom configuring of HttpSecurity object started.");
             return httpCustomizer.customize(http);
+        } else {
+            log.info("No HttpSecurityCustomizer bean found in ApplicationContext, no custom configuring of HttpSecurity object.");
         }
         return http;
     }
@@ -227,6 +246,8 @@ public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
     @Configuration
     public static class CrowdBeans implements ResourceLoaderAware {
         
+        private final Logger log = LoggerFactory.getLogger(CrowdBeans.class);
+        
         @Autowired
         private HttpAuthenticator httpAuthenticator;
         @Autowired
@@ -249,8 +270,10 @@ public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
             crowdUserDetailsService.setUserManager(userManager);
             Set roleMappings = loadCrowdGroupToRoleMappings();
             if (roleMappings != null) {
+                log.info("Found crowd-group-to-role.properties on classpath, mappings will be applied.");
                 crowdUserDetailsService.setGroupToAuthorityMappings(roleMappings);
             } else {
+                log.info("No crowd-group-to-role.properties found on classpath, no mappings will be applied.");
                 crowdUserDetailsService.setAuthorityPrefix(ROLE_PREFIX);
             }
             return crowdUserDetailsService;
