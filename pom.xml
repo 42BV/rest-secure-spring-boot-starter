@@ -4,7 +4,7 @@
     
     <groupId>nl.42</groupId>
     <artifactId>rest-secure-spring-boot-starter</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.1.0</version>
     <packaging>jar</packaging>
     <name>42 REST Secure Spring Boot Starter</name>
     <description>Spring boot starter/autoconfig for Spring security</description>
@@ -120,7 +120,7 @@
                 <version>1.6.7</version>
                 <extensions>true</extensions>
                 <configuration>
-                    <serverId>sonatype-nexus-staging</serverId>
+                    <serverId>ossrh</serverId>
                     <nexusUrl>https://oss.sonatype.org/</nexusUrl>
                     <autoReleaseAfterClose>false</autoReleaseAfterClose>
                 </configuration>
