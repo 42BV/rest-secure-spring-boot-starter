@@ -4,7 +4,7 @@ Spring boot autoconfig for spring security in a REST environment
 
 ## Features
 
-- Auto-configures Spring Web Security with a customized UserDetailsService for internal users storage or with crowd-integration-springsecurity for external crowd authentication.
+- Auto-configures Spring Web Security with a customized UserDetailsService for internal database users storage or with crowd-integration-springsecurity for external crowd authentication.
 - Spring Method Security is enabled: You can make use of `@PreAuthorize` and `@PostAuthorize`.
 - Customizable authentication endpoints provided:
    * POST `/authentication` - to be able to login clients should provide a json request body like `{ username: 'user@email.com', password: 'secret'}`.
@@ -13,9 +13,15 @@ Spring boot autoconfig for spring security in a REST environment
 - The @CurrentUser annotation may be used to annotate a controller method argument to inject the current custom user.
 - This autoconfiguration removes the concern of a so called "role prefix". Your domain roles are not mandatory to have this. E.g. User domain objects will have an ADMIN role instead of ROLE_ADMIN.
 
-## Usage
+## Setup for internal database users store
 
-1. The maven dependency you need:
+1. Prerequisites
+ - You must have the following components in your application:
+   * A database table where the users are stored.
+   * A custom User domain class that maps on this database table using JPA.
+   * A custom `UserRepository` that provides a method to obtain a custom User by the field that will be used as username using spring-data-jpa. 
+   
+ - The maven dependencies you need:
 
 ```xml
 <dependency>
@@ -23,12 +29,26 @@ Spring boot autoconfig for spring security in a REST environment
     <artifactId>rest-secure-spring-boot-starter</artifactId>
     <version>0.1.0</version>
 </dependency>
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-data-jpa</artifactId>
+</dependency>
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-web</artifactId>
+</dependency>
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-security</artifactId>
+</dependency>
 ```
-2. If you want to configure for an internal users storage:
- - Make your custom User domain object implement the `RegisteredUser` interface:
+2. Configuration:
+ - Make your custom User domain object implement the `RegisteredUser` interface (using the email fields as username):
  ```java
 @Entity
-public class User extends BaseEntity implements RegisteredUser {
+public class User implements RegisteredUser {
+    @Id
+    private Long id;
     private boolean active;
     private String email;
     private String password;
@@ -39,7 +59,7 @@ public class User extends BaseEntity implements RegisteredUser {
     }
     @Override
     public String getUsername() {
-        return email;ˇ
+        return email;
     }
 }
  ```
@@ -69,9 +89,24 @@ public class User implements RegisteredUser {
  - By default, a `BcryptPasswordEncoder` bean is added to the security config for password matching. Use this bean when you are encrypting passwords for your User domain object.
 If you want to override this bean, you can provide a custom `PasswordEncoder` implementation by adding it to your Spring `ApplicationContext`.
 
-3. If you want to configure for an external crowd authentication:
- - Add the crowd-integration-springsecurity dependency to your pom.xml:
+## Setup for crowd users store
+
+ - The maven dependencies you need:
+
 ```xml
+<dependency>
+    <groupId>nl.42</groupId>
+    <artifactId>rest-secure-spring-boot-starter</artifactId>
+    <version>0.1.0</version>
+</dependency>
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-web</artifactId>
+</dependency>
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-security</artifactId>
+</dependency>
 <dependency>
     <groupId>com.atlassian.crowd</groupId>
     <artifactId>crowd-integration-springsecurity</artifactId>
