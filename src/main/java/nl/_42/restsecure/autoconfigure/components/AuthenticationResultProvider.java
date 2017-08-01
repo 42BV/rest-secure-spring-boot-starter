@@ -2,7 +2,6 @@ package nl._42.restsecure.autoconfigure.components;
 
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
-import org.springframework.security.web.csrf.CsrfToken;
 
 import nl._42.restsecure.autoconfigure.userdetails.RegisteredUser;
 
@@ -15,11 +14,10 @@ import nl._42.restsecure.autoconfigure.userdetails.RegisteredUser;
 public interface AuthenticationResultProvider<T extends RegisteredUser> {
 
     /**
-     * Translates the given {@link RegisteredUser} implementation and csrfToken to an {@link AuthenticationResult}.
+     * Translates the given {@link RegisteredUser} implementation to an {@link AuthenticationResult}.
      * 
      * @param user {@link RegisteredUser}
-     * @param csrfToken {@link CsrfToken}
      * @return {@link AuthenticationResult}
      */
-    AuthenticationResult toAuthenticationResult(T user, CsrfToken csrfToken);
+    AuthenticationResult toAuthenticationResult(T user);
 }

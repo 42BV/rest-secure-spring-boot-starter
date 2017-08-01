@@ -1,18 +1,18 @@
 package nl._42.restsecure.autoconfigure.components;
 
+import java.util.Set;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * Interface representing the json result of the authentication endpoints. 
- * The json object will have a 'currentUser' object and a 'csrfToken' string property.
- * 
- * @see RegisteredUserResult
+ * Interface representing the json result object of the authentication endpoints. 
+ * The json object will by default have a 'username' string and a 'roles' array property.
  */
 public interface AuthenticationResult {
-   
+
     @JsonProperty
-    RegisteredUserResult getCurrentUser();
+    String getUsername();
         
     @JsonProperty
-    String getCsrfToken();
+    Set<String> getRoles();
 }

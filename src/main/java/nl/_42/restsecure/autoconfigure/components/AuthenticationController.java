@@ -1,8 +1,10 @@
 package nl._42.restsecure.autoconfigure.components;
 
+import static java.util.Collections.singletonMap;
 import static java.util.stream.Collectors.toSet;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
+import java.util.Map;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +14,8 @@ import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import nl._42.restsecure.autoconfigure.userdetails.RegisteredUser;
 
@@ -25,53 +29,37 @@ import nl._42.restsecure.autoconfigure.userdetails.RegisteredUser;
 public class AuthenticationController {
 
     @Autowired(required = false)
-    private AuthenticationResultProvider authenticationResultProvider;
+    private AuthenticationResultProvider<RegisteredUser> authenticationResultProvider;
     
     @RequestMapping(method = POST)
-    AuthenticationResult authenticate(@CurrentUser RegisteredUser user, CsrfToken csrfToken) {
-        return transform(user, csrfToken);
+    AuthenticationResult authenticate(@CurrentUser RegisteredUser user) {
+        return transform(user);
     }
 
     @RequestMapping(path = "/current", method = RequestMethod.GET)
-    AuthenticationResult current(@CurrentUser RegisteredUser user, CsrfToken csrfToken) {
-        return transform(user, csrfToken);
+    AuthenticationResult current(@CurrentUser RegisteredUser user) {
+        return transform(user);
     }
 
     @RequestMapping(path = "/handshake", method = RequestMethod.GET)
-    AuthenticationResult handshake(CsrfToken csrfToken) {
-        return new AuthenticationResult() {
-            @Override
-            public RegisteredUserResult getCurrentUser() {
-                return null;
-            }
-            @Override
-            public String getCsrfToken() {
-                return csrfToken.getToken();
-            }};
+    Map<String, String> handshake(CsrfToken csrfToken) {
+        return singletonMap("csrfToken", csrfToken.getToken());
     }
     
-    private AuthenticationResult transform(RegisteredUser user, CsrfToken csrfToken) {
+    private AuthenticationResult transform(RegisteredUser user) {
         if (authenticationResultProvider != null) {
-            return authenticationResultProvider.toAuthenticationResult(user, csrfToken);
+            return authenticationResultProvider.toAuthenticationResult(user);
         }
-        RegisteredUserResult userResult = new RegisteredUserResult() {
+        return new AuthenticationResult() {
             @Override
+            @JsonProperty
             public String getUsername() {
                 return user.getUsername();
             }
             @Override
+            @JsonProperty
             public Set<String> getRoles() {
                 return user.getRolesAsString().stream().collect(toSet());
             }};
-        return new AuthenticationResult() {
-            @Override
-            public RegisteredUserResult getCurrentUser() {
-                return userResult;
-            }
-            @Override
-            public String getCsrfToken() {
-                return csrfToken.getToken();
-            }
-        };
     }
 }

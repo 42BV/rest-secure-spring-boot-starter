@@ -27,7 +27,7 @@ Spring boot autoconfig for spring security in a REST environment
 <dependency>
     <groupId>nl.42</groupId>
     <artifactId>rest-secure-spring-boot-starter</artifactId>
-    <version>0.1.0</version>
+    <version>0.2.0</version>
 </dependency>
 <dependency>
     <groupId>org.springframework.boot</groupId>
@@ -61,6 +61,10 @@ public class User implements RegisteredUser {
     public String getUsername() {
         return email;
     }
+    @Override
+    public String getPassword() {
+        return password;
+    }
 }
  ```
  - Implement `AbstractUserDetailsService` and add it as a `Bean` to your Spring `ApplicationContext`:
@@ -68,7 +72,7 @@ public class User implements RegisteredUser {
 @Service
 class SpringUserDetailsService extends AbstractUserDetailsService<User> {
     @Autowired
-    private final UserRepository userRepository;
+    private UserRepository userRepository;
     @Override
     protected User findUserByUsername(String username) {
         return userRepository.findByEmailIgnoreCase(username);
@@ -97,7 +101,7 @@ If you want to override this bean, you can provide a custom `PasswordEncoder` im
 <dependency>
     <groupId>nl.42</groupId>
     <artifactId>rest-secure-spring-boot-starter</artifactId>
-    <version>0.1.0</version>
+    <version>0.2.0</version>
 </dependency>
 <dependency>
     <groupId>org.springframework.boot</groupId>
@@ -220,31 +224,30 @@ public RequestAuthorizationCustomizer requestAuthorizationCustomizer() {
    * POST /authentication and GET /authentication/current:
 ```
 {
-    currentUser: { username: 'peter@email.com', roles: ['USER']},
-    csrfToken: 'KbyUmhTLMpYj7CD2di7JKP1P3qmLlkPt'
+    username: 'peter@email.com', 
+    roles: ['USER']
 }
 ```
    * GET /authentication/handshake
 ```
 {
-    currentUser: null,
     csrfToken: 'KbyUmhTLMpYj7CD2di7JKP1P3qmLlkPt'
 }
 ```
-Note that depending on your application's jackson configuration the currentUser appears as null or is completely left out of the json.
-- The above json returned can be customized by implementing the `AuthenticationResultProvider<T>` and adding it as `Bean` to the Spring `ApplicationContext`.
-Note on example below: `CustomAuthenticationResult` implements `AuthenticationResult` and `UserFullResult` implements `RegisteredUserResult`.
+- The json returned for /authentication and /authentication/current can be customized by implementing the `AuthenticationResultProvider<T>` and adding it as `Bean` to the Spring `ApplicationContext`.
+Note on example below: `CustomAuthenticationResult` implements `AuthenticationResult`.
 ```java
 @Component
 public class CustomAuthenticationResultProvider implements AuthenticationResultProvider<User> {
     @Autowired
     private BeanMapper beanMapper;
     @Override
-    public AuthenticationResult toAuthenticationResult(User user, CsrfToken csrfToken) {
+    public AuthenticationResult toAuthenticationResult(User user) {
+        CustomAuthenticationResult result = beanMapper.map(user, CustomAuthenticationResult.class);
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        boolean restorable = authentication instanceof LoginAsAuthentication;
-        boolean fullyAuthenticated = authentication instanceof UsernamePasswordAuthenticationToken;
-        return new CustomAuthenticationResult(beanMapper.map(user, UserFullResult.class), csrfToken.getToken(), restorable, fullyAuthenticated); 
+        result.restorable = authentication instanceof LoginAsAuthentication;
+        result.fullyAuthenticated = authentication instanceof UsernamePasswordAuthenticationToken;
+        return result;
     }
 }
 ```
@@ -257,9 +260,9 @@ public class CustomAuthenticationResultProvider implements AuthenticationResultP
     @Autowired
     private MyCustomUserService myCustomUserService;
     @Override
-    public AuthenticationResult toAuthenticationResult(RegisteredUser crowdUser, CsrfToken csrfToken) {
+    public AuthenticationResult toAuthenticationResult(RegisteredUser crowdUser) {
         User user = myCustomUserService.findByEmail(crowdUser.getUsername());
-        return new CustomAuthenticationResult(beanMapper.map(user, UserFullResult.class), csrfToken.getToken()); 
+        return beanMapper.map(user, CustomAuthenticationResult.class); 
     }
 }
 ```
