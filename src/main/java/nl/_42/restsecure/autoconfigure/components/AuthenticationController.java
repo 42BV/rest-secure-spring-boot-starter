@@ -29,7 +29,7 @@ import nl._42.restsecure.autoconfigure.userdetails.RegisteredUser;
 public class AuthenticationController {
 
     @Autowired(required = false)
-    private AuthenticationResultProvider<RegisteredUser> authenticationResultProvider;
+    private AuthenticationResultProvider authenticationResultProvider;
     
     @RequestMapping(method = POST)
     AuthenticationResult authenticate(@CurrentUser RegisteredUser user) {
