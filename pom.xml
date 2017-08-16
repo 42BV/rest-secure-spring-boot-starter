@@ -57,7 +57,7 @@
         <maven.javadoc.version>2.8</maven.javadoc.version>
         <maven.project.version>2.4</maven.project.version>
         <maven.site.plugin.version>3.3</maven.site.plugin.version>
-        <crowd-integration-springsecurity.version>2.7.2</crowd-integration-springsecurity.version>
+        <crowd-integration-springsecurity.version>1000.82.0</crowd-integration-springsecurity.version>
         <commons-io.version>2.5</commons-io.version>
     </properties>
     

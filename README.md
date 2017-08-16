@@ -27,7 +27,7 @@ Spring boot autoconfig for spring security in a REST environment
 <dependency>
     <groupId>nl.42</groupId>
     <artifactId>rest-secure-spring-boot-starter</artifactId>
-    <version>0.2.0</version>
+    <version>0.4.0</version>
 </dependency>
 <dependency>
     <groupId>org.springframework.boot</groupId>
@@ -101,7 +101,7 @@ If you want to override this bean, you can provide a custom `PasswordEncoder` im
 <dependency>
     <groupId>nl.42</groupId>
     <artifactId>rest-secure-spring-boot-starter</artifactId>
-    <version>0.2.0</version>
+    <version>0.4.0</version>
 </dependency>
 <dependency>
     <groupId>org.springframework.boot</groupId>
@@ -114,7 +114,13 @@ If you want to override this bean, you can provide a custom `PasswordEncoder` im
 <dependency>
     <groupId>com.atlassian.crowd</groupId>
     <artifactId>crowd-integration-springsecurity</artifactId>
-    <version>2.7.2</version>
+    <version>1000.82.0</version>
+    <exclusions>
+        <exclusion>
+            <groupId>org.apache.struts</groupId>
+            <artifactId>struts2-core</artifactId>
+        </exclusion>
+    </exclusions>
 </dependency>
 ```
  - Provide your application with a `crowd.properties` by adding it to the classpath. For more information on this file see: [Atlassian documentation](https://confluence.atlassian.com/crowd/integrating-crowd-with-spring-security-174752019.html) chapter 2.3.

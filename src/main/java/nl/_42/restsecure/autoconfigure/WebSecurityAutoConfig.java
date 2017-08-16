@@ -20,6 +20,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnResource;
 import org.springframework.boot.autoconfigure.web.WebMvcAutoConfiguration;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ResourceLoaderAware;
 import org.springframework.context.annotation.Bean;
@@ -49,6 +50,7 @@ import org.springframework.security.web.csrf.HttpSessionCsrfTokenRepository;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 import com.atlassian.crowd.integration.http.HttpAuthenticator;
+import com.atlassian.crowd.integration.http.VerifyTokenFilter;
 import com.atlassian.crowd.integration.springsecurity.RemoteCrowdAuthenticationProvider;
 import com.atlassian.crowd.integration.springsecurity.user.CrowdUserDetailsService;
 import com.atlassian.crowd.integration.springsecurity.user.CrowdUserDetailsServiceImpl;
@@ -259,13 +261,19 @@ public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
         private ResourceLoader resourceLoader;
         
         @Bean
+        public FilterRegistrationBean registration(VerifyTokenFilter filter) {
+            FilterRegistrationBean registration = new FilterRegistrationBean(filter);
+            registration.setEnabled(false);
+            return registration;
+        }
+
+        @Bean
         public AuthenticationProvider crowdAuthenticationProvider() throws Exception {
             return new RemoteCrowdAuthenticationProvider(crowdAuthenticationManager, httpAuthenticator, crowdUserDetailsService());
         }
         
         private CrowdUserDetailsService crowdUserDetailsService() {
             CrowdUserDetailsServiceImpl crowdUserDetailsService = new CrowdUserDetailsServiceImpl();
-            crowdUserDetailsService.setAuthenticationManager(crowdAuthenticationManager);
             crowdUserDetailsService.setGroupMembershipManager(groupMembershipManager);
             crowdUserDetailsService.setUserManager(userManager);
             Set roleMappings = loadCrowdGroupToRoleMappings();
