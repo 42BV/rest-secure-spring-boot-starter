@@ -18,6 +18,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import nl._42.restsecure.autoconfigure.userdetails.RegisteredUser;
+import nl._42.restsecure.autoconfigure.userdetails.crowd.CrowdUser;
+import nl._42.restsecure.autoconfigure.userdetails.crowd.CrowdUserResult;
 
 /**
  * This controller implements the default /authentication and /authentication/handshake endpoints.
@@ -49,6 +51,9 @@ public class AuthenticationController {
     private AuthenticationResult transform(RegisteredUser user) {
         if (authenticationResultProvider != null) {
             return authenticationResultProvider.toAuthenticationResult(user);
+        }
+        if (user instanceof CrowdUser) {
+            return new CrowdUserResult((CrowdUser) user);
         }
         return new AuthenticationResult() {
             @Override

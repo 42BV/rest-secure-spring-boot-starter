@@ -272,7 +272,8 @@ public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
             return new RemoteCrowdAuthenticationProvider(crowdAuthenticationManager, httpAuthenticator, crowdUserDetailsService());
         }
         
-        private CrowdUserDetailsService crowdUserDetailsService() {
+        @Bean
+        public CrowdUserDetailsService crowdUserDetailsService() {
             CrowdUserDetailsServiceImpl crowdUserDetailsService = new CrowdUserDetailsServiceImpl();
             crowdUserDetailsService.setGroupMembershipManager(groupMembershipManager);
             crowdUserDetailsService.setUserManager(userManager);
