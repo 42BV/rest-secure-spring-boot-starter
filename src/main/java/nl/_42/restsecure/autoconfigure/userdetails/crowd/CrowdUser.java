@@ -13,23 +13,29 @@ import nl._42.restsecure.autoconfigure.userdetails.RegisteredUser;
 
 public class CrowdUser implements RegisteredUser {
 
+    private final String password;
     private final String username;
-    private final String email;
-    private final String fullname;
-    private final String firstname;
-    private final String lastname;
     private final List<String> roles;
+    private String email;
+    private String fullname;
+    private String firstname;
+    private String lastname;
+
+    public CrowdUser(String username, String password, List<String> roles) {
+        this.username = username;
+        this.password = password;
+        this.roles = roles;
+    }
 
     public CrowdUser(CrowdUserDetails userDetails) {
-        this.username = userDetails.getUsername();
+        this(userDetails.getUsername(), "********", userDetails.getAuthorities()
+                .stream()
+                .map(ga -> stripStart(ga.getAuthority(), ROLE_PREFIX))
+                .collect(toList()));
         this.email = userDetails.getEmail();
         this.firstname = userDetails.getFirstName();
         this.lastname = userDetails.getLastName();
         this.fullname = userDetails.getFullName();
-        this.roles = userDetails.getAuthorities()
-                .stream()
-                .map(ga -> stripStart(ga.getAuthority(), ROLE_PREFIX))
-                .collect(toList());
     }
 
     @Override
@@ -39,7 +45,7 @@ public class CrowdUser implements RegisteredUser {
 
     @Override
     public String getPassword() {
-        return "********";
+        return password;
     }
 
     @Override
@@ -51,15 +57,31 @@ public class CrowdUser implements RegisteredUser {
         return email;
     }
 
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
     public String getFirstname() {
         return firstname;
+    }
+
+    public void setFirstname(String firstname) {
+        this.firstname = firstname;
     }
 
     public String getLastname() {
         return lastname;
     }
 
+    public void setLastname(String lastname) {
+        this.lastname = lastname;
+    }
+
     public String getFullname() {
         return fullname;
+    }
+
+    public void setFullname(String fullname) {
+        this.fullname = fullname;
     }
 }

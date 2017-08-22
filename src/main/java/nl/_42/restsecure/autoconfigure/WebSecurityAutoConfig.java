@@ -1,6 +1,5 @@
 package nl._42.restsecure.autoconfigure;
 
-import static java.util.stream.Collectors.toList;
 import static nl._42.restsecure.autoconfigure.userdetails.UserDetailsAdapter.ROLE_PREFIX;
 import static org.springframework.http.HttpMethod.DELETE;
 import static org.springframework.http.HttpMethod.POST;
@@ -31,14 +30,12 @@ import org.springframework.core.io.ResourceLoader;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
-import org.springframework.security.config.annotation.authentication.configurers.provisioning.InMemoryUserDetailsManagerConfigurer;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.annotation.web.configurers.ExpressionUrlAuthorizationConfigurer;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -94,8 +91,6 @@ public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
     @Autowired(required = false)
     private HttpSecurityCustomizer httpCustomizer;
     @Autowired(required = false)
-    private InMemoryUsersStore inMemoryUsersStore;
-    @Autowired(required = false)
     private CustomAuthenticationProviders customAuthenticationProviders;
     @Autowired(required = false)
     private WebSecurityCustomizer webSecurityCustomizer;
@@ -108,36 +103,22 @@ public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
      */
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        if (inMemoryUsersStore == null) {
-            if (userDetailsService != null) {
-                log.info("Found userDetailService in ApplicationContext; configuring for local authentication store.");
-                auth.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder());
-            }
-            if (crowdAuthenticationProvider != null) {
-                log.info("Found crowd authenticationProvider in ApplicationContext; configuring for crowd authentication store.");
-                auth.authenticationProvider(crowdAuthenticationProvider);
-            }
-            if (customAuthenticationProviders != null) {
-                List<AuthenticationProvider> providers = customAuthenticationProviders.get();
-                notEmpty(providers, "CustomAuthenticationProviders bean must return at least one AuthenticationProvider.");
-                log.info("Found customAuthenticationProviders bean in ApplicationContext; adding {} custom providers to web security.", providers.size());
-                providers.forEach(auth::authenticationProvider);
-            }
-            if (userDetailsService == null && crowdAuthenticationProvider == null && customAuthenticationProviders == null) {
-                throw new IllegalStateException("Cannot configure security; either an AbstractUserDetailsService- or CustomAuthenticationProviders bean must be provided "
-                        + "or crowd-integration-springsecurity.jar with crowd.properties must be on the classpath.");
-            }
+        if (userDetailsService != null) {
+            log.info("Found userDetailService in ApplicationContext; configuring for local authentication store.");
+            auth.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder());
+        } else if (crowdAuthenticationProvider != null) {
+            log.info("Found crowd authenticationProvider in ApplicationContext; configuring for crowd authentication store.");
+            auth.authenticationProvider(crowdAuthenticationProvider);
         } else {
-            log.warn("Now loading users with plaintext passwords in memory to build an authentication store, DO NOT USE THIS IN A PRODUCTION ENVIRONMENT!");
-            InMemoryUserDetailsManagerConfigurer<AuthenticationManagerBuilder> configurer = auth.inMemoryAuthentication();
-            inMemoryUsersStore.users().forEach(user -> {
-                configurer.withUser(user.getUsername())
-                    .password(user.getPassword())
-                    .authorities(user.getRolesAsString()
-                            .stream()
-                            .map(role -> new SimpleGrantedAuthority(ROLE_PREFIX + role))
-                            .collect(toList()));
-            });
+            throw new IllegalStateException(
+                    "Cannot configure security; either an AbstractUserDetailsService bean must be provided "
+                            + "or crowd-integration-springsecurity.jar with crowd.properties must be on the classpath.");
+        }
+        if (customAuthenticationProviders != null) {
+            List<AuthenticationProvider> providers = customAuthenticationProviders.get();
+            notEmpty(providers, "CustomAuthenticationProviders bean must return at least one AuthenticationProvider.");
+            log.info("Found customAuthenticationProviders bean in ApplicationContext; adding {} custom providers to web security.", providers.size());
+            providers.forEach(auth::authenticationProvider);
         }
     }
     

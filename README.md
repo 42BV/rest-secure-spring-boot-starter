@@ -15,19 +15,18 @@ Spring boot autoconfig for spring security in a REST environment
 
 ## Setup for internal database users store
 
-1. Prerequisites
- - You must have the following components in your application:
+- You must have the following components in your application:
    * A database table where the users are stored.
    * A custom User domain class that maps on this database table using JPA.
    * A custom `UserRepository` that provides a method to obtain a custom User by the field that will be used as username using spring-data-jpa. 
    
- - The maven dependencies you need:
+- The maven dependencies you need:
 
 ```xml
 <dependency>
     <groupId>nl.42</groupId>
     <artifactId>rest-secure-spring-boot-starter</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.2</version>
 </dependency>
 <dependency>
     <groupId>org.springframework.boot</groupId>
@@ -42,8 +41,8 @@ Spring boot autoconfig for spring security in a REST environment
     <artifactId>spring-boot-starter-security</artifactId>
 </dependency>
 ```
-2. Configuration:
- - Make your custom User domain object implement the `RegisteredUser` interface (using the email fields as username):
+- Make your custom User domain object implement the `RegisteredUser` interface (using the email fields as username):
+ 
  ```java
 @Entity
 public class User implements RegisteredUser {
@@ -67,7 +66,8 @@ public class User implements RegisteredUser {
     }
 }
  ```
- - Implement `AbstractUserDetailsService` and add it as a `Bean` to your Spring `ApplicationContext`:
+- Implement `AbstractUserDetailsService` and add it as a `Bean` to your Spring `ApplicationContext`:
+ 
 ```java
 @Service
 class SpringUserDetailsService extends AbstractUserDetailsService<User> {
@@ -79,8 +79,9 @@ class SpringUserDetailsService extends AbstractUserDetailsService<User> {
     }
 }
 ```
- - If your custom User domain object has custom properties for "accountExpired", "accountLocked", "credentialsExpired" or "userEnabled", 
+- If your custom User domain object has custom properties for "accountExpired", "accountLocked", "credentialsExpired" or "userEnabled", 
 you must override the corresponding default RegisteredUser methods:
+
 ```java
 public class User implements RegisteredUser {
     private boolean active;
@@ -90,18 +91,18 @@ public class User implements RegisteredUser {
     }
 }
 ```
- - By default, a `BcryptPasswordEncoder` bean is added to the security config for password matching. Use this bean when you are encrypting passwords for your User domain object.
+- By default, a `BcryptPasswordEncoder` bean is added to the security config for password matching. Use this bean when you are encrypting passwords for your User domain object.
 If you want to override this bean, you can provide a custom `PasswordEncoder` implementation by adding it to your Spring `ApplicationContext`.
 
 ## Setup for crowd users store
 
- - The maven dependencies you need:
+- The maven dependencies you need:
 
 ```xml
 <dependency>
     <groupId>nl.42</groupId>
     <artifactId>rest-secure-spring-boot-starter</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.2</version>
 </dependency>
 <dependency>
     <groupId>org.springframework.boot</groupId>
@@ -123,12 +124,38 @@ If you want to override this bean, you can provide a custom `PasswordEncoder` im
     </exclusions>
 </dependency>
 ```
- - Provide your application with a `crowd.properties` by adding it to the classpath. For more information on this file see: [Atlassian documentation](https://confluence.atlassian.com/crowd/integrating-crowd-with-spring-security-174752019.html) chapter 2.3.
- - If you want to map crowd groups to your custom application user roles you can provide your application with a `crowd-group-to-role.properties` by adding it to the classpath:
+- Provide your application with a `crowd.properties` by adding it to the classpath. For more information on this file see: [Atlassian documentation](https://confluence.atlassian.com/crowd/integrating-crowd-with-spring-security-174752019.html) chapter 2.3.
+- If you want to map crowd groups to your custom application user roles you can provide your application with a `crowd-group-to-role.properties` by adding it to the classpath:
  ```
  crowd-admin-group = ADMIN
  ```
+- Put an implementation of `AbstractUserDetailsService<CrowdUser>` in your unittest configuration to be able to run spring boot webmvc tests:
 
+```java
+    @Profile("unit-test")
+    @Configuration
+    public class UnitTestAuthenticationStore {
+        @Bean
+        public PasswordEncoder passwordEncoder() {
+            return NoOpPasswordEncoder.getInstance();
+        }    
+        @Bean
+        public AbstractUserDetailsService<CrowdUser> userDetailsService() {
+            return new AbstractUserDetailsService<CrowdUser>() {
+                private Map<String, CrowdUser> users = new HashMap<>();
+                @PostConstruct
+                private void initUserStore() {
+                    users.put("janAdmin", new CrowdUser("janAdmin", "secret", asList(ADMIN.name())));
+                    users.put("janUser", new CrowdUser("janUser", "secret", asList(USER.name())));
+                }
+                @Override
+                protected CrowdUser findUserByUsername(String username) {
+                    return users.get(username);
+                }
+            };
+        }
+    }
+```
 ## Customization
 
 1. Adding custom filters:
@@ -153,6 +180,7 @@ If you want to override this bean, you can provide a custom `PasswordEncoder` im
 The restsecure autoconfig puts a `RestAuthenticationFilter` just before the Spring Security's `AnonymousAuthenticationFilter`.  
 If you put a custom filter in between them (like the rememberMeFilter in the example above), you cannot read the request inputStream anymore when the request was a POST form login. This due to the fact that the `RestAuthenticationFilter` already has been reading the request inputStream to extract the usercredentials.  
 To be able to access this information in subsequent filters, the `RestAuthenticationFilter` puts the request body as a request attribute after reading. You can retreive the request body like this:
+
 ```java
 import static nl._42.restsecure.autoconfigure.RestAuthenticationFilter.LOGIN_FORM_JSON;
 
@@ -180,34 +208,9 @@ class RememberMeFilter extends OncePerRequestFilter {
 ```
 - Note that the `RestAuthenticationFilter` must be able to read form the inputStream when the request is a POST login. So make sure you do not add filters before this one that read the request inputStream or no login credentials can be read to be able to authenticate!
  
-2. Using the in-memory users store for testing purposes:
-- In case you are configuring for external Crowd authentication, you may want to make use of an in-memory authentication provider when testing in a local environment. You can do this by implementing the `InMemoryUsersStore` and adding it to the Spring `ApplicationContext` for a local test profile:
-```java
-@Bean
-public InMemoryUsersStore userStore() {
-    return new InMemoryUsersStore() {
-        @Override
-        public List<RegisteredUser> users() {
-            return asList(new RegisteredUser() {
-                @Override
-                public String getUsername() {
-                    return "piet";
-                }        
-                @Override
-                public List<String> getRolesAsString() {
-                    return asList("USER");
-                }
-                @Override
-                public String getPassword() {
-                    return "secret";
-                }
-            });
-        }
-    };
-}
-```
-3. Configuring request url authorization:
+2. Configuring request url authorization:
 - By default the authentication endpoints are configured accessible for any request, all other url's require full authentication. You may want to add url patterns in between these. Implement `RequestAuthorizationCustomizer` and add it as a `Bean` to the Spring `ApplicationContext`:
+
 ```java
 @Bean
 public RequestAuthorizationCustomizer requestAuthorizationCustomizer() {
@@ -225,9 +228,10 @@ public RequestAuthorizationCustomizer requestAuthorizationCustomizer() {
 }
 ```
 
-4. Customizing the authentication endpoints:
+3. Customizing the authentication endpoints:
 - The 3 default authentication endpoints will return the following json by default:
    * POST /authentication and GET /authentication/current:
+   
 ```
 {
     username: 'peter@email.com', 
@@ -235,6 +239,7 @@ public RequestAuthorizationCustomizer requestAuthorizationCustomizer() {
 }
 ```
    * GET /authentication/handshake
+   
 ```
 {
     csrfToken: 'KbyUmhTLMpYj7CD2di7JKP1P3qmLlkPt'
@@ -242,6 +247,7 @@ public RequestAuthorizationCustomizer requestAuthorizationCustomizer() {
 ```
 - The json returned for /authentication and /authentication/current can be customized by implementing the `AuthenticationResultProvider<T>` and adding it as `Bean` to the Spring `ApplicationContext`.
 Note on example below: `CustomAuthenticationResult` implements `AuthenticationResult`.
+
 ```java
 @Component
 public class CustomAuthenticationResultProvider implements AuthenticationResultProvider<User> {
@@ -257,24 +263,23 @@ public class CustomAuthenticationResultProvider implements AuthenticationResultP
     }
 }
 ```
-- When using Crowd as Authentication method, the user argument will always be of type `RegisteredUser`:
+- When using Crowd as Authentication method, the user argument will always be of type `CrowdUser`:
+
 ```java
 @Component
-public class CustomAuthenticationResultProvider implements AuthenticationResultProvider<RegisteredUser> {
+public class CustomAuthenticationResultProvider implements AuthenticationResultProvider<CrowdUser> {
     @Autowired
     private BeanMapper beanMapper;
-    @Autowired
-    private MyCustomUserService myCustomUserService;
     @Override
-    public AuthenticationResult toAuthenticationResult(RegisteredUser crowdUser) {
-        User user = myCustomUserService.findByEmail(crowdUser.getUsername());
-        return beanMapper.map(user, CustomAuthenticationResult.class); 
+    public AuthenticationResult toAuthenticationResult(CrowdUser crowdUser) {
+        return beanMapper.map(crowdUser, CustomAuthenticationResult.class); 
     }
 }
 ```
 
-5. Adding custom `AuthenticationProvider`'s:
+4. Adding custom `AuthenticationProvider`'s:
 - If you want to add an extra `AutenticationProvider` to the security config, implement the `CustomAuthenticationProviders` interface and add it as `Bean` to the Spring `ApplicationContext`:
+
 ```java
 @Bean
 public CustomAuthenticationProviders customAuthenticationProviders() {
@@ -287,7 +292,8 @@ public CustomAuthenticationProviders customAuthenticationProviders() {
 }
 ```
 
-6. Using the `WebSecurityCustomizer`:
+5. Using the `WebSecurityCustomizer`:
+
 ```java
 @Bean
 public WebSecurityCustomizer webSecurityCustomizer() {
@@ -300,8 +306,9 @@ public WebSecurityCustomizer webSecurityCustomizer() {
 }
 ```
 
-7. Errorhandling:
+6. Errorhandling:
 - An `@ExceptionHandler` method for handling the method security `AccessDeniedExcption` is added to a `@RestControllerAdvice` with `@Order(0)`. This way all custom `@ControllerAdvice` with `@ExceptionHandler` methods with default order will be processed hereafter. The http response will have a http status 403 with a json body:
+
 ```
 { errroCode: 'SERVER.ACCESS_DENIED_ERROR'}
 ```

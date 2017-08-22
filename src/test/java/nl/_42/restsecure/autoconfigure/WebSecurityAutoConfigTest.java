@@ -77,16 +77,7 @@ public class WebSecurityAutoConfigTest {
         assertEquals("custom", auth.getName());
         assertEquals("ROLE_ADMIN", auth.getAuthorities().iterator().next().getAuthority());
     }
-    
-    @Test
-    public void authenticate_shouldSucceed_withInMemoryUserStore() {
-        loadApplicationContext(ConfigWithInMemoryUserStore.class);
-        AuthenticationManager authManager = context.getBean(AuthenticationManager.class);
-        Authentication auth = authManager.authenticate(new UsernamePasswordAuthenticationToken("piet", "secret"));
-        assertEquals("piet", auth.getName());
-        assertEquals("ROLE_USER", auth.getAuthorities().iterator().next().getAuthority());
-    }
-    
+
     @Test(expected = BadCredentialsException.class)
     public void authenticate_shouldFail_withDefaultPasswordEncoder() {
         loadApplicationContext(ConfigWithUserDetailsService.class);
@@ -111,36 +102,6 @@ public class WebSecurityAutoConfigTest {
         @Bean
         public PasswordEncoder passwordEncoder() {
             return NoOpPasswordEncoder.getInstance();
-        }
-    }
-
-    @Configuration
-    static class ConfigWithInMemoryUserStore {
-        @Bean
-        public InMemoryUsersStore userStore() {
-            return new InMemoryUsersStore() {
-
-                @Override
-                public List<RegisteredUser> users() {
-                    return asList(new RegisteredUser() {
-                        @Override
-                        public String getUsername() {
-                            return "piet";
-                        }
-                        
-                        @Override
-                        public List<String> getRolesAsString() {
-                            return asList("USER");
-                        }
-                        
-                        @Override
-                        public String getPassword() {
-                            return "secret";
-                        }
-                    });
-                }
-                
-            };
         }
     }
     
