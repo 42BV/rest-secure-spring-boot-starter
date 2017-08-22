@@ -6,9 +6,8 @@ import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.security.core.context.SecurityContextHolder.MODE_INHERITABLETHREADLOCAL;
 import static org.springframework.util.Assert.notEmpty;
 
-import java.io.IOException;
 import java.util.List;
-import java.util.Properties;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -19,14 +18,13 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnResource;
 import org.springframework.boot.autoconfigure.web.WebMvcAutoConfiguration;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.ResourceLoaderAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportResource;
-import org.springframework.core.io.ResourceLoader;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -59,6 +57,7 @@ import nl._42.restsecure.autoconfigure.components.AuthenticationController;
 import nl._42.restsecure.autoconfigure.components.errorhandling.GenericErrorHandler;
 import nl._42.restsecure.autoconfigure.userdetails.AbstractUserDetailsService;
 import nl._42.restsecure.autoconfigure.userdetails.RegisteredUser;
+import nl._42.restsecure.autoconfigure.userdetails.crowd.RestSecureProperties;
 
 /**
  * Auto-configures Spring Web Security with a customized UserDetailsService for internal users storage or with crowd-integration-springsecurity for external crowd authentication.
@@ -227,7 +226,8 @@ public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
     @ConditionalOnResource(resources = {"applicationContext-CrowdClient.xml", "crowd.properties"})
     @ImportResource("classpath:/applicationContext-CrowdClient.xml")
     @Configuration
-    public static class CrowdBeans implements ResourceLoaderAware {
+    @EnableConfigurationProperties(RestSecureProperties.class)
+    public static class CrowdBeans {
         
         private final Logger log = LoggerFactory.getLogger(CrowdBeans.class);
         
@@ -239,8 +239,9 @@ public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
         private CacheAwareAuthenticationManager crowdAuthenticationManager;
         @Autowired
         private UserManager userManager;
-        private ResourceLoader resourceLoader;
-        
+        @Autowired
+        private RestSecureProperties props;
+
         @Bean
         public FilterRegistrationBean registration(VerifyTokenFilter filter) {
             FilterRegistrationBean registration = new FilterRegistrationBean(filter);
@@ -258,8 +259,8 @@ public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
             CrowdUserDetailsServiceImpl crowdUserDetailsService = new CrowdUserDetailsServiceImpl();
             crowdUserDetailsService.setGroupMembershipManager(groupMembershipManager);
             crowdUserDetailsService.setUserManager(userManager);
-            Set roleMappings = loadCrowdGroupToRoleMappings();
-            if (roleMappings != null) {
+            Set<Entry<String, String>> roleMappings = props.convertedMappings();
+            if (!roleMappings.isEmpty()) {
                 log.info("Found crowd-group-to-role.properties on classpath, mappings will be applied.");
                 crowdUserDetailsService.setGroupToAuthorityMappings(roleMappings);
             } else {
@@ -267,22 +268,6 @@ public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
                 crowdUserDetailsService.setAuthorityPrefix(ROLE_PREFIX);
             }
             return crowdUserDetailsService;
-        }
-        
-        private Set loadCrowdGroupToRoleMappings() {
-            try {
-                Properties roleMappings = new Properties();
-                roleMappings.load(resourceLoader.getResource("classpath:crowd-group-to-role.properties").getInputStream());
-                roleMappings.replaceAll((k, v) -> ROLE_PREFIX + v);
-                return roleMappings.entrySet();
-            } catch (IOException ioe) {
-                return null;
-            }
-        }
-
-        @Override
-        public void setResourceLoader(ResourceLoader resourceLoader) {
-            this.resourceLoader = resourceLoader;
         }
     }
 }

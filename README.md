@@ -125,9 +125,13 @@ If you want to override this bean, you can provide a custom `PasswordEncoder` im
 </dependency>
 ```
 - Provide your application with a `crowd.properties` by adding it to the classpath. For more information on this file see: [Atlassian documentation](https://confluence.atlassian.com/crowd/integrating-crowd-with-spring-security-174752019.html) chapter 2.3.
-- If you want to map crowd groups to your custom application user roles you can provide your application with a `crowd-group-to-role.properties` by adding it to the classpath:
+- If you want to map crowd groups to your custom application user roles you can provide these to your application.yml:
+
  ```
- crowd-admin-group = ADMIN
+ rest-secure:
+   crowd-group-to-role-mappings:
+     crowd-admin-group: ADMIN
+     crowd-user-group: USER 
  ```
 - Put an implementation of `AbstractUserDetailsService<CrowdUser>` in your unittest configuration to be able to run spring boot webmvc tests:
 

@@ -61,7 +61,8 @@ public class WebSecurityAutoConfigTest {
     
     @Test
     public void autoConfig_shouldConfigureSecurity_withCrowd() {
-        loadApplicationContext();
+        loadApplicationContext("rest-secure.crowd-group-to-role-mappings.crowd-admin-group=ADMIN",
+                "rest-secure.crowd-group-to-role-mappings.crowd-user-group=USER");
         AuthenticationManager delegatingManager = context.getBean(AuthenticationManager.class);
         AuthenticationManagerBuilder authManagerBuilder = (AuthenticationManagerBuilder) getField(delegatingManager, "delegateBuilder");
         ProviderManager authManager = (ProviderManager) getField(authManagerBuilder.getObject(), "parent");
