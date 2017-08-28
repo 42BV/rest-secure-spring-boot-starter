@@ -223,7 +223,7 @@ public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
      * Autoconfigures Crowd when a crowd-integration-springsecurity jar and a crowd.properties are found on the application's classpath.
      * When a crowd-group-to-role.properties is found on the application's classpath, these mappings will be used by the {@link CrowdUserDetailsService}
      */
-    @ConditionalOnResource(resources = {"applicationContext-CrowdClient.xml", "crowd.properties"})
+    @ConditionalOnResource(resources = { "classpath:/applicationContext-CrowdClient.xml", "classpath:/crowd.properties" })
     @ImportResource("classpath:/applicationContext-CrowdClient.xml")
     @Configuration
     @EnableConfigurationProperties(RestSecureProperties.class)
