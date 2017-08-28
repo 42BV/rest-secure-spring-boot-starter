@@ -26,7 +26,7 @@ Spring boot autoconfig for spring security in a REST environment
 <dependency>
     <groupId>nl.42</groupId>
     <artifactId>rest-secure-spring-boot-starter</artifactId>
-    <version>1.1.0</version>
+    <version>1.1.1</version>
 </dependency>
 <dependency>
     <groupId>org.springframework.boot</groupId>
@@ -102,7 +102,7 @@ If you want to override this bean, you can provide a custom `PasswordEncoder` im
 <dependency>
     <groupId>nl.42</groupId>
     <artifactId>rest-secure-spring-boot-starter</artifactId>
-    <version>1.1.0</version>
+    <version>1.1.1</version>
 </dependency>
 <dependency>
     <groupId>org.springframework.boot</groupId>
