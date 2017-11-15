@@ -1,13 +1,16 @@
 package nl._42.restsecure.autoconfigure;
 
-import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.springframework.boot.test.util.EnvironmentTestUtils.addEnvironment;
 import static org.springframework.test.util.ReflectionTestUtils.getField;
 
-import java.util.List;
+import java.util.Set;
+
+import nl._42.restsecure.autoconfigure.components.errorhandling.WebMvcErrorHandler;
+import nl._42.restsecure.autoconfigure.userdetails.AbstractUserDetailsService;
+import nl._42.restsecure.autoconfigure.userdetails.RegisteredUser;
 
 import org.junit.After;
 import org.junit.Test;
@@ -30,10 +33,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
 
 import com.atlassian.crowd.integration.springsecurity.RemoteCrowdAuthenticationProvider;
-
-import nl._42.restsecure.autoconfigure.components.errorhandling.WebMvcErrorHandler;
-import nl._42.restsecure.autoconfigure.userdetails.AbstractUserDetailsService;
-import nl._42.restsecure.autoconfigure.userdetails.RegisteredUser;
+import com.google.common.collect.Sets;
 
 public class WebSecurityAutoConfigTest {
 
@@ -61,8 +61,8 @@ public class WebSecurityAutoConfigTest {
     
     @Test
     public void autoConfig_shouldConfigureSecurity_withCrowd() {
-        loadApplicationContext("rest-secure.crowd-group-to-role-mappings.crowd-admin-group=ADMIN",
-                "rest-secure.crowd-group-to-role-mappings.crowd-user-group=USER");
+        loadApplicationContext("rest-secure.crowd-group-to-authority-mappings.crowd-admin-group=ADMIN",
+                "rest-secure.crowd-group-to-authority-mappings.crowd-user-group=USER");
         AuthenticationManager delegatingManager = context.getBean(AuthenticationManager.class);
         AuthenticationManagerBuilder authManagerBuilder = (AuthenticationManagerBuilder) getField(delegatingManager, "delegateBuilder");
         ProviderManager authManager = (ProviderManager) getField(authManagerBuilder.getObject(), "parent");
@@ -76,7 +76,7 @@ public class WebSecurityAutoConfigTest {
         AuthenticationManager authManager = context.getBean(AuthenticationManager.class);
         Authentication auth = authManager.authenticate(new UsernamePasswordAuthenticationToken("user", "password"));
         assertEquals("custom", auth.getName());
-        assertEquals("ROLE_ADMIN", auth.getAuthorities().iterator().next().getAuthority());
+        assertEquals("ADMIN", auth.getAuthorities().iterator().next().getAuthority());
     }
 
     @Test(expected = BadCredentialsException.class)
@@ -119,8 +119,8 @@ public class WebSecurityAutoConfigTest {
         }
 
         @Override
-        public List<String> getRolesAsString() {
-            return asList("ADMIN");
+        public Set<String> getAuthorities() {
+            return Sets.newHashSet("ADMIN");
         }
         
         public boolean accountNonExpired() {

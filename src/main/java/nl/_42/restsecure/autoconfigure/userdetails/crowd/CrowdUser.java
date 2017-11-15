@@ -1,37 +1,37 @@
 package nl._42.restsecure.autoconfigure.userdetails.crowd;
 
-import static java.util.stream.Collectors.toList;
-import static nl._42.restsecure.autoconfigure.userdetails.UserDetailsAdapter.ROLE_PREFIX;
-import static org.apache.commons.lang3.StringUtils.stripStart;
+import static java.util.Collections.unmodifiableSet;
+import static java.util.stream.Collectors.toSet;
 
-import java.util.Collections;
-import java.util.List;
-
-import com.atlassian.crowd.integration.springsecurity.user.CrowdUserDetails;
+import java.util.Set;
 
 import nl._42.restsecure.autoconfigure.userdetails.RegisteredUser;
+
+import org.springframework.security.core.GrantedAuthority;
+
+import com.atlassian.crowd.integration.springsecurity.user.CrowdUserDetails;
 
 public class CrowdUser implements RegisteredUser {
 
     private final String password;
     private final String username;
-    private final List<String> roles;
+    private final Set<String> authorities;
     private String email;
     private String fullname;
     private String firstname;
     private String lastname;
 
-    public CrowdUser(String username, String password, List<String> roles) {
+    public CrowdUser(String username, String password, Set<String> authorities) {
         this.username = username;
         this.password = password;
-        this.roles = roles;
+        this.authorities = authorities;
     }
 
     public CrowdUser(CrowdUserDetails userDetails) {
         this(userDetails.getUsername(), "********", userDetails.getAuthorities()
                 .stream()
-                .map(ga -> stripStart(ga.getAuthority(), ROLE_PREFIX))
-                .collect(toList()));
+                .map(GrantedAuthority::getAuthority)
+                .collect(toSet()));
         this.email = userDetails.getEmail();
         this.firstname = userDetails.getFirstName();
         this.lastname = userDetails.getLastName();
@@ -49,8 +49,8 @@ public class CrowdUser implements RegisteredUser {
     }
 
     @Override
-    public List<String> getRolesAsString() {
-        return Collections.unmodifiableList(roles);
+    public Set<String> getAuthorities() {
+        return unmodifiableSet(authorities);
     }
 
     public String getEmail() {

@@ -1,7 +1,8 @@
 package nl._42.restsecure.autoconfigure.userdetails;
 
+import static java.util.stream.Collectors.toSet;
+
 import java.util.Collection;
-import java.util.stream.Collectors;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -15,8 +16,6 @@ import org.springframework.security.core.userdetails.UserDetails;
  * @param <T> the type of the custom user.
  */
 public class UserDetailsAdapter<T extends RegisteredUser> implements UserDetails {
-
-    public static final String ROLE_PREFIX = "ROLE_";
     
     private final T user;
     
@@ -26,9 +25,9 @@ public class UserDetailsAdapter<T extends RegisteredUser> implements UserDetails
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return user.getRolesAsString().stream()
-                .map(role -> new SimpleGrantedAuthority(ROLE_PREFIX + role.toString()))
-                .collect(Collectors.toSet());
+        return user.getAuthorities().stream()
+                .map(SimpleGrantedAuthority::new)
+                .collect(toSet());
     }
 
     public T getUser() {

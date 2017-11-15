@@ -1,7 +1,5 @@
 package nl._42.restsecure.autoconfigure.userdetails.crowd;
 
-import static java.util.stream.Collectors.toSet;
-
 import java.util.Set;
 
 import nl._42.restsecure.autoconfigure.components.AuthenticationResult;
@@ -13,7 +11,7 @@ public class CrowdUserResult implements AuthenticationResult {
     public final String fullname;
     public final String firstname;
     public final String lastname;
-    public final Set<String> roles;
+    public final Set<String> authorities;
 
     public CrowdUserResult(CrowdUser user) {
         this.username = user.getUsername();
@@ -21,7 +19,7 @@ public class CrowdUserResult implements AuthenticationResult {
         this.fullname = user.getFullname();
         this.firstname = user.getFirstname();
         this.lastname = user.getLastname();
-        this.roles = user.getRolesAsString().stream().collect(toSet());
+        this.authorities = user.getAuthorities();
     }
 
     @Override
@@ -30,8 +28,8 @@ public class CrowdUserResult implements AuthenticationResult {
     }
 
     @Override
-    public Set<String> getRoles() {
-        return roles;
+    public Set<String> getAuthorities() {
+        return authorities;
     }
 
 }

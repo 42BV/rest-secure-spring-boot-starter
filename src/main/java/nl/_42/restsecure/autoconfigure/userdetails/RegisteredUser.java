@@ -1,6 +1,6 @@
 package nl._42.restsecure.autoconfigure.userdetails;
 
-import java.util.List;
+import java.util.Set;
 
 import org.springframework.security.core.Authentication;
 
@@ -14,7 +14,7 @@ public interface RegisteredUser {
     
     String getPassword();
     
-    List<String> getRolesAsString();
+    Set<String> getAuthorities();
     
     default boolean isAccountExpired() {
         return false;

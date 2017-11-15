@@ -14,5 +14,5 @@ public interface AuthenticationResult {
     String getUsername();
         
     @JsonProperty
-    Set<String> getRoles();
+    Set<String> getAuthorities();
 }

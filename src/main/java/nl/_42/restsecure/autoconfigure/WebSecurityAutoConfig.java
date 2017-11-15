@@ -1,6 +1,5 @@
 package nl._42.restsecure.autoconfigure;
 
-import static nl._42.restsecure.autoconfigure.userdetails.UserDetailsAdapter.ROLE_PREFIX;
 import static org.springframework.http.HttpMethod.DELETE;
 import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.security.core.context.SecurityContextHolder.MODE_INHERITABLETHREADLOCAL;
@@ -9,6 +8,12 @@ import static org.springframework.util.Assert.notEmpty;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
+
+import nl._42.restsecure.autoconfigure.components.AuthenticationController;
+import nl._42.restsecure.autoconfigure.components.errorhandling.GenericErrorHandler;
+import nl._42.restsecure.autoconfigure.userdetails.AbstractUserDetailsService;
+import nl._42.restsecure.autoconfigure.userdetails.RegisteredUser;
+import nl._42.restsecure.autoconfigure.userdetails.crowd.RestSecureProperties;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,12 +57,6 @@ import com.atlassian.crowd.integration.springsecurity.user.CrowdUserDetailsServi
 import com.atlassian.crowd.service.GroupMembershipManager;
 import com.atlassian.crowd.service.UserManager;
 import com.atlassian.crowd.service.cache.CacheAwareAuthenticationManager;
-
-import nl._42.restsecure.autoconfigure.components.AuthenticationController;
-import nl._42.restsecure.autoconfigure.components.errorhandling.GenericErrorHandler;
-import nl._42.restsecure.autoconfigure.userdetails.AbstractUserDetailsService;
-import nl._42.restsecure.autoconfigure.userdetails.RegisteredUser;
-import nl._42.restsecure.autoconfigure.userdetails.crowd.RestSecureProperties;
 
 /**
  * Auto-configures Spring Web Security with a customized UserDetailsService for internal users storage or with crowd-integration-springsecurity for external crowd authentication.
@@ -259,13 +258,13 @@ public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
             CrowdUserDetailsServiceImpl crowdUserDetailsService = new CrowdUserDetailsServiceImpl();
             crowdUserDetailsService.setGroupMembershipManager(groupMembershipManager);
             crowdUserDetailsService.setUserManager(userManager);
-            Set<Entry<String, String>> roleMappings = props.convertedMappings();
+            Set<Entry<String, String>> roleMappings = props.getCrowdGroupToAuthorityMappings().entrySet();
             if (!roleMappings.isEmpty()) {
-                log.info("Found crowd-group-to-role.properties on classpath, mappings will be applied.");
+                log.info("Found rest-secure.crowd-group-to-authority-mappings in spring boot application properties.");
+                roleMappings.forEach(rm -> log.info("\t {}", rm));
                 crowdUserDetailsService.setGroupToAuthorityMappings(roleMappings);
             } else {
-                log.info("No crowd-group-to-role.properties found on classpath, no mappings will be applied.");
-                crowdUserDetailsService.setAuthorityPrefix(ROLE_PREFIX);
+                log.warn("No rest-secure.crowd-group-to-authority-mappings in spring boot application properties found, no conversion of Crowd Groups will be applied!");
             }
             return crowdUserDetailsService;
         }

@@ -7,11 +7,13 @@ Spring boot autoconfig for spring security in a REST environment
 - Auto-configures Spring Web Security with a customized UserDetailsService for internal database users storage or with crowd-integration-springsecurity for external crowd authentication.
 - Spring Method Security is enabled: You can make use of `@PreAuthorize` and `@PostAuthorize`.
 - Customizable authentication endpoints provided:
-   * POST `/authentication` - to be able to login clients should provide a json request body like `{ username: 'user@email.com', password: 'secret'}`.
-   * GET `/authentication/handshake` - to obtain the current csrf token
-   * GET `/authentication/current` - to obtain the current logged in user
+    * POST `/authentication` - to be able to login clients should provide a json request body like `{ username: 'user@email.com', password: 'secret'}`.
+    * GET `/authentication/handshake` - to obtain the current csrf token
+    * GET `/authentication/current` - to obtain the current logged in user
 - The @CurrentUser annotation may be used to annotate a controller method argument to inject the current custom user.
-- This autoconfiguration removes the concern of a so called "role prefix". Your domain roles are not mandatory to have this. E.g. User domain objects will have an ADMIN role instead of ROLE_ADMIN.
+- This autoconfiguration does not make assumptions of how you implement the "authorities" of a User. Spring Security can interpret your authorities by looking at a prefix; if you prefix an authority with "ROLE_", the framework provides a specific role-checking-api. But you can always use the more generic authority-checking-api.
+    * For instance if you want to make use of "roles" and the Spring Security "hasRole(..)"-api methods, you must prefix your roles with the default "ROLE_".
+    * If you want to avoid doing anything with prefixing, you are advised to make use of the more generic "hasAuthority(..)"-api methods.
 
 ## Setup for internal database users store
 
@@ -26,7 +28,7 @@ Spring boot autoconfig for spring security in a REST environment
 <dependency>
     <groupId>nl.42</groupId>
     <artifactId>rest-secure-spring-boot-starter</artifactId>
-    <version>1.1.1</version>
+    <version>2.0.0</version>
 </dependency>
 <dependency>
     <groupId>org.springframework.boot</groupId>
@@ -53,8 +55,10 @@ public class User implements RegisteredUser {
     private String password;
     private UserRole role;
     @Override
-    public List<String> getRolesAsString() {
-        return Arrays.asList(role.name());
+    public Set<String> getAuthorities() {
+        Set<String> authorities = new HashSet<>();
+        authorities.add("ROLE_" + role.name());
+        return authorities;
     }
     @Override
     public String getUsername() {
@@ -102,7 +106,7 @@ If you want to override this bean, you can provide a custom `PasswordEncoder` im
 <dependency>
     <groupId>nl.42</groupId>
     <artifactId>rest-secure-spring-boot-starter</artifactId>
-    <version>1.1.1</version>
+    <version>2.0.0</version>
 </dependency>
 <dependency>
     <groupId>org.springframework.boot</groupId>
@@ -129,9 +133,9 @@ If you want to override this bean, you can provide a custom `PasswordEncoder` im
 
  ```
  rest-secure:
-   crowd-group-to-role-mappings:
-     crowd-admin-group: ADMIN
-     crowd-user-group: USER 
+   crowd-group-to-authority-mappings:
+     crowd-admin-group: ROLE_ADMIN
+     crowd-user-group: ROLE_USER 
  ```
 - Put an implementation of `AbstractUserDetailsService<CrowdUser>` in your unittest configuration to be able to run spring boot webmvc tests:
 
@@ -149,8 +153,8 @@ If you want to override this bean, you can provide a custom `PasswordEncoder` im
                 private Map<String, CrowdUser> users = new HashMap<>();
                 @PostConstruct
                 private void initUserStore() {
-                    users.put("janAdmin", new CrowdUser("janAdmin", "secret", asList(ADMIN.name())));
-                    users.put("janUser", new CrowdUser("janUser", "secret", asList(USER.name())));
+                    users.put("janAdmin", new CrowdUser("janAdmin", "secret", asList("ROLE_" + ADMIN.name())));
+                    users.put("janUser", new CrowdUser("janUser", "secret", asList("ROLE_" + USER.name())));
                 }
                 @Override
                 protected CrowdUser findUserByUsername(String username) {
@@ -239,7 +243,7 @@ public RequestAuthorizationCustomizer requestAuthorizationCustomizer() {
 ```
 {
     username: 'peter@email.com', 
-    roles: ['USER']
+    authorities: ['ROLE_USER']
 }
 ```
    * GET /authentication/handshake

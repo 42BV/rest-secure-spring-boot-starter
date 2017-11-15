@@ -1,11 +1,14 @@
 package nl._42.restsecure.autoconfigure.components;
 
 import static java.util.Collections.singletonMap;
-import static java.util.stream.Collectors.toSet;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
 import java.util.Map;
 import java.util.Set;
+
+import nl._42.restsecure.autoconfigure.userdetails.RegisteredUser;
+import nl._42.restsecure.autoconfigure.userdetails.crowd.CrowdUser;
+import nl._42.restsecure.autoconfigure.userdetails.crowd.CrowdUserResult;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -16,10 +19,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-
-import nl._42.restsecure.autoconfigure.userdetails.RegisteredUser;
-import nl._42.restsecure.autoconfigure.userdetails.crowd.CrowdUser;
-import nl._42.restsecure.autoconfigure.userdetails.crowd.CrowdUserResult;
 
 /**
  * This controller implements the default /authentication and /authentication/handshake endpoints.
@@ -63,8 +62,8 @@ public class AuthenticationController {
             }
             @Override
             @JsonProperty
-            public Set<String> getRoles() {
-                return user.getRolesAsString().stream().collect(toSet());
+            public Set<String> getAuthorities() {
+                return user.getAuthorities();
             }};
     }
 }
