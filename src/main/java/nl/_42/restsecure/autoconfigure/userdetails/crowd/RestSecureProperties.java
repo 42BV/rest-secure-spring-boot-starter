@@ -1,7 +1,11 @@
 package nl._42.restsecure.autoconfigure.userdetails.crowd;
 
+import static java.util.stream.Collectors.toMap;
+
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
@@ -11,13 +15,20 @@ public class RestSecureProperties {
     /**
      * Mappings from crowd group name to application role.
      */
-    private Map<String, String> crowdGroupToAuthorityMappings = new HashMap<>();
+    private Map<String, String> authorityToCrowdGroupMappings = new HashMap<>();
 
-    public Map<String, String> getCrowdGroupToAuthorityMappings() {
-        return crowdGroupToAuthorityMappings;
+    public Set<Entry<String, String>> getCrowdGroupToAuthorityMappings() {
+        return authorityToCrowdGroupMappings.entrySet()
+                .stream()
+                .collect(toMap(Entry::getValue, Entry::getKey))
+                .entrySet();
     }
-
-    public void setCrowdGroupToAuthorityMappings(Map<String, String> crowdGroupToAuthorityMappings) {
-        this.crowdGroupToAuthorityMappings = crowdGroupToAuthorityMappings;
+    
+    public void setAuthorityToCrowdGroupMappings(Map<String, String> authorityToCrowdGroupMappings) {
+        this.authorityToCrowdGroupMappings = authorityToCrowdGroupMappings;
+    }
+    
+    public Map<String, String> getAuthorityToCrowdGroupMappings() {
+        return authorityToCrowdGroupMappings;
     }
 }

@@ -61,8 +61,8 @@ public class WebSecurityAutoConfigTest {
     
     @Test
     public void autoConfig_shouldConfigureSecurity_withCrowd() {
-        loadApplicationContext("rest-secure.crowd-group-to-authority-mappings.crowd-admin-group=ADMIN",
-                "rest-secure.crowd-group-to-authority-mappings.crowd-user-group=USER");
+        loadApplicationContext("rest-secure.authority-to-crowd-group-mappings.ROLE_ADMIN=crowd-admin-group",
+                "rest-secure.authority-to-crowd-group-mappings.ROLE_USER=crowd-user-group");
         AuthenticationManager delegatingManager = context.getBean(AuthenticationManager.class);
         AuthenticationManagerBuilder authManagerBuilder = (AuthenticationManagerBuilder) getField(delegatingManager, "delegateBuilder");
         ProviderManager authManager = (ProviderManager) getField(authManagerBuilder.getObject(), "parent");
@@ -76,7 +76,7 @@ public class WebSecurityAutoConfigTest {
         AuthenticationManager authManager = context.getBean(AuthenticationManager.class);
         Authentication auth = authManager.authenticate(new UsernamePasswordAuthenticationToken("user", "password"));
         assertEquals("custom", auth.getName());
-        assertEquals("ADMIN", auth.getAuthorities().iterator().next().getAuthority());
+        assertEquals("ROLE_ADMIN", auth.getAuthorities().iterator().next().getAuthority());
     }
 
     @Test(expected = BadCredentialsException.class)
@@ -120,7 +120,7 @@ public class WebSecurityAutoConfigTest {
 
         @Override
         public Set<String> getAuthorities() {
-            return Sets.newHashSet("ADMIN");
+            return Sets.newHashSet("ROLE_ADMIN");
         }
         
         public boolean accountNonExpired() {

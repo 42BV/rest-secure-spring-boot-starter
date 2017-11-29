@@ -1,3 +1,6 @@
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/nl.42/rest-secure-spring-boot-starter/badge.svg)](https://maven-badges.herokuapp.com/maven-central/nl.42/rest-secure-spring-boot-starter)
+[![Apache 2](http://img.shields.io/badge/license-Apache%202-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0)
+
 # rest-secure-spring-boot-starter
 
 Spring boot autoconfig for spring security in a REST environment
@@ -125,17 +128,23 @@ If you want to override this bean, you can provide a custom `PasswordEncoder` im
             <groupId>org.apache.struts</groupId>
             <artifactId>struts2-core</artifactId>
         </exclusion>
+        <exclusion>
+            <groupId>ognl</groupId>
+            <artifactId>ognl</artifactId>
+        </exclusion>
     </exclusions>
 </dependency>
 ```
+- Provide your application with a `crowd-ehcache.xml` by adding it to the classpath. An example can be found in this project in directory: `src/test/resources/`.
 - Provide your application with a `crowd.properties` by adding it to the classpath. For more information on this file see: [Atlassian documentation](https://confluence.atlassian.com/crowd/integrating-crowd-with-spring-security-174752019.html) chapter 2.3.
-- If you want to map crowd groups to your custom application user roles you can provide these to your application.yml:
+- If you want to map your custom application authorities to crowd-groups you can add these to your application.yml 
+(Note that this only works for a 1 to 1 cardinality between authority and crowd-group):
 
  ```
  rest-secure:
-   crowd-group-to-authority-mappings:
-     crowd-admin-group: ROLE_ADMIN
-     crowd-user-group: ROLE_USER 
+   authority-to-crowd-group-mappings:
+     ROLE_ADMIN: crowd-admin-group
+     ROLE_USER: crowd-user-group 
  ```
 - Put an implementation of `AbstractUserDetailsService<CrowdUser>` in your unittest configuration to be able to run spring boot webmvc tests:
 

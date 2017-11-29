@@ -258,13 +258,13 @@ public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
             CrowdUserDetailsServiceImpl crowdUserDetailsService = new CrowdUserDetailsServiceImpl();
             crowdUserDetailsService.setGroupMembershipManager(groupMembershipManager);
             crowdUserDetailsService.setUserManager(userManager);
-            Set<Entry<String, String>> roleMappings = props.getCrowdGroupToAuthorityMappings().entrySet();
+            Set<Entry<String, String>> roleMappings = props.getCrowdGroupToAuthorityMappings();
             if (!roleMappings.isEmpty()) {
-                log.info("Found rest-secure.crowd-group-to-authority-mappings in spring boot application properties.");
+                log.info("Found rest-secure.authority-to-crowd-role-mappings in spring boot application properties.");
                 roleMappings.forEach(rm -> log.info("\t {}", rm));
                 crowdUserDetailsService.setGroupToAuthorityMappings(roleMappings);
             } else {
-                log.warn("No rest-secure.crowd-group-to-authority-mappings in spring boot application properties found, no conversion of Crowd Groups will be applied!");
+                log.warn("No rest-secure.authority-to-crowd-group-mappings in spring boot application properties found, no conversion of Crowd Groups will be applied!");
             }
             return crowdUserDetailsService;
         }
