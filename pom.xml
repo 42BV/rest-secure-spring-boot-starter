@@ -165,7 +165,18 @@
                     </execution>
                 </executions>
             </plugin>
-        </plugins>
+        </plugins>       
     </build>
-    
+    <profiles>
+        <profile>
+            <id>travis</id>
+            <repositories>
+                <repository>
+                    <id>atlassian-public</id>
+                    <name>Atlassian public repository</name>
+                    <url>https://maven.atlassian.com/content/groups/public</url>
+                </repository>
+            </repositories>
+        </profile>    
+    </profiles>
 </project>

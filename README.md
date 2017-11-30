@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/42BV/rest-secure-spring-boot-starter.svg?branch=master)](https://travis-ci.org/42BV/rest-secure-spring-boot-starter)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/nl.42/rest-secure-spring-boot-starter/badge.svg)](https://maven-badges.herokuapp.com/maven-central/nl.42/rest-secure-spring-boot-starter)
 [![Apache 2](http://img.shields.io/badge/license-Apache%202-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0)
 
