@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/42BV/rest-secure-spring-boot-starter.svg?branch=master)](https://travis-ci.org/42BV/rest-secure-spring-boot-starter)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/3f361d897c0c45afb6d0dae3dba16709)](https://www.codacy.com/app/sptdevos/rest-secure-spring-boot-starter?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=42BV/rest-secure-spring-boot-starter&amp;utm_campaign=Badge_Grade)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/nl.42/rest-secure-spring-boot-starter/badge.svg)](https://maven-badges.herokuapp.com/maven-central/nl.42/rest-secure-spring-boot-starter)
 [![Apache 2](http://img.shields.io/badge/license-Apache%202-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0)
 
