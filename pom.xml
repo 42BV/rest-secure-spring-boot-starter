@@ -58,7 +58,7 @@
         <maven.project.version>2.4</maven.project.version>
         <maven.site.plugin.version>3.3</maven.site.plugin.version>
         <crowd-integration-springsecurity.version>1000.82.0</crowd-integration-springsecurity.version>
-        <commons-io.version>2.5</commons-io.version>
+        <commons-io.version>2.6</commons-io.version>
     </properties>
     
     <dependencies>
@@ -98,6 +98,16 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.jayway.jsonpath</groupId>
+            <artifactId>json-path</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
     
     <dependencyManagement>
@@ -105,7 +115,7 @@
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-dependencies</artifactId>
-                <version>1.5.3.RELEASE</version>
+                <version>1.5.9.RELEASE</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>

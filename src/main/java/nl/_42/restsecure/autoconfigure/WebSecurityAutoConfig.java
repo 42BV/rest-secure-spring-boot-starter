@@ -44,9 +44,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.AnonymousAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
-import org.springframework.security.web.csrf.CsrfFilter;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRepository;
-import org.springframework.security.web.csrf.HttpSessionCsrfTokenRepository;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 import com.atlassian.crowd.integration.http.HttpAuthenticator;
@@ -176,9 +175,7 @@ public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
                     .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler())
             .and()
                 .csrf()
-                    .csrfTokenRepository(csrfTokenRepository())
-            .and()
-                .addFilterAfter(new XsrfHeaderFilter(), CsrfFilter.class);
+                    .csrfTokenRepository(csrfTokenRepository());
         customize(http);
     }
 
@@ -213,8 +210,9 @@ public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
     }
 
     private CsrfTokenRepository csrfTokenRepository() {
-        HttpSessionCsrfTokenRepository repository = new HttpSessionCsrfTokenRepository();
-        repository.setHeaderName("X-XSRF-TOKEN");
+        CookieCsrfTokenRepository repository = new CookieCsrfTokenRepository();
+        repository.setCookiePath("/");
+        repository.setCookieHttpOnly(false);
         return repository;
     }
     
