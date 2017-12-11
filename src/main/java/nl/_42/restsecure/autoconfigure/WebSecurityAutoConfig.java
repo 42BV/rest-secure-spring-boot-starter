@@ -3,6 +3,7 @@ package nl._42.restsecure.autoconfigure;
 import static org.springframework.http.HttpMethod.DELETE;
 import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.security.core.context.SecurityContextHolder.MODE_INHERITABLETHREADLOCAL;
+import static org.springframework.security.web.csrf.CookieCsrfTokenRepository.withHttpOnlyFalse;
 import static org.springframework.util.Assert.notEmpty;
 
 import java.util.List;
@@ -13,7 +14,6 @@ import nl._42.restsecure.autoconfigure.components.AuthenticationController;
 import nl._42.restsecure.autoconfigure.components.errorhandling.GenericErrorHandler;
 import nl._42.restsecure.autoconfigure.userdetails.AbstractUserDetailsService;
 import nl._42.restsecure.autoconfigure.userdetails.RegisteredUser;
-import nl._42.restsecure.autoconfigure.userdetails.crowd.RestSecureProperties;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -210,9 +210,8 @@ public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
     }
 
     private CsrfTokenRepository csrfTokenRepository() {
-        CookieCsrfTokenRepository repository = new CookieCsrfTokenRepository();
+        CookieCsrfTokenRepository repository = withHttpOnlyFalse();
         repository.setCookiePath("/");
-        repository.setCookieHttpOnly(false);
         return repository;
     }
     

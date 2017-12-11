@@ -7,7 +7,9 @@ import static org.springframework.test.util.ReflectionTestUtils.getField;
 
 import nl._42.restsecure.autoconfigure.components.errorhandling.WebMvcErrorHandler;
 import nl._42.restsecure.autoconfigure.shared.test.AbstractApplicationContextTest;
+import nl._42.restsecure.autoconfigure.shared.test.UserDetailsServiceConfig;
 import nl._42.restsecure.autoconfigure.userdetails.AbstractUserDetailsService;
+import nl._42.restsecure.autoconfigure.userdetails.RegisteredUser;
 
 import org.junit.Test;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -23,12 +25,12 @@ public class WebSecurityAutoConfigTest extends AbstractApplicationContextTest {
     
     @Test
     public void autoConfig_shouldConfigureSecurity_withDefaults() {
-        loadApplicationContext(ConfigWithUserDetailsService.class);
+        loadApplicationContext(UserDetailsServiceConfig.class);
         PasswordEncoder passwordEncoder = context.getBean(PasswordEncoder.class);
         assertEquals(BCryptPasswordEncoder.class, passwordEncoder.getClass());
         WebMvcErrorHandler errorHandler = context.getBean(WebMvcErrorHandler.class);
         assertNotNull(errorHandler);        
-        AbstractUserDetailsService<CustomUser> userDetailsService = context.getBean(AbstractUserDetailsService.class);
+        AbstractUserDetailsService<RegisteredUser> userDetailsService = context.getBean(AbstractUserDetailsService.class);
         UserDetails user = userDetailsService.loadUserByUsername("jaja");
         assertTrue(user.isAccountNonExpired());
         assertTrue(user.isAccountNonLocked());

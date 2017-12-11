@@ -167,8 +167,8 @@ If you want to override this bean, you can provide a custom `PasswordEncoder` im
                 private Map<String, CrowdUser> users = new HashMap<>();
                 @PostConstruct
                 private void initUserStore() {
-                    users.put("janAdmin", new CrowdUser("janAdmin", "secret", asList("ROLE_" + ADMIN.name())));
-                    users.put("janUser", new CrowdUser("janUser", "secret", asList("ROLE_" + USER.name())));
+                    users.put("janAdmin", new CrowdUser("janAdmin", "secret", newHashSet("ROLE_" + ADMIN.name())));
+                    users.put("janUser", new CrowdUser("janUser", "secret", newHashSet("ROLE_" + USER.name())));
                 }
                 @Override
                 protected CrowdUser findUserByUsername(String username) {
@@ -182,6 +182,7 @@ If you want to override this bean, you can provide a custom `PasswordEncoder` im
 
 1. Adding custom filters:
 - Use HttpSecurityCustomizer to add your custom filters to the `SpringSecurityFilterChain` and customize the `HttpSecurity` object in general:
+
 ```java
     @Bean
     public HttpSecurityCustomizer httpSecurityCustomizer() {

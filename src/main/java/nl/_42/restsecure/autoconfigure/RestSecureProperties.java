@@ -1,4 +1,4 @@
-package nl._42.restsecure.autoconfigure.userdetails.crowd;
+package nl._42.restsecure.autoconfigure;
 
 import static java.util.stream.Collectors.toMap;
 
@@ -22,10 +22,6 @@ public class RestSecureProperties {
                 .stream()
                 .collect(toMap(Entry::getValue, Entry::getKey))
                 .entrySet();
-    }
-    
-    public void setAuthorityToCrowdGroupMappings(Map<String, String> authorityToCrowdGroupMappings) {
-        this.authorityToCrowdGroupMappings = authorityToCrowdGroupMappings;
     }
     
     public Map<String, String> getAuthorityToCrowdGroupMappings() {
