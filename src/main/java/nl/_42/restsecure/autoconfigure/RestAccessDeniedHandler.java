@@ -21,9 +21,10 @@ import org.springframework.security.web.access.AccessDeniedHandler;
  */
 class RestAccessDeniedHandler implements AccessDeniedHandler, AuthenticationEntryPoint {
 
-    private static final String SERVER_AUTHENTICATE_ERROR = "SERVER.AUTHENTICATE_ERROR";
-    private static final String SERVER_ACCESS_DENIED_ERROR = "SERVER.ACCESS_DENIED_ERROR";
-
+    public static final String SERVER_AUTHENTICATE_ERROR = "SERVER.AUTHENTICATE_ERROR";
+    public static final String SERVER_ACCESS_DENIED_ERROR = "SERVER.ACCESS_DENIED_ERROR";
+    public static final String SERVER_SESSION_INVALID_ERROR = "SERVER.SESSION_TIMEOUT_ERROR";
+    
     private final GenericErrorHandler errorHandler;
 
     RestAccessDeniedHandler(GenericErrorHandler errorHandler) {
@@ -45,6 +46,11 @@ class RestAccessDeniedHandler implements AccessDeniedHandler, AuthenticationEntr
      */
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException ex) throws IOException, ServletException {
-        errorHandler.respond(response, UNAUTHORIZED, SERVER_AUTHENTICATE_ERROR);
+        String errorCode = SERVER_AUTHENTICATE_ERROR;
+        if (request.getRequestedSessionId() != null
+                && !request.isRequestedSessionIdValid()) {
+            errorCode = SERVER_SESSION_INVALID_ERROR;
+        }
+        errorHandler.respond(response, UNAUTHORIZED, errorCode);
     }
 }

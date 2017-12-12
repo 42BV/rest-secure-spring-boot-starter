@@ -343,7 +343,7 @@ Response body: `{ errorCode: 'SERVER.AUTHENTICATE_ERROR'}`
    * Authorization errors when trying to access a url that needs a specific authority:  
 Http status: 403  
 Response body: `{ errorCode: 'SERVER.ACCESS_DENIED_ERROR'}`
-   * Invalid session (e.g. timeout):  
+   * Invalid session (e.g. timeout or after logout):  
 Http status: 401  
-Response body: `{ errorCode: 'SERVER.SESSION_TIMEOUT_ERROR'}`
+Response body: `{ errorCode: 'SERVER.SESSION_INVALID_ERROR'}`
 

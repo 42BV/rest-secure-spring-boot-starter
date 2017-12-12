@@ -2,19 +2,13 @@ package nl._42.restsecure.autoconfigure;
 
 import static org.springframework.http.HttpMethod.DELETE;
 import static org.springframework.http.HttpMethod.POST;
-import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 import static org.springframework.security.core.context.SecurityContextHolder.MODE_INHERITABLETHREADLOCAL;
 import static org.springframework.security.web.csrf.CookieCsrfTokenRepository.withHttpOnlyFalse;
 import static org.springframework.util.Assert.notEmpty;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import nl._42.restsecure.autoconfigure.components.AuthenticationController;
 import nl._42.restsecure.autoconfigure.components.errorhandling.GenericErrorHandler;
@@ -52,7 +46,6 @@ import org.springframework.security.web.authentication.AnonymousAuthenticationFi
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRepository;
-import org.springframework.security.web.session.InvalidSessionStrategy;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 import com.atlassian.crowd.integration.http.HttpAuthenticator;
@@ -181,9 +174,6 @@ public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
             .logoutRequestMatcher(new AntPathRequestMatcher("/authentication", DELETE.name()))
             .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler())
             .and()
-            .sessionManagement()
-            .invalidSessionStrategy(invalidSessionStrategy())
-            .and()
             .csrf()
             .csrfTokenRepository(csrfTokenRepository());
         customize(http);
@@ -218,18 +208,7 @@ public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
     private RestAccessDeniedHandler accessDeniedHandler() {
         return new RestAccessDeniedHandler(errorHandler);
     }
-
-    private InvalidSessionStrategy invalidSessionStrategy() {
-        return new InvalidSessionStrategy() {
-            private static final String SERVER_SESSION_TIMEOUT_ERROR = "SERVER.SESSION_TIMEOUT_ERROR";
-
-            @Override
-            public void onInvalidSessionDetected(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-                errorHandler.respond(response, UNAUTHORIZED, SERVER_SESSION_TIMEOUT_ERROR);
-            }
-        };
-    }
-    
+   
     private CsrfTokenRepository csrfTokenRepository() {
         CookieCsrfTokenRepository repository = withHttpOnlyFalse();
         repository.setCookiePath("/");

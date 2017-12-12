@@ -1,5 +1,6 @@
 package nl._42.restsecure.autoconfigure;
 
+import static nl._42.restsecure.autoconfigure.RestAccessDeniedHandler.SERVER_SESSION_INVALID_ERROR;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -14,6 +15,7 @@ import nl._42.restsecure.autoconfigure.shared.test.config.UserDetailsServiceConf
 import org.junit.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.web.servlet.RequestBuilder;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 public class SessionTimeoutTest extends AbstractApplicationContextTest {
 
@@ -26,7 +28,9 @@ public class SessionTimeoutTest extends AbstractApplicationContextTest {
             .perform(new RequestBuilder() {
                 @Override
                 public MockHttpServletRequest buildRequest(ServletContext servletContext) {
-                    MockHttpServletRequest request = new MockHttpServletRequest();
+                    MockHttpServletRequest request = MockMvcRequestBuilders
+                            .get("/authentication/current")
+                            .buildRequest(servletContext);
                     request.setRequestedSessionId("sessionid");
                     request.setRequestedSessionIdValid(false);
                     return request;
@@ -34,7 +38,6 @@ public class SessionTimeoutTest extends AbstractApplicationContextTest {
             })
             .andDo(print())
             .andExpect(status().isUnauthorized())
-            .andExpect(jsonPath("errorCode").value("SERVER.SESSION_TIMEOUT_ERROR"))
-        ;
+            .andExpect(jsonPath("errorCode").value(SERVER_SESSION_INVALID_ERROR));
     }
 }
