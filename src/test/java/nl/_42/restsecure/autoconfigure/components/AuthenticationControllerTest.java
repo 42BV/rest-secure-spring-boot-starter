@@ -9,6 +9,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import nl._42.restsecure.autoconfigure.shared.test.AbstractApplicationContextTest;
 import nl._42.restsecure.autoconfigure.shared.test.AuthenticationResultProviderConfig;
 import nl._42.restsecure.autoconfigure.shared.test.InMemoryCrowdConfig;
+import nl._42.restsecure.autoconfigure.shared.test.MockedCrowdAuthenticationProviderConfig;
 import nl._42.restsecure.autoconfigure.shared.test.NoopPasswordEncoderConfig;
 import nl._42.restsecure.autoconfigure.shared.test.UserDetailsServiceConfig;
 
@@ -60,6 +61,16 @@ public class AuthenticationControllerTest extends AbstractApplicationContextTest
             .andExpect(status().isOk())
             .andExpect(jsonPath("authorities[0]").value("ROLE_USER"))
             .andExpect(jsonPath("username").value("janUser"));
+    }
+
+    @Test
+    public void authenticate_shouldSucceed_whenUsingMockedCrowdAuthenticationProvider() throws Exception {
+        getWebClient(InMemoryCrowdConfig.class, MockedCrowdAuthenticationProviderConfig.class)
+            .perform(post("/authentication")
+                .content("{\"username\": \"crowdUser\", \"password\": \"crowdPassword\"}"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("authorities[0]").value("ROLE_USER"))
+            .andExpect(jsonPath("username").value("crowdUser"));
     }
 
     @Test
