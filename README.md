@@ -343,7 +343,7 @@ Response body: `{ errorCode: 'SERVER.AUTHENTICATE_ERROR'}`
    * Authorization errors when trying to access a url that needs a specific authority:  
 Http status: 403  
 Response body: `{ errorCode: 'SERVER.ACCESS_DENIED_ERROR'}`
-   * Csrf token missing due to session timeout:  
+   * Invalid session (e.g. timeout):  
 Http status: 401  
 Response body: `{ errorCode: 'SERVER.SESSION_TIMEOUT_ERROR'}`
 

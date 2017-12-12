@@ -1,4 +1,4 @@
-package nl._42.restsecure.autoconfigure.shared.test;
+package nl._42.restsecure.autoconfigure.shared.test.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

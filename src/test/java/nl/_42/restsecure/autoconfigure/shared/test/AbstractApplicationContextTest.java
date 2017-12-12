@@ -1,6 +1,6 @@
 package nl._42.restsecure.autoconfigure.shared.test;
 
-import static nl._42.restsecure.autoconfigure.shared.test.UserDetailsServiceConfig.createUser;
+import static nl._42.restsecure.autoconfigure.shared.test.config.UserDetailsServiceConfig.createUser;
 import static org.springframework.boot.test.util.EnvironmentTestUtils.addEnvironment;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;

@@ -7,11 +7,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import nl._42.restsecure.autoconfigure.shared.test.AbstractApplicationContextTest;
-import nl._42.restsecure.autoconfigure.shared.test.AuthenticationResultProviderConfig;
-import nl._42.restsecure.autoconfigure.shared.test.InMemoryCrowdConfig;
-import nl._42.restsecure.autoconfigure.shared.test.MockedCrowdAuthenticationProviderConfig;
-import nl._42.restsecure.autoconfigure.shared.test.NoopPasswordEncoderConfig;
-import nl._42.restsecure.autoconfigure.shared.test.UserDetailsServiceConfig;
+import nl._42.restsecure.autoconfigure.shared.test.config.AuthenticationResultProviderConfig;
+import nl._42.restsecure.autoconfigure.shared.test.config.InMemoryCrowdConfig;
+import nl._42.restsecure.autoconfigure.shared.test.config.MockedCrowdAuthenticationProviderConfig;
+import nl._42.restsecure.autoconfigure.shared.test.config.NoopPasswordEncoderConfig;
+import nl._42.restsecure.autoconfigure.shared.test.config.UserDetailsServiceConfig;
 
 import org.junit.Test;
 

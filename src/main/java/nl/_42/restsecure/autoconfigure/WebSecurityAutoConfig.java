@@ -2,13 +2,19 @@ package nl._42.restsecure.autoconfigure;
 
 import static org.springframework.http.HttpMethod.DELETE;
 import static org.springframework.http.HttpMethod.POST;
+import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 import static org.springframework.security.core.context.SecurityContextHolder.MODE_INHERITABLETHREADLOCAL;
 import static org.springframework.security.web.csrf.CookieCsrfTokenRepository.withHttpOnlyFalse;
 import static org.springframework.util.Assert.notEmpty;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import nl._42.restsecure.autoconfigure.components.AuthenticationController;
 import nl._42.restsecure.autoconfigure.components.errorhandling.GenericErrorHandler;
@@ -46,6 +52,7 @@ import org.springframework.security.web.authentication.AnonymousAuthenticationFi
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRepository;
+import org.springframework.security.web.session.InvalidSessionStrategy;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 import com.atlassian.crowd.integration.http.HttpAuthenticator;
@@ -73,7 +80,7 @@ import com.atlassian.crowd.service.cache.CacheAwareAuthenticationManager;
 public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
 
     private final Logger log = LoggerFactory.getLogger(WebSecurityAutoConfig.class);
-    
+
     static {
         SecurityContextHolder.setStrategyName(MODE_INHERITABLETHREADLOCAL);
     }
@@ -82,7 +89,7 @@ public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
     private GenericErrorHandler errorHandler;
     @Autowired(required = false)
     private AbstractUserDetailsService<? extends RegisteredUser> userDetailsService;
-    
+
     @Autowired(required = false)
     private RequestAuthorizationCustomizer authCustomizer;
     @Autowired(required = false)
@@ -91,10 +98,10 @@ public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
     private CustomAuthenticationProviders customAuthenticationProviders;
     @Autowired(required = false)
     private WebSecurityCustomizer webSecurityCustomizer;
-    
+
     @Autowired(required = false)
     private AuthenticationProvider crowdAuthenticationProvider;
-    
+
     /**
      * {@inheritDoc}
      */
@@ -118,7 +125,7 @@ public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
             providers.forEach(auth::authenticationProvider);
         }
     }
-    
+
     /**
      * Adds a {@link BCryptPasswordEncoder} to the {@link ApplicationContext} if no {@link PasswordEncoder} bean is found already.
      * @return PasswordEncoder
@@ -139,7 +146,7 @@ public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
     public AuthenticationManager authenticationManagerBean() throws Exception {
         return super.authenticationManagerBean();
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -152,7 +159,7 @@ public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
             log.info("No WebSecurityCustomizer bean found in ApplicationContext, no custom configuring of WebSecurity object.");
         }
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -161,21 +168,24 @@ public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
         ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry urlRegistry = http
             .addFilterBefore(authenticationFilter(), AnonymousAuthenticationFilter.class)
             .authorizeRequests()
-                .antMatchers("/authentication").permitAll()
-                .antMatchers("/authentication/handshake").permitAll();
+            .antMatchers("/authentication").permitAll()
+            .antMatchers("/authentication/handshake").permitAll();
         customize(urlRegistry)
-                .anyRequest().fullyAuthenticated()
+            .anyRequest().fullyAuthenticated()
             .and()
-                .exceptionHandling()
-                    .accessDeniedHandler(accessDeniedHandler())
-                    .authenticationEntryPoint(accessDeniedHandler())
+            .exceptionHandling()
+            .accessDeniedHandler(accessDeniedHandler())
+            .authenticationEntryPoint(accessDeniedHandler())
             .and()
-                .logout()
-                    .logoutRequestMatcher(new AntPathRequestMatcher("/authentication", DELETE.name()))
-                    .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler())
+            .logout()
+            .logoutRequestMatcher(new AntPathRequestMatcher("/authentication", DELETE.name()))
+            .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler())
             .and()
-                .csrf()
-                    .csrfTokenRepository(csrfTokenRepository());
+            .sessionManagement()
+            .invalidSessionStrategy(invalidSessionStrategy())
+            .and()
+            .csrf()
+            .csrfTokenRepository(csrfTokenRepository());
         customize(http);
     }
 
@@ -189,7 +199,7 @@ public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
         }
         return urlRegistry;
     }
-    
+
     private HttpSecurity customize(HttpSecurity http) throws Exception {
         if (httpCustomizer != null) {
             log.info("Found HttpSecurityCustomizer bean in ApplicationContext, custom configuring of HttpSecurity object started.");
@@ -199,7 +209,7 @@ public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
         }
         return http;
     }
-    
+
     private RestAuthenticationFilter authenticationFilter() throws Exception {
         AntPathRequestMatcher matcher = new AntPathRequestMatcher("/authentication", POST.name());
         return new RestAuthenticationFilter(errorHandler, matcher, authenticationManagerBean());
@@ -209,12 +219,23 @@ public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
         return new RestAccessDeniedHandler(errorHandler);
     }
 
+    private InvalidSessionStrategy invalidSessionStrategy() {
+        return new InvalidSessionStrategy() {
+            private static final String SERVER_SESSION_TIMEOUT_ERROR = "SERVER.SESSION_TIMEOUT_ERROR";
+
+            @Override
+            public void onInvalidSessionDetected(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+                errorHandler.respond(response, UNAUTHORIZED, SERVER_SESSION_TIMEOUT_ERROR);
+            }
+        };
+    }
+    
     private CsrfTokenRepository csrfTokenRepository() {
         CookieCsrfTokenRepository repository = withHttpOnlyFalse();
         repository.setCookiePath("/");
         return repository;
     }
-    
+
     /**
      * Autoconfigures Crowd when a crowd-integration-springsecurity jar and a crowd.properties are found on the application's classpath.
      * When a crowd-group-to-role.properties is found on the application's classpath, these mappings will be used by the {@link CrowdUserDetailsService}
@@ -224,9 +245,9 @@ public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
     @Configuration
     @EnableConfigurationProperties(RestSecureProperties.class)
     public static class CrowdBeans {
-        
+
         private final Logger log = LoggerFactory.getLogger(CrowdBeans.class);
-        
+
         @Autowired
         private HttpAuthenticator httpAuthenticator;
         @Autowired
@@ -249,7 +270,7 @@ public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
         public AuthenticationProvider crowdAuthenticationProvider() throws Exception {
             return new RemoteCrowdAuthenticationProvider(crowdAuthenticationManager, httpAuthenticator, crowdUserDetailsService());
         }
-        
+
         @Bean
         public CrowdUserDetailsService crowdUserDetailsService() {
             CrowdUserDetailsServiceImpl crowdUserDetailsService = new CrowdUserDetailsServiceImpl();
@@ -261,7 +282,8 @@ public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
                 roleMappings.forEach(rm -> log.info("\t {}", rm));
                 crowdUserDetailsService.setGroupToAuthorityMappings(roleMappings);
             } else {
-                log.warn("No rest-secure.authority-to-crowd-group-mappings in spring boot application properties found, no conversion of Crowd Groups will be applied!");
+                log.warn(
+                        "No rest-secure.authority-to-crowd-group-mappings in spring boot application properties found, no conversion of Crowd Groups will be applied!");
             }
             return crowdUserDetailsService;
         }

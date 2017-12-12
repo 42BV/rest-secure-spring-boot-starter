@@ -1,7 +1,6 @@
 package nl._42.restsecure.autoconfigure.components;
 
 import static java.util.Collections.singletonMap;
-import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
 import java.util.Map;
 import java.util.Set;
@@ -14,8 +13,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.web.csrf.CsrfToken;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -32,17 +32,17 @@ public class AuthenticationController {
     @Autowired(required = false)
     private AuthenticationResultProvider authenticationResultProvider;
     
-    @RequestMapping(method = POST)
+    @PostMapping
     AuthenticationResult authenticate(@CurrentUser RegisteredUser user) {
         return transform(user);
     }
 
-    @RequestMapping(path = "/current", method = RequestMethod.GET)
+    @GetMapping("/current")
     AuthenticationResult current(@CurrentUser RegisteredUser user) {
         return transform(user);
     }
 
-    @RequestMapping(path = "/handshake", method = RequestMethod.GET)
+    @GetMapping("/handshake")
     Map<String, String> handshake(CsrfToken csrfToken) {
         return singletonMap("csrfToken", csrfToken.getToken());
     }

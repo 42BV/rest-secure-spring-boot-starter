@@ -7,7 +7,7 @@ import static org.springframework.test.util.ReflectionTestUtils.getField;
 
 import nl._42.restsecure.autoconfigure.components.errorhandling.WebMvcErrorHandler;
 import nl._42.restsecure.autoconfigure.shared.test.AbstractApplicationContextTest;
-import nl._42.restsecure.autoconfigure.shared.test.UserDetailsServiceConfig;
+import nl._42.restsecure.autoconfigure.shared.test.config.UserDetailsServiceConfig;
 import nl._42.restsecure.autoconfigure.userdetails.AbstractUserDetailsService;
 import nl._42.restsecure.autoconfigure.userdetails.RegisteredUser;
 
