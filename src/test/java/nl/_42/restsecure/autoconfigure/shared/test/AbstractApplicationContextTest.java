@@ -44,6 +44,10 @@ public class AbstractApplicationContextTest {
             .alwaysDo(print())
             .build();
     }
+   
+    protected void loadApplicationContext() {
+        this.context = load(create());
+    }
     
     protected void loadApplicationContext(String... env) {
         this.context = load(create(env));

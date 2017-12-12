@@ -7,11 +7,13 @@ import static org.springframework.test.util.ReflectionTestUtils.getField;
 
 import nl._42.restsecure.autoconfigure.components.errorhandling.WebMvcErrorHandler;
 import nl._42.restsecure.autoconfigure.shared.test.AbstractApplicationContextTest;
+import nl._42.restsecure.autoconfigure.shared.test.config.NullCrowdAuthenticationProviderConfig;
 import nl._42.restsecure.autoconfigure.shared.test.config.UserDetailsServiceConfig;
 import nl._42.restsecure.autoconfigure.userdetails.AbstractUserDetailsService;
 import nl._42.restsecure.autoconfigure.userdetails.RegisteredUser;
 
 import org.junit.Test;
+import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -45,6 +47,13 @@ public class WebSecurityAutoConfigTest extends AbstractApplicationContextTest {
         ProviderManager authManager = (ProviderManager) getField(authManagerBuilder.getObject(), "parent");
         assertEquals(1, authManager.getProviders().size());
         assertEquals(RemoteCrowdAuthenticationProvider.class, authManager.getProviders().get(0).getClass());        
+    }
+    
+    @Test(expected = BeanCreationException.class)
+    public void autoConfig_shouldFail_withoutAuthenticationProvider() {
+        loadApplicationContext();
+        this.context.register(NullCrowdAuthenticationProviderConfig.class);
+        this.context.refresh();
     }
 
 }
