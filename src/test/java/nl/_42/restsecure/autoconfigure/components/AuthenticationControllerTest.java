@@ -1,5 +1,6 @@
 package nl._42.restsecure.autoconfigure.components;
 
+import static nl._42.restsecure.autoconfigure.RestAuthenticationFilter.SERVER_LOGIN_FAILED_ERROR;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.anonymous;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -7,12 +8,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import nl._42.restsecure.autoconfigure.shared.test.AbstractApplicationContextTest;
+import nl._42.restsecure.autoconfigure.shared.test.config.AccountExpiredUserConfig;
+import nl._42.restsecure.autoconfigure.shared.test.config.AccountLockedUserConfig;
+import nl._42.restsecure.autoconfigure.shared.test.config.ActiveUserConfig;
 import nl._42.restsecure.autoconfigure.shared.test.config.AuthenticationResultProviderConfig;
+import nl._42.restsecure.autoconfigure.shared.test.config.CredentialsExpiredUserConfig;
 import nl._42.restsecure.autoconfigure.shared.test.config.CustomWebSecurityAndHttpSecurityConfig;
 import nl._42.restsecure.autoconfigure.shared.test.config.InMemoryCrowdConfig;
 import nl._42.restsecure.autoconfigure.shared.test.config.MockedCrowdAuthenticationProviderConfig;
 import nl._42.restsecure.autoconfigure.shared.test.config.NoopPasswordEncoderConfig;
-import nl._42.restsecure.autoconfigure.shared.test.config.UserDetailsServiceConfig;
 
 import org.junit.Test;
 
@@ -20,7 +24,7 @@ public class AuthenticationControllerTest extends AbstractApplicationContextTest
 
     @Test
     public void currentUser_shouldFail_whenNotLoggedIn() throws Exception {
-        getWebClient(UserDetailsServiceConfig.class)
+        getWebClient(ActiveUserConfig.class)
             .perform(get("/authentication/current")
                 .with(anonymous()))
             .andExpect(status().isUnauthorized());
@@ -28,7 +32,7 @@ public class AuthenticationControllerTest extends AbstractApplicationContextTest
 
     @Test
     public void currentUser_shouldSucceed_whenLoggedIn() throws Exception {
-        getWebClient(UserDetailsServiceConfig.class)
+        getWebClient(ActiveUserConfig.class)
             .perform(get("/authentication/current"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("authorities[0]").value("ROLE_ADMIN"))
@@ -37,7 +41,7 @@ public class AuthenticationControllerTest extends AbstractApplicationContextTest
 
     @Test
     public void currentUser_shouldSucceed_whenNotLoggedIn_andCustomWebSecurity() throws Exception {
-        getWebClient(UserDetailsServiceConfig.class, CustomWebSecurityAndHttpSecurityConfig.class)
+        getWebClient(ActiveUserConfig.class, CustomWebSecurityAndHttpSecurityConfig.class)
             .perform(get("/authentication/current"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("authorities[0]").value("ROLE_ADMIN"))
@@ -55,7 +59,7 @@ public class AuthenticationControllerTest extends AbstractApplicationContextTest
 
     @Test
     public void authenticate_shouldSucceed_withCorrectCredentials() throws Exception {
-        getWebClient(UserDetailsServiceConfig.class, NoopPasswordEncoderConfig.class)
+        getWebClient(ActiveUserConfig.class, NoopPasswordEncoderConfig.class)
             .perform(post("/authentication")
                 .content("{\"username\": \"custom\", \"password\": \"password\"}"))
             .andExpect(status().isOk())
@@ -63,6 +67,42 @@ public class AuthenticationControllerTest extends AbstractApplicationContextTest
             .andExpect(jsonPath("username").value("username"));
     }
 
+    @Test
+    public void authenticate_shouldFail_withCorrectCredentials_butBrcyptPasswordEncoder() throws Exception {
+        getWebClient(ActiveUserConfig.class)
+            .perform(post("/authentication")
+                .content("{\"username\": \"custom\", \"password\": \"password\"}"))
+            .andExpect(status().isUnauthorized())
+            .andExpect(jsonPath("errorCode").value(SERVER_LOGIN_FAILED_ERROR));
+    }
+    
+    @Test
+    public void authenticate_shouldFail_withAccountExpired() throws Exception {
+        getWebClient(AccountExpiredUserConfig.class, NoopPasswordEncoderConfig.class)
+            .perform(post("/authentication")
+                .content("{\"username\": \"custom\", \"password\": \"password\"}"))
+            .andExpect(status().isUnauthorized())
+            .andExpect(jsonPath("errorCode").value(SERVER_LOGIN_FAILED_ERROR));
+    }
+    
+    @Test
+    public void authenticate_shouldFail_withAccountLocked() throws Exception {
+        getWebClient(AccountLockedUserConfig.class, NoopPasswordEncoderConfig.class)
+            .perform(post("/authentication")
+                .content("{\"username\": \"custom\", \"password\": \"password\"}"))
+            .andExpect(status().isUnauthorized())
+            .andExpect(jsonPath("errorCode").value(SERVER_LOGIN_FAILED_ERROR));
+    }
+    
+    @Test
+    public void authenticate_shouldFail_withCredentialsExpired() throws Exception {
+        getWebClient(CredentialsExpiredUserConfig.class, NoopPasswordEncoderConfig.class)
+            .perform(post("/authentication")
+                .content("{\"username\": \"custom\", \"password\": \"password\"}"))
+            .andExpect(status().isUnauthorized())
+            .andExpect(jsonPath("errorCode").value(SERVER_LOGIN_FAILED_ERROR));
+    }
+    
     @Test
     public void authenticate_shouldSucceed_whenUsingInMemoryCrowdUsers() throws Exception {
         getWebClient(InMemoryCrowdConfig.class, NoopPasswordEncoderConfig.class)
@@ -74,6 +114,15 @@ public class AuthenticationControllerTest extends AbstractApplicationContextTest
     }
 
     @Test
+    public void authenticate_shouldFail_withIncorrectCredentials() throws Exception {
+        getWebClient(InMemoryCrowdConfig.class, NoopPasswordEncoderConfig.class)
+            .perform(post("/authentication")
+                .content("{\"username\": \"unknownUser\", \"password\": \"secret\"}"))
+            .andExpect(status().isUnauthorized())
+            .andExpect(jsonPath("errorCode").value(SERVER_LOGIN_FAILED_ERROR));
+    }
+    
+    @Test
     public void authenticate_shouldSucceed_whenUsingMockedCrowdAuthenticationProvider() throws Exception {
         getWebClient(InMemoryCrowdConfig.class, MockedCrowdAuthenticationProviderConfig.class)
             .perform(post("/authentication")
@@ -84,16 +133,8 @@ public class AuthenticationControllerTest extends AbstractApplicationContextTest
     }
 
     @Test
-    public void authenticate_shouldFail_withCorrectCredentials_butBrcyptPasswordEncoder() throws Exception {
-        getWebClient(UserDetailsServiceConfig.class)
-            .perform(post("/authentication")
-                .content("{\"username\": \"custom\", \"password\": \"password\"}"))
-            .andExpect(status().isUnauthorized());
-    }
-
-    @Test
     public void handshake_shouldReturnCsrfToken() throws Exception {
-        getWebClient(UserDetailsServiceConfig.class)
+        getWebClient(ActiveUserConfig.class)
             .perform(get("/authentication/handshake"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("csrfToken").exists());

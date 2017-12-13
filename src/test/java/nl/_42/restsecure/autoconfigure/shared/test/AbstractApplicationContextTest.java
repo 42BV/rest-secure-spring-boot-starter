@@ -1,13 +1,13 @@
 package nl._42.restsecure.autoconfigure.shared.test;
 
-import static nl._42.restsecure.autoconfigure.shared.test.config.UserDetailsServiceConfig.createUser;
+import static nl._42.restsecure.autoconfigure.shared.test.config.AbstractUserDetailsServiceConfig.RegisteredUserBuilder.user;
 import static org.springframework.boot.test.util.EnvironmentTestUtils.addEnvironment;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.log;
 import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppContextSetup;
 
 import nl._42.restsecure.autoconfigure.WebSecurityAutoConfig;
@@ -40,8 +40,8 @@ public class AbstractApplicationContextTest {
             .defaultRequest(get("/")
                 .contentType(APPLICATION_JSON)
                 .with(csrf())
-                .with(user(new UserDetailsAdapter<RegisteredUser>(createUser()))))
-            .alwaysDo(print())
+                .with(user(new UserDetailsAdapter<RegisteredUser>(user().build()))))
+            .alwaysDo(log())
             .build();
     }
    

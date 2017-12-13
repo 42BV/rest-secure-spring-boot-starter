@@ -10,6 +10,10 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import nl._42.restsecure.autoconfigure.components.errorhandling.GenericErrorHandler;
+import nl._42.restsecure.autoconfigure.userdetails.UserDetailsAdapter;
+import nl._42.restsecure.autoconfigure.userdetails.crowd.CrowdUser;
+
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,10 +28,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import com.atlassian.crowd.integration.springsecurity.user.CrowdUserDetails;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
-import nl._42.restsecure.autoconfigure.components.errorhandling.GenericErrorHandler;
-import nl._42.restsecure.autoconfigure.userdetails.UserDetailsAdapter;
-import nl._42.restsecure.autoconfigure.userdetails.crowd.CrowdUser;
 
 /**
  * Handles the login POST request. Tries to Authenticate the given user credentials using the auto configured {@link AuthenticationManager}.
@@ -62,6 +62,7 @@ public class RestAuthenticationFilter extends OncePerRequestFilter {
             LoginForm form = objectMapper.readValue(loginFormJson, LoginForm.class);
             UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(form.username, form.password);
             try {
+                log.info("Authenticating user: {}", form.username);
                 Authentication authentication = authenticationManager.authenticate(token);
                 authentication = convertIfNecessary(authentication);
                 SecurityContextHolder.getContext().setAuthentication(authentication);
@@ -89,7 +90,7 @@ public class RestAuthenticationFilter extends OncePerRequestFilter {
 
     private void handleLoginFailure(HttpServletResponse response, AuthenticationException ae) throws IOException {
         errorHandler.respond(response, UNAUTHORIZED, SERVER_LOGIN_FAILED_ERROR);
-        log.warn("Login failure", ae.getMessage());
+        log.warn("Authentication failure: {}", ae.getMessage());
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
