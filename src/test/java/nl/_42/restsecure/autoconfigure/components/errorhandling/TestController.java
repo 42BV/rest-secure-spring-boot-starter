@@ -15,6 +15,6 @@ public class TestController {
      * Empty REST endpoint for @PreAuthorize testing.
      */
     public void restrictedMethod() {
-        
+        // Intentionally left without implementation because the test will never reach this.
     }
 }

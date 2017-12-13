@@ -19,7 +19,6 @@ import nl._42.restsecure.autoconfigure.shared.test.config.RestrictedEndpointsCon
 import org.junit.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.web.servlet.RequestBuilder;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 public class AccessDeniedHandlerTest extends AbstractApplicationContextTest {
 
@@ -61,8 +60,7 @@ public class AccessDeniedHandlerTest extends AbstractApplicationContextTest {
             .perform(new RequestBuilder() {
                 @Override
                 public MockHttpServletRequest buildRequest(ServletContext servletContext) {
-                    MockHttpServletRequest request = MockMvcRequestBuilders
-                            .get("/authentication/current")
+                    MockHttpServletRequest request = get("/authentication/current")
                             .buildRequest(servletContext);
                     request.setRequestedSessionId("sessionid");
                     request.setRequestedSessionIdValid(true);

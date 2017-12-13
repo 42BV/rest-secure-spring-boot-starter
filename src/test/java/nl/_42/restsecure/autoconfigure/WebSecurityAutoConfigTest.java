@@ -7,8 +7,8 @@ import static org.springframework.test.util.ReflectionTestUtils.getField;
 
 import nl._42.restsecure.autoconfigure.components.errorhandling.WebMvcErrorHandler;
 import nl._42.restsecure.autoconfigure.shared.test.AbstractApplicationContextTest;
-import nl._42.restsecure.autoconfigure.shared.test.config.NullCrowdAuthenticationProviderConfig;
 import nl._42.restsecure.autoconfigure.shared.test.config.ActiveUserConfig;
+import nl._42.restsecure.autoconfigure.shared.test.config.NullCrowdAuthenticationProviderConfig;
 import nl._42.restsecure.autoconfigure.userdetails.AbstractUserDetailsService;
 import nl._42.restsecure.autoconfigure.userdetails.RegisteredUser;
 
@@ -29,13 +29,13 @@ public class WebSecurityAutoConfigTest extends AbstractApplicationContextTest {
     public void autoConfig_shouldConfigureSecurity_withDefaults() {
         loadApplicationContext(ActiveUserConfig.class);
         PasswordEncoder passwordEncoder = context.getBean(PasswordEncoder.class);
-        assertEquals(BCryptPasswordEncoder.class, passwordEncoder.getClass());
+        assertEquals("PasswordEncoder should be a BCryptPasswordEncoder.", BCryptPasswordEncoder.class, passwordEncoder.getClass());
         WebMvcErrorHandler errorHandler = context.getBean(WebMvcErrorHandler.class);
-        assertNotNull(errorHandler);        
+        assertNotNull("WebMvcErrorHandler should be part of the applicationContext.", errorHandler);        
         AbstractUserDetailsService<RegisteredUser> userDetailsService = context.getBean(AbstractUserDetailsService.class);
         UserDetails user = userDetailsService.loadUserByUsername("jaja");
-        assertTrue(user.isAccountNonExpired());
-        assertTrue(user.isAccountNonLocked());
+        assertTrue("User returned by userDetailsService should have account non expired.", user.isAccountNonExpired());
+        assertTrue("User returned by userDetailsService should have account non locked.", user.isAccountNonLocked());
     }
     
     @Test
@@ -45,8 +45,8 @@ public class WebSecurityAutoConfigTest extends AbstractApplicationContextTest {
         AuthenticationManager delegatingManager = context.getBean(AuthenticationManager.class);
         AuthenticationManagerBuilder authManagerBuilder = (AuthenticationManagerBuilder) getField(delegatingManager, "delegateBuilder");
         ProviderManager authManager = (ProviderManager) getField(authManagerBuilder.getObject(), "parent");
-        assertEquals(1, authManager.getProviders().size());
-        assertEquals(RemoteCrowdAuthenticationProvider.class, authManager.getProviders().get(0).getClass());        
+        assertEquals("There should be one AuthenticationProvider configured.", 1, authManager.getProviders().size());
+        assertEquals("The AuthenticationProvider should be a RemoteCrowdAuthenticationProvider.", RemoteCrowdAuthenticationProvider.class, authManager.getProviders().get(0).getClass());        
     }
     
     @Test(expected = BeanCreationException.class)
