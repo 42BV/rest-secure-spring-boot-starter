@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import nl._42.restsecure.autoconfigure.shared.test.AbstractApplicationContextTest;
 import nl._42.restsecure.autoconfigure.shared.test.config.AuthenticationResultProviderConfig;
+import nl._42.restsecure.autoconfigure.shared.test.config.CustomWebSecurityAndHttpSecurityConfig;
 import nl._42.restsecure.autoconfigure.shared.test.config.InMemoryCrowdConfig;
 import nl._42.restsecure.autoconfigure.shared.test.config.MockedCrowdAuthenticationProviderConfig;
 import nl._42.restsecure.autoconfigure.shared.test.config.NoopPasswordEncoderConfig;
@@ -28,6 +29,15 @@ public class AuthenticationControllerTest extends AbstractApplicationContextTest
     @Test
     public void currentUser_shouldSucceed_whenLoggedIn() throws Exception {
         getWebClient(UserDetailsServiceConfig.class)
+            .perform(get("/authentication/current"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("authorities[0]").value("ROLE_ADMIN"))
+            .andExpect(jsonPath("username").value("username"));
+    }
+
+    @Test
+    public void currentUser_shouldSucceed_whenNotLoggedIn_andCustomWebSecurity() throws Exception {
+        getWebClient(UserDetailsServiceConfig.class, CustomWebSecurityAndHttpSecurityConfig.class)
             .perform(get("/authentication/current"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("authorities[0]").value("ROLE_ADMIN"))
