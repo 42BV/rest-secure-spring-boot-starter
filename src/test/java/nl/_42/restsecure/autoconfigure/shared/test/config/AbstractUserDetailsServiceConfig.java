@@ -23,7 +23,7 @@ public abstract class AbstractUserDetailsServiceConfig {
 
     protected abstract RegisteredUser foundUser();
 
-    public static class RegisteredUserBuilder {
+    public final static class RegisteredUserBuilder {
 
         boolean accountExpired;
         boolean accountLocked;

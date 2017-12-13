@@ -10,7 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties("rest-secure")
-public class RestSecureProperties {
+public final class RestSecureProperties {
 
     /**
      * Mappings from crowd group name to application role.

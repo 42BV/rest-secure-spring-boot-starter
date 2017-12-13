@@ -173,9 +173,7 @@ public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
             .logout()
             .logoutRequestMatcher(new AntPathRequestMatcher("/authentication", DELETE.name()))
             .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler())
-            .and()
-            .csrf()
-            .csrfTokenRepository(csrfTokenRepository());
+            .and().csrf().csrfTokenRepository(csrfTokenRepository());
         customize(http);
     }
 
@@ -208,7 +206,7 @@ public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
     private RestAccessDeniedHandler accessDeniedHandler() {
         return new RestAccessDeniedHandler(errorHandler);
     }
-   
+
     private CsrfTokenRepository csrfTokenRepository() {
         CookieCsrfTokenRepository repository = withHttpOnlyFalse();
         repository.setCookiePath("/");
