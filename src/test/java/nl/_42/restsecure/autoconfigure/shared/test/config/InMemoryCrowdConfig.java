@@ -2,8 +2,8 @@ package nl._42.restsecure.autoconfigure.shared.test.config;
 
 import static com.google.common.collect.Sets.newHashSet;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.annotation.PostConstruct;
 
@@ -19,7 +19,7 @@ public class InMemoryCrowdConfig {
     @Bean
     public AbstractUserDetailsService<CrowdUser> userDetailsService() {
         return new AbstractUserDetailsService<CrowdUser>() {
-            private Map<String, CrowdUser> users = new HashMap<>();
+            private Map<String, CrowdUser> users = new ConcurrentHashMap<>();
             @PostConstruct
             private void initUserStore() {
                 users.put("janAdmin", new CrowdUser("janAdmin", "secret", newHashSet("ROLE_ADMIN")));

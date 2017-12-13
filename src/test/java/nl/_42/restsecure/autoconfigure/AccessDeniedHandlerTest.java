@@ -40,8 +40,7 @@ public class AccessDeniedHandlerTest extends AbstractApplicationContextTest {
             .perform(new RequestBuilder() {
                 @Override
                 public MockHttpServletRequest buildRequest(ServletContext servletContext) {
-                    MockHttpServletRequest request = MockMvcRequestBuilders
-                            .get("/authentication/current")
+                    MockHttpServletRequest request = get("/authentication/current")
                             .buildRequest(servletContext);
                     request.setRequestedSessionId("sessionid");
                     request.setRequestedSessionIdValid(false);

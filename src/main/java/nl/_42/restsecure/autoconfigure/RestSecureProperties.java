@@ -2,10 +2,10 @@ package nl._42.restsecure.autoconfigure;
 
 import static java.util.stream.Collectors.toMap;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
@@ -15,7 +15,7 @@ public class RestSecureProperties {
     /**
      * Mappings from crowd group name to application role.
      */
-    private Map<String, String> authorityToCrowdGroupMappings = new HashMap<>();
+    private Map<String, String> authorityToCrowdGroupMappings = new ConcurrentHashMap<>();
 
     public Set<Entry<String, String>> getCrowdGroupToAuthorityMappings() {
         return authorityToCrowdGroupMappings.entrySet()

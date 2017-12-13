@@ -13,7 +13,7 @@ import org.springframework.security.config.annotation.web.builders.WebSecurity;
 @Configuration
 public class CustomWebSecurityAndHttpSecurityConfig {
 
-    private Logger log = LoggerFactory.getLogger(getClass());
+    final Logger log = LoggerFactory.getLogger(getClass());
     
     @Bean
     public WebSecurityCustomizer WebSecurityCustomizer() {

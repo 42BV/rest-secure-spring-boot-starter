@@ -25,9 +25,9 @@ public abstract class AbstractUserDetailsServiceConfig {
 
     public static class RegisteredUserBuilder {
 
-        private boolean accountExpired = false;
-        private boolean accountLocked = false;
-        private boolean credentialsExpired = false;
+        boolean accountExpired;
+        boolean accountLocked;
+        boolean credentialsExpired;
 
         private RegisteredUserBuilder() {
         }
