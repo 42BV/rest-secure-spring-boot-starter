@@ -20,7 +20,6 @@ import org.junit.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.web.servlet.RequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 public class AccessDeniedHandlerTest extends AbstractApplicationContextTest {
 
@@ -29,7 +28,7 @@ public class AccessDeniedHandlerTest extends AbstractApplicationContextTest {
         getWebClient(RestrictedEndpointsConfig.class)
             .perform(get("/test/forbidden"))
             .andExpect(status().isForbidden())
-            .andExpect(MockMvcResultMatchers.jsonPath("errorCode").value(SERVER_ACCESS_DENIED_ERROR));
+            .andExpect(jsonPath("errorCode").value(SERVER_ACCESS_DENIED_ERROR));
     }
     
     @Test
