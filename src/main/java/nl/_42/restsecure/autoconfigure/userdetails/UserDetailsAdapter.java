@@ -15,7 +15,7 @@ import org.springframework.security.core.userdetails.UserDetails;
  *
  * @param <T> the type of the custom user.
  */
-public class UserDetailsAdapter<T extends RegisteredUser> implements UserDetails {
+public final class UserDetailsAdapter<T extends RegisteredUser> implements UserDetails {
     
     private final T user;
     
