@@ -22,7 +22,7 @@ import org.springframework.mock.web.MockServletContext;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
 
-public class AbstractApplicationContextTest {
+public abstract class AbstractApplicationContextTest {
 
     protected AnnotationConfigWebApplicationContext context;
     

@@ -36,7 +36,7 @@ class RestAccessDeniedHandler implements AccessDeniedHandler, AuthenticationEntr
      * {@inheritDoc}
      */
     @Override
-    public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException ex) throws IOException, ServletException {
+    public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException exception) throws IOException, ServletException {
         errorHandler.respond(response, FORBIDDEN, SERVER_ACCESS_DENIED_ERROR);
     }
 
@@ -45,7 +45,7 @@ class RestAccessDeniedHandler implements AccessDeniedHandler, AuthenticationEntr
      * {@inheritDoc}
      */
     @Override
-    public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException ex) throws IOException, ServletException {
+    public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws IOException, ServletException {
         String errorCode = SERVER_AUTHENTICATE_ERROR;
         if (request.getRequestedSessionId() != null
                 && !request.isRequestedSessionIdValid()) {

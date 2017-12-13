@@ -88,9 +88,9 @@ public class RestAuthenticationFilter extends OncePerRequestFilter {
         return authentication;
     }
 
-    private void handleLoginFailure(HttpServletResponse response, AuthenticationException ae) throws IOException {
+    private void handleLoginFailure(HttpServletResponse response, AuthenticationException exception) throws IOException {
         errorHandler.respond(response, UNAUTHORIZED, SERVER_LOGIN_FAILED_ERROR);
-        log.warn("Authentication failure: {}", ae.getMessage());
+        log.warn("Authentication failure: {}", exception.getMessage());
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
