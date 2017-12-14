@@ -1,4 +1,4 @@
-package nl._42.restsecure.autoconfigure.components.errorhandling;
+package nl._42.restsecure.autoconfigure.errorhandling;
 
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.UNAUTHORIZED;

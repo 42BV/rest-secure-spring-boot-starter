@@ -1,6 +1,6 @@
-package nl._42.restsecure.autoconfigure.components.errorhandling;
+package nl._42.restsecure.autoconfigure.errorhandling;
 
-import static nl._42.restsecure.autoconfigure.components.errorhandling.RestAccessDeniedHandler.SERVER_ACCESS_DENIED_ERROR;
+import static nl._42.restsecure.autoconfigure.errorhandling.RestAccessDeniedHandler.SERVER_ACCESS_DENIED_ERROR;
 
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;

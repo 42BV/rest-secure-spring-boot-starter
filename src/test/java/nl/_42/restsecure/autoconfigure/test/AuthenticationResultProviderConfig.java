@@ -2,8 +2,8 @@ package nl._42.restsecure.autoconfigure.test;
 
 import java.util.Set;
 
-import nl._42.restsecure.autoconfigure.components.AuthenticationResult;
-import nl._42.restsecure.autoconfigure.components.AuthenticationResultProvider;
+import nl._42.restsecure.autoconfigure.authentication.AuthenticationResult;
+import nl._42.restsecure.autoconfigure.authentication.AuthenticationResultProvider;
 import nl._42.restsecure.autoconfigure.userdetails.RegisteredUser;
 
 import org.springframework.context.annotation.Bean;

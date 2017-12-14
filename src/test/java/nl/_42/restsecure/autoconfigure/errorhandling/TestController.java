@@ -1,4 +1,4 @@
-package nl._42.restsecure.autoconfigure.components.errorhandling;
+package nl._42.restsecure.autoconfigure.errorhandling;
 
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;

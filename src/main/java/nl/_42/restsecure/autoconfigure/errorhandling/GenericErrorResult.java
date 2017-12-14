@@ -1,4 +1,4 @@
-package nl._42.restsecure.autoconfigure.components.errorhandling;
+package nl._42.restsecure.autoconfigure.errorhandling;
 
 /**
  * Represents the json object that is set as http response body when an exception is thrown.

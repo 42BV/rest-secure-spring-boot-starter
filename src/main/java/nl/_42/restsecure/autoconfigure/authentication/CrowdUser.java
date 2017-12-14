@@ -1,9 +1,11 @@
-package nl._42.restsecure.autoconfigure.userdetails;
+package nl._42.restsecure.autoconfigure.authentication;
 
 import static java.util.Collections.unmodifiableSet;
 import static java.util.stream.Collectors.toSet;
 
 import java.util.Set;
+
+import nl._42.restsecure.autoconfigure.userdetails.RegisteredUser;
 
 import org.springframework.security.core.GrantedAuthority;
 

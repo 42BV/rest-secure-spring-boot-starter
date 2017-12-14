@@ -5,7 +5,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.springframework.test.util.ReflectionTestUtils.getField;
 
-import nl._42.restsecure.autoconfigure.components.errorhandling.WebMvcErrorHandler;
+import nl._42.restsecure.autoconfigure.errorhandling.WebMvcErrorHandler;
 import nl._42.restsecure.autoconfigure.test.ActiveUserConfig;
 import nl._42.restsecure.autoconfigure.test.NullCrowdAuthenticationProviderConfig;
 import nl._42.restsecure.autoconfigure.userdetails.AbstractUserDetailsService;

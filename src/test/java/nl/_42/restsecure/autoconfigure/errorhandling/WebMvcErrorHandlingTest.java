@@ -1,6 +1,6 @@
-package nl._42.restsecure.autoconfigure.components.errorhandling;
+package nl._42.restsecure.autoconfigure.errorhandling;
 
-import static nl._42.restsecure.autoconfigure.components.errorhandling.RestAccessDeniedHandler.SERVER_ACCESS_DENIED_ERROR;
+import static nl._42.restsecure.autoconfigure.errorhandling.RestAccessDeniedHandler.SERVER_ACCESS_DENIED_ERROR;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
