@@ -1,7 +1,7 @@
 package nl._42.restsecure.autoconfigure.test;
 
-import nl._42.restsecure.autoconfigure.customizer.HttpSecurityCustomizer;
-import nl._42.restsecure.autoconfigure.customizer.WebSecurityCustomizer;
+import nl._42.restsecure.autoconfigure.HttpSecurityCustomizer;
+import nl._42.restsecure.autoconfigure.WebSecurityCustomizer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

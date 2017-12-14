@@ -1,6 +1,6 @@
 package nl._42.restsecure.autoconfigure.test;
 
-import nl._42.restsecure.autoconfigure.customizer.RequestAuthorizationCustomizer;
+import nl._42.restsecure.autoconfigure.RequestAuthorizationCustomizer;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

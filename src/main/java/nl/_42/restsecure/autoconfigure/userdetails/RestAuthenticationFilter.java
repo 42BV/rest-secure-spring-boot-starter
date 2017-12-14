@@ -1,4 +1,4 @@
-package nl._42.restsecure.autoconfigure;
+package nl._42.restsecure.autoconfigure.userdetails;
 
 import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.http.HttpStatus.UNAUTHORIZED;
@@ -12,8 +12,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import nl._42.restsecure.autoconfigure.components.errorhandling.GenericErrorHandler;
-import nl._42.restsecure.autoconfigure.userdetails.CrowdUser;
-import nl._42.restsecure.autoconfigure.userdetails.UserDetailsAdapter;
 
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;

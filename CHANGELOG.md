@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Added tests to gain 100% coverage.
 
 ### Changed
-- Package restructuring. Customizers are now found in `nl._42.restsecure.autoconfigure.customizer` package.
+- Package restructuring.
 
 ## [2.2.0] - 2017-12-07
 

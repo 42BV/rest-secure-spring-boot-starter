@@ -12,12 +12,9 @@ import javax.servlet.Filter;
 import nl._42.restsecure.autoconfigure.components.AuthenticationController;
 import nl._42.restsecure.autoconfigure.components.errorhandling.GenericErrorHandler;
 import nl._42.restsecure.autoconfigure.components.errorhandling.RestAccessDeniedHandler;
-import nl._42.restsecure.autoconfigure.customizer.CustomAuthenticationProviders;
-import nl._42.restsecure.autoconfigure.customizer.HttpSecurityCustomizer;
-import nl._42.restsecure.autoconfigure.customizer.RequestAuthorizationCustomizer;
-import nl._42.restsecure.autoconfigure.customizer.WebSecurityCustomizer;
 import nl._42.restsecure.autoconfigure.userdetails.AbstractUserDetailsService;
 import nl._42.restsecure.autoconfigure.userdetails.RegisteredUser;
+import nl._42.restsecure.autoconfigure.userdetails.RestAuthenticationFilter;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

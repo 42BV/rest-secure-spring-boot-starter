@@ -3,8 +3,6 @@ package nl._42.restsecure.autoconfigure;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import nl._42.restsecure.autoconfigure.shared.RestSecureProperties;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

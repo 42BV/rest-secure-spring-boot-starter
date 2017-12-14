@@ -1,4 +1,4 @@
-package nl._42.restsecure.autoconfigure.customizer;
+package nl._42.restsecure.autoconfigure;
 
 import java.util.List;
 
