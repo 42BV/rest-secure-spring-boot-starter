@@ -5,8 +5,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import nl._42.restsecure.autoconfigure.userdetails.RegisteredUser;
-
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
 /**

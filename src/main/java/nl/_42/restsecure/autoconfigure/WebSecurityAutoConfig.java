@@ -9,10 +9,10 @@ import java.util.List;
 
 import javax.servlet.Filter;
 
+import nl._42.restsecure.autoconfigure.authentication.AbstractUserDetailsService;
 import nl._42.restsecure.autoconfigure.authentication.AuthenticationController;
 import nl._42.restsecure.autoconfigure.errorhandling.GenericErrorHandler;
 import nl._42.restsecure.autoconfigure.errorhandling.RestAccessDeniedHandler;
-import nl._42.restsecure.autoconfigure.userdetails.AbstractUserDetailsService;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

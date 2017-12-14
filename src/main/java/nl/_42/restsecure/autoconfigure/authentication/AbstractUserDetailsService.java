@@ -1,4 +1,4 @@
-package nl._42.restsecure.autoconfigure.userdetails;
+package nl._42.restsecure.autoconfigure.authentication;
 
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;

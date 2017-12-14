@@ -12,8 +12,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import nl._42.restsecure.autoconfigure.authentication.CrowdUser;
+import nl._42.restsecure.autoconfigure.authentication.UserDetailsAdapter;
 import nl._42.restsecure.autoconfigure.errorhandling.GenericErrorHandler;
-import nl._42.restsecure.autoconfigure.userdetails.UserDetailsAdapter;
 
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;

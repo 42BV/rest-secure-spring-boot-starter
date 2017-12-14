@@ -5,8 +5,6 @@ import static java.util.Collections.singletonMap;
 import java.util.Map;
 import java.util.Set;
 
-import nl._42.restsecure.autoconfigure.userdetails.RegisteredUser;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;

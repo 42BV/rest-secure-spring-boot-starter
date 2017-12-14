@@ -4,7 +4,7 @@ import java.util.Set;
 
 import nl._42.restsecure.autoconfigure.authentication.AuthenticationResult;
 import nl._42.restsecure.autoconfigure.authentication.AuthenticationResultProvider;
-import nl._42.restsecure.autoconfigure.userdetails.RegisteredUser;
+import nl._42.restsecure.autoconfigure.authentication.RegisteredUser;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
