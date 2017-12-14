@@ -10,8 +10,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.log;
 import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppContextSetup;
 
-import nl._42.restsecure.autoconfigure.CrowdAuthenticationAutoConfig;
-import nl._42.restsecure.autoconfigure.WebSecurityAutoConfig;
 import nl._42.restsecure.autoconfigure.userdetails.RegisteredUser;
 import nl._42.restsecure.autoconfigure.userdetails.UserDetailsAdapter;
 
