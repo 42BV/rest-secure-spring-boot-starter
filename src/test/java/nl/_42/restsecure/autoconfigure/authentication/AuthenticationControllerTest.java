@@ -1,6 +1,6 @@
 package nl._42.restsecure.autoconfigure.authentication;
 
-import static nl._42.restsecure.autoconfigure.authentication.RestAuthenticationFilter.SERVER_LOGIN_FAILED_ERROR;
+import static nl._42.restsecure.autoconfigure.RestAuthenticationFilter.SERVER_LOGIN_FAILED_ERROR;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.anonymous;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;

@@ -10,7 +10,6 @@ import java.util.List;
 import javax.servlet.Filter;
 
 import nl._42.restsecure.autoconfigure.authentication.AuthenticationController;
-import nl._42.restsecure.autoconfigure.authentication.RestAuthenticationFilter;
 import nl._42.restsecure.autoconfigure.errorhandling.GenericErrorHandler;
 import nl._42.restsecure.autoconfigure.errorhandling.RestAccessDeniedHandler;
 import nl._42.restsecure.autoconfigure.userdetails.AbstractUserDetailsService;
