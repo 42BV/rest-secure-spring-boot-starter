@@ -1,4 +1,4 @@
-package nl._42.restsecure.autoconfigure.shared.test.config;
+package nl._42.restsecure.autoconfigure.test;
 
 import static com.google.common.collect.Sets.newHashSet;
 
@@ -8,7 +8,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.annotation.PostConstruct;
 
 import nl._42.restsecure.autoconfigure.userdetails.AbstractUserDetailsService;
-import nl._42.restsecure.autoconfigure.userdetails.crowd.CrowdUser;
+import nl._42.restsecure.autoconfigure.userdetails.CrowdUser;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

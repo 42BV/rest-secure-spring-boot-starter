@@ -6,9 +6,8 @@ import static org.junit.Assert.assertTrue;
 import static org.springframework.test.util.ReflectionTestUtils.getField;
 
 import nl._42.restsecure.autoconfigure.components.errorhandling.WebMvcErrorHandler;
-import nl._42.restsecure.autoconfigure.shared.test.AbstractApplicationContextTest;
-import nl._42.restsecure.autoconfigure.shared.test.config.ActiveUserConfig;
-import nl._42.restsecure.autoconfigure.shared.test.config.NullCrowdAuthenticationProviderConfig;
+import nl._42.restsecure.autoconfigure.test.ActiveUserConfig;
+import nl._42.restsecure.autoconfigure.test.NullCrowdAuthenticationProviderConfig;
 import nl._42.restsecure.autoconfigure.userdetails.AbstractUserDetailsService;
 import nl._42.restsecure.autoconfigure.userdetails.RegisteredUser;
 

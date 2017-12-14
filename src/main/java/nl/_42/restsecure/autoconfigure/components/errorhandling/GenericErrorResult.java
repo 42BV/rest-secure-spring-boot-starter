@@ -7,8 +7,8 @@ public class GenericErrorResult {
 
     private String errorCode;
 
-    public GenericErrorResult(String errorCode) {
-        this.errorCode = errorCode;
+    public GenericErrorResult(String code) {
+        this.errorCode = code;
     }
 
     public String getErrorCode() {

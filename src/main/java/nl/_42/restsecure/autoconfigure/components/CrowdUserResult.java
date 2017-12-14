@@ -1,8 +1,8 @@
-package nl._42.restsecure.autoconfigure.userdetails.crowd;
+package nl._42.restsecure.autoconfigure.components;
 
 import java.util.Set;
 
-import nl._42.restsecure.autoconfigure.components.AuthenticationResult;
+import nl._42.restsecure.autoconfigure.userdetails.CrowdUser;
 
 public class CrowdUserResult implements AuthenticationResult {
 

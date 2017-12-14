@@ -1,4 +1,4 @@
-package nl._42.restsecure.autoconfigure.shared.test.config;
+package nl._42.restsecure.autoconfigure.test;
 
 import java.util.Set;
 
@@ -23,7 +23,7 @@ public abstract class AbstractUserDetailsServiceConfig {
 
     protected abstract RegisteredUser foundUser();
 
-    public final static class RegisteredUserBuilder {
+    public static final class RegisteredUserBuilder {
 
         boolean accountExpired;
         boolean accountLocked;

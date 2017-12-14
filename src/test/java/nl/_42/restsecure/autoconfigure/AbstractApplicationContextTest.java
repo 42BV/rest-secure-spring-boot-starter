@@ -1,6 +1,6 @@
-package nl._42.restsecure.autoconfigure.shared.test;
+package nl._42.restsecure.autoconfigure;
 
-import static nl._42.restsecure.autoconfigure.shared.test.config.AbstractUserDetailsServiceConfig.RegisteredUserBuilder.user;
+import static nl._42.restsecure.autoconfigure.test.AbstractUserDetailsServiceConfig.RegisteredUserBuilder.user;
 import static org.springframework.boot.test.util.EnvironmentTestUtils.addEnvironment;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
@@ -10,6 +10,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.log;
 import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppContextSetup;
 
+import nl._42.restsecure.autoconfigure.CrowdAuthenticationAutoConfig;
 import nl._42.restsecure.autoconfigure.WebSecurityAutoConfig;
 import nl._42.restsecure.autoconfigure.userdetails.RegisteredUser;
 import nl._42.restsecure.autoconfigure.userdetails.UserDetailsAdapter;
@@ -68,6 +69,7 @@ public abstract class AbstractApplicationContextTest {
     private AnnotationConfigWebApplicationContext load(AnnotationConfigWebApplicationContext applicationContext) {
         applicationContext.register(
                 WebMvcAutoConfiguration.class,
+                CrowdAuthenticationAutoConfig.class,
                 JacksonAutoConfiguration.class,
                 HttpMessageConvertersAutoConfiguration.class,
                 WebSecurityAutoConfig.class);

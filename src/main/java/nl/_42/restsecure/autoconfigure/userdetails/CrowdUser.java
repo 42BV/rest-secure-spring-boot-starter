@@ -1,11 +1,9 @@
-package nl._42.restsecure.autoconfigure.userdetails.crowd;
+package nl._42.restsecure.autoconfigure.userdetails;
 
 import static java.util.Collections.unmodifiableSet;
 import static java.util.stream.Collectors.toSet;
 
 import java.util.Set;
-
-import nl._42.restsecure.autoconfigure.userdetails.RegisteredUser;
 
 import org.springframework.security.core.GrantedAuthority;
 
@@ -21,10 +19,10 @@ public class CrowdUser implements RegisteredUser {
     private String firstname;
     private String lastname;
 
-    public CrowdUser(String username, String password, Set<String> authorities) {
-        this.username = username;
-        this.password = password;
-        this.authorities = authorities;
+    public CrowdUser(String name, String credentials, Set<String> auths) {
+        this.username = name;
+        this.password = credentials;
+        this.authorities = auths;
     }
 
     public CrowdUser(CrowdUserDetails userDetails) {

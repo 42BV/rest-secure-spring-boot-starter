@@ -7,16 +7,16 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import nl._42.restsecure.autoconfigure.shared.test.AbstractApplicationContextTest;
-import nl._42.restsecure.autoconfigure.shared.test.config.AccountExpiredUserConfig;
-import nl._42.restsecure.autoconfigure.shared.test.config.AccountLockedUserConfig;
-import nl._42.restsecure.autoconfigure.shared.test.config.ActiveUserConfig;
-import nl._42.restsecure.autoconfigure.shared.test.config.AuthenticationResultProviderConfig;
-import nl._42.restsecure.autoconfigure.shared.test.config.CredentialsExpiredUserConfig;
-import nl._42.restsecure.autoconfigure.shared.test.config.CustomWebSecurityAndHttpSecurityConfig;
-import nl._42.restsecure.autoconfigure.shared.test.config.InMemoryCrowdConfig;
-import nl._42.restsecure.autoconfigure.shared.test.config.MockedCrowdAuthenticationProviderConfig;
-import nl._42.restsecure.autoconfigure.shared.test.config.NoopPasswordEncoderConfig;
+import nl._42.restsecure.autoconfigure.AbstractApplicationContextTest;
+import nl._42.restsecure.autoconfigure.test.AccountExpiredUserConfig;
+import nl._42.restsecure.autoconfigure.test.AccountLockedUserConfig;
+import nl._42.restsecure.autoconfigure.test.ActiveUserConfig;
+import nl._42.restsecure.autoconfigure.test.AuthenticationResultProviderConfig;
+import nl._42.restsecure.autoconfigure.test.CredentialsExpiredUserConfig;
+import nl._42.restsecure.autoconfigure.test.CustomWebSecurityAndHttpSecurityConfig;
+import nl._42.restsecure.autoconfigure.test.InMemoryCrowdConfig;
+import nl._42.restsecure.autoconfigure.test.MockedCrowdAuthenticationProviderConfig;
+import nl._42.restsecure.autoconfigure.test.NoopPasswordEncoderConfig;
 
 import org.junit.Test;
 

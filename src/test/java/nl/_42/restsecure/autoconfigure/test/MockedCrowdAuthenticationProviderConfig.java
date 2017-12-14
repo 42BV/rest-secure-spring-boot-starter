@@ -1,10 +1,10 @@
-package nl._42.restsecure.autoconfigure.shared.test.config;
+package nl._42.restsecure.autoconfigure.test;
 
 import static java.util.Arrays.asList;
 
 import java.util.List;
 
-import nl._42.restsecure.autoconfigure.CustomAuthenticationProviders;
+import nl._42.restsecure.autoconfigure.customizer.CustomAuthenticationProviders;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

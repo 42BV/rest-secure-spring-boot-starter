@@ -4,10 +4,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [2.3.0] - 2017-12-14
+
+### Fixed
+- The `RestAccessDeniedHandler` no longer checks for a `CsrfTokenNotFoundException` to tell that the session is invalid. This because of no longer using the 'Synchronizer Token Pattern' for CSRF protection. Now the request's validity is checked upon a `AuthenticationException`.
+- Code style violations fixed.
+- Added tests to gain 100% coverage.
+
+### Changed
+- Package restructuring. Customizers are now found in `nl._42.restsecure.autoconfigure.customizer` package.
+
 ## [2.2.0] - 2017-12-07
 
 ### Changed
 - The custom XsrfHeaderFilter is removed in favor of the Spring Security CookieCsrfTokenRepository.
+   - 'Double Cookie Submit pattern' now used instead of 'Synchronizer Token Pattern'.
 - Added tests for the `/authentication` endpoints. 
 
 ## [2.1.0] - 2017-11-29

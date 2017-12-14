@@ -1,4 +1,4 @@
-package nl._42.restsecure.autoconfigure;
+package nl._42.restsecure.autoconfigure.shared;
 
 import static java.util.stream.Collectors.toMap;
 

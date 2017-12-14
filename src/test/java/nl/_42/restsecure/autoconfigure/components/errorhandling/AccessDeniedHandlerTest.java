@@ -1,8 +1,8 @@
-package nl._42.restsecure.autoconfigure;
+package nl._42.restsecure.autoconfigure.components.errorhandling;
 
-import static nl._42.restsecure.autoconfigure.RestAccessDeniedHandler.SERVER_ACCESS_DENIED_ERROR;
-import static nl._42.restsecure.autoconfigure.RestAccessDeniedHandler.SERVER_AUTHENTICATE_ERROR;
-import static nl._42.restsecure.autoconfigure.RestAccessDeniedHandler.SERVER_SESSION_INVALID_ERROR;
+import static nl._42.restsecure.autoconfigure.components.errorhandling.RestAccessDeniedHandler.SERVER_ACCESS_DENIED_ERROR;
+import static nl._42.restsecure.autoconfigure.components.errorhandling.RestAccessDeniedHandler.SERVER_AUTHENTICATE_ERROR;
+import static nl._42.restsecure.autoconfigure.components.errorhandling.RestAccessDeniedHandler.SERVER_SESSION_INVALID_ERROR;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.log;
@@ -12,9 +12,9 @@ import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppC
 
 import javax.servlet.ServletContext;
 
-import nl._42.restsecure.autoconfigure.shared.test.AbstractApplicationContextTest;
-import nl._42.restsecure.autoconfigure.shared.test.config.ActiveUserConfig;
-import nl._42.restsecure.autoconfigure.shared.test.config.RestrictedEndpointsConfig;
+import nl._42.restsecure.autoconfigure.AbstractApplicationContextTest;
+import nl._42.restsecure.autoconfigure.test.ActiveUserConfig;
+import nl._42.restsecure.autoconfigure.test.RestrictedEndpointsConfig;
 
 import org.junit.Test;
 import org.springframework.mock.web.MockHttpServletRequest;

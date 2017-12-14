@@ -5,9 +5,8 @@ import static java.util.Collections.singletonMap;
 import java.util.Map;
 import java.util.Set;
 
+import nl._42.restsecure.autoconfigure.userdetails.CrowdUser;
 import nl._42.restsecure.autoconfigure.userdetails.RegisteredUser;
-import nl._42.restsecure.autoconfigure.userdetails.crowd.CrowdUser;
-import nl._42.restsecure.autoconfigure.userdetails.crowd.CrowdUserResult;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -48,22 +47,26 @@ public class AuthenticationController {
     }
     
     private AuthenticationResult transform(RegisteredUser user) {
+        AuthenticationResult authentication;
         if (authenticationResultProvider != null) {
-            return authenticationResultProvider.toAuthenticationResult(user);
+            authentication = authenticationResultProvider.toAuthenticationResult(user);
+        } else if (user instanceof CrowdUser) {
+            authentication = new CrowdUserResult((CrowdUser) user);
+        } else {
+            authentication = new AuthenticationResult() {
+                @Override
+                @JsonProperty
+                public String getUsername() {
+                    return user.getUsername();
+                }
+
+                @Override
+                @JsonProperty
+                public Set<String> getAuthorities() {
+                    return user.getAuthorities();
+                }
+            };
         }
-        if (user instanceof CrowdUser) {
-            return new CrowdUserResult((CrowdUser) user);
-        }
-        return new AuthenticationResult() {
-            @Override
-            @JsonProperty
-            public String getUsername() {
-                return user.getUsername();
-            }
-            @Override
-            @JsonProperty
-            public Set<String> getAuthorities() {
-                return user.getAuthorities();
-            }};
+        return authentication;
     }
 }

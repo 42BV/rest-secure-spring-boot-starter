@@ -19,8 +19,8 @@ public final class UserDetailsAdapter<T extends RegisteredUser> implements UserD
     
     private final T user;
     
-    public UserDetailsAdapter(T user) {
-        this.user = user;
+    public UserDetailsAdapter(T registeredUser) {
+        this.user = registeredUser;
     }
 
     @Override

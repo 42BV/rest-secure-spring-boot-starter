@@ -1,4 +1,4 @@
-package nl._42.restsecure.autoconfigure.shared.test.config;
+package nl._42.restsecure.autoconfigure.test;
 
 import java.util.Set;
 

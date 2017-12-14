@@ -1,4 +1,4 @@
-package nl._42.restsecure.autoconfigure;
+package nl._42.restsecure.autoconfigure.components.errorhandling;
 
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.UNAUTHORIZED;
@@ -9,17 +9,18 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import nl._42.restsecure.autoconfigure.components.errorhandling.GenericErrorHandler;
-
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.access.AccessDeniedHandler;
+import org.springframework.stereotype.Component;
 
 /**
  * Handles all authentication- and authorization exceptions that can occur in the http web environment. 
  */
-class RestAccessDeniedHandler implements AccessDeniedHandler, AuthenticationEntryPoint {
+@Component
+public class RestAccessDeniedHandler implements AccessDeniedHandler, AuthenticationEntryPoint {
 
     public static final String SERVER_AUTHENTICATE_ERROR = "SERVER.AUTHENTICATE_ERROR";
     public static final String SERVER_ACCESS_DENIED_ERROR = "SERVER.ACCESS_DENIED_ERROR";
@@ -27,8 +28,9 @@ class RestAccessDeniedHandler implements AccessDeniedHandler, AuthenticationEntr
     
     private final GenericErrorHandler errorHandler;
 
-    RestAccessDeniedHandler(GenericErrorHandler errorHandler) {
-        this.errorHandler = errorHandler;
+    @Autowired
+    public RestAccessDeniedHandler(GenericErrorHandler handler) {
+        this.errorHandler = handler;
     }
 
     /**
@@ -41,7 +43,7 @@ class RestAccessDeniedHandler implements AccessDeniedHandler, AuthenticationEntr
     }
 
     /**
-     * Handles authentication exception when trying to reach a restricted URL
+     * Handles authentication exception when trying to reach a restricted URL.
      * {@inheritDoc}
      */
     @Override

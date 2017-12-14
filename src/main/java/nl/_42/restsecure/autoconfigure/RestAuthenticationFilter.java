@@ -1,5 +1,6 @@
 package nl._42.restsecure.autoconfigure;
 
+import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 
 import java.io.IOException;
@@ -11,8 +12,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import nl._42.restsecure.autoconfigure.components.errorhandling.GenericErrorHandler;
+import nl._42.restsecure.autoconfigure.userdetails.CrowdUser;
 import nl._42.restsecure.autoconfigure.userdetails.UserDetailsAdapter;
-import nl._42.restsecure.autoconfigure.userdetails.crowd.CrowdUser;
 
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
@@ -33,7 +34,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * Handles the login POST request. Tries to Authenticate the given user credentials using the auto configured {@link AuthenticationManager}.
  * Expects the request body to contain json like:
  * <code>{ username: 'user@email.com', password: 'secret' }</code> 
- * 
  * After a successful login, sets the read json as request attribute. This to enable subsequent {@link Filter}'s to obtain this information.
  */
 public class RestAuthenticationFilter extends OncePerRequestFilter {
@@ -44,20 +44,20 @@ public class RestAuthenticationFilter extends OncePerRequestFilter {
     private final Logger log = LoggerFactory.getLogger(RestAuthenticationFilter.class);
     
     private final GenericErrorHandler errorHandler;
-    private final AntPathRequestMatcher matcher;
+    private final AntPathRequestMatcher requestMatcher;
     private final AuthenticationManager authenticationManager;
     private final ObjectMapper objectMapper;
 
-    RestAuthenticationFilter(GenericErrorHandler errorHandler, AntPathRequestMatcher matcher, AuthenticationManager authenticationManager) {
-        this.errorHandler = errorHandler;
-        this.matcher = matcher;
-        this.authenticationManager = authenticationManager;
+    public RestAuthenticationFilter(GenericErrorHandler handler, AuthenticationManager manager) {
+        this.errorHandler = handler;
+        this.requestMatcher = new AntPathRequestMatcher("/authentication", POST.name());
+        this.authenticationManager = manager;
         this.objectMapper = new ObjectMapper();
     }
 
     @Override
     public void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
-        if (matcher.matches(request)) {
+        if (requestMatcher.matches(request)) {
             String loginFormJson = IOUtils.toString(request.getReader());
             LoginForm form = objectMapper.readValue(loginFormJson, LoginForm.class);
             UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(form.username, form.password);
