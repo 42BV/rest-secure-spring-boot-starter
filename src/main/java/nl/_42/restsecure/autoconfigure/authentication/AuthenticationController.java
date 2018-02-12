@@ -38,11 +38,6 @@ public class AuthenticationController {
         return transform(user);
     }
 
-    @GetMapping("/handshake")
-    Map<String, String> handshake(CsrfToken csrfToken) {
-        return singletonMap("csrfToken", csrfToken.getToken());
-    }
-    
     private AuthenticationResult transform(RegisteredUser user) {
         AuthenticationResult authentication;
         if (authenticationResultProvider != null) {

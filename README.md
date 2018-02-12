@@ -16,8 +16,8 @@ Spring boot autoconfig for spring security in a REST environment
 - Spring Method Security is enabled: You can make use of `@PreAuthorize` and `@PostAuthorize`.
 - Customizable authentication endpoints provided:
     * POST `/authentication` - to be able to login clients should provide a json request body like `{ username: 'user@email.com', password: 'secret'}`.
-    * GET `/authentication/handshake` - to obtain the current csrf token
     * GET `/authentication/current` - to obtain the current logged in user
+- CSRF protection by the [double submit cookie](https://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF)_Prevention_Cheat_Sheet#Double_Submit_Cookie) pattern. Implemented by using the [CsrfTokenRepository](https://docs.spring.io/spring-security/site/docs/current/reference/html/csrf.html#csrf-cookie).
 - The @CurrentUser annotation may be used to annotate a controller method argument to inject the current custom user.
 - This autoconfiguration does not make assumptions of how you implement the "authorities" of a User. Spring Security can interpret your authorities by looking at a prefix; if you prefix an authority with "ROLE_", the framework provides a specific role-checking-api. But you can always use the more generic authority-checking-api.
     * For instance if you want to make use of "roles" and the Spring Security "hasRole(..)"-api methods, you must prefix your roles with the default "ROLE_".
@@ -252,20 +252,13 @@ public RequestAuthorizationCustomizer requestAuthorizationCustomizer() {
 ```
 
 3. Customizing the authentication endpoints:
-- The 3 default authentication endpoints will return the following json by default:
+- The 2 authentication endpoints will return the following json by default:
    * POST /authentication and GET /authentication/current:
    
 ```
 {
     username: 'peter@email.com', 
     authorities: ['ROLE_USER']
-}
-```
-   * GET /authentication/handshake
-   
-```
-{
-    csrfToken: 'KbyUmhTLMpYj7CD2di7JKP1P3qmLlkPt'
 }
 ```
 - The json returned for /authentication and /authentication/current can be customized by implementing the `AuthenticationResultProvider<T>` and adding it as `Bean` to the Spring `ApplicationContext`.

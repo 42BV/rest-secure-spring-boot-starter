@@ -131,12 +131,4 @@ public class AuthenticationControllerTest extends AbstractApplicationContextTest
             .andExpect(jsonPath("authorities[0]").value("ROLE_USER"))
             .andExpect(jsonPath("username").value("crowdUser"));
     }
-
-    @Test
-    public void handshake_shouldReturnCsrfToken() throws Exception {
-        getWebClient(ActiveUserConfig.class)
-            .perform(get("/authentication/handshake"))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("csrfToken").exists());
-    }
 }
