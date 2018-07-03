@@ -26,8 +26,8 @@
     
     <scm>
         <url>https://github.com/42BV/rest-secure-spring-boot-starter</url>
-        <connection>scm:git://github.com/42BV/rest-secure-spring-boot-starter.git</connection>
-        <developerConnection>scm:git:git@github.com:42BV/rest-secure-spring-boot-starter.git</developerConnection>
+        <connection>scm:git:https://github.com/42BV/rest-secure-spring-boot-starter.git</connection>
+        <developerConnection>scm:git:https://github.com/42BV/rest-secure-spring-boot-starter.git</developerConnection>
     </scm>
     
     <developers>
@@ -115,7 +115,7 @@
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-dependencies</artifactId>
-                <version>1.5.10.RELEASE</version>
+                <version>2.0.3.RELEASE</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -193,6 +193,19 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+
+            <plugin>
+                <artifactId>maven-release-plugin</artifactId>
+                <version>2.5.3</version>
+                <dependencies>
+                    <!-- Fixes release commit creation on systems which are not in English -->
+                    <dependency>
+                        <groupId>org.apache.maven.scm</groupId>
+                        <artifactId>maven-scm-provider-gitexe</artifactId>
+                        <version>1.9.2</version>
+                    </dependency>
+                </dependencies>
             </plugin>
         </plugins>       
     </build>
