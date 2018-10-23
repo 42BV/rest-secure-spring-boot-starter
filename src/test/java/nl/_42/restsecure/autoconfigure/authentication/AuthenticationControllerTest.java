@@ -14,6 +14,7 @@ import nl._42.restsecure.autoconfigure.test.ActiveUserConfig;
 import nl._42.restsecure.autoconfigure.test.AuthenticationResultProviderConfig;
 import nl._42.restsecure.autoconfigure.test.CredentialsExpiredUserConfig;
 import nl._42.restsecure.autoconfigure.test.CustomWebSecurityAndHttpSecurityConfig;
+import nl._42.restsecure.autoconfigure.test.FailingTwoFactorAuthenticationFilterConfig;
 import nl._42.restsecure.autoconfigure.test.InMemoryCrowdConfig;
 import nl._42.restsecure.autoconfigure.test.MockedCrowdAuthenticationProviderConfig;
 import nl._42.restsecure.autoconfigure.test.NoopPasswordEncoderConfig;
@@ -130,5 +131,14 @@ public class AuthenticationControllerTest extends AbstractApplicationContextTest
             .andExpect(status().isOk())
             .andExpect(jsonPath("authorities[0]").value("ROLE_USER"))
             .andExpect(jsonPath("username").value("crowdUser"));
+    }
+
+    @Test
+    public void authenticate_shouldFail_withAuthenticationExceptionInSubsequentFilter() throws Exception {
+        getWebClient(ActiveUserConfig.class, NoopPasswordEncoderConfig.class, FailingTwoFactorAuthenticationFilterConfig.class)
+                .perform(post("/authentication")
+                        .content("{\"username\": \"custom\", \"password\": \"password\"}"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("errorCode").value(SERVER_LOGIN_FAILED_ERROR));
     }
 }
