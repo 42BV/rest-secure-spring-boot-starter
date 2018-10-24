@@ -89,6 +89,7 @@ public class RestAuthenticationFilter extends OncePerRequestFilter {
     }
 
     private void handleLoginFailure(HttpServletResponse response, AuthenticationException exception) throws IOException {
+        SecurityContextHolder.getContext().setAuthentication(null);
         errorHandler.respond(response, UNAUTHORIZED, SERVER_LOGIN_FAILED_ERROR);
         log.warn("Authentication failure: {}", exception.getMessage());
     }
