@@ -13,6 +13,12 @@ import nl._42.restsecure.autoconfigure.test.NullCrowdAuthenticationProviderConfi
 
 import org.junit.Test;
 import org.springframework.beans.factory.BeanCreationException;
+import org.springframework.boot.autoconfigure.AutoConfigurations;
+import org.springframework.boot.autoconfigure.http.HttpMessageConvertersAutoConfiguration;
+import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
+import org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration;
+import org.springframework.boot.test.context.runner.ApplicationContextRunner;
+import org.springframework.boot.test.context.runner.WebApplicationContextRunner;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -23,7 +29,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import com.atlassian.crowd.integration.springsecurity.RemoteCrowdAuthenticationProvider;
 
 public class WebSecurityAutoConfigTest extends AbstractApplicationContextTest {
-    
+
     @Test
     public void autoConfig_shouldConfigureSecurity_withDefaults() {
         loadApplicationContext(ActiveUserConfig.class);
@@ -39,13 +45,22 @@ public class WebSecurityAutoConfigTest extends AbstractApplicationContextTest {
     
     @Test
     public void autoConfig_shouldConfigureSecurity_withCrowd() {
-        loadApplicationContext("rest-secure.authority-to-crowd-group-mappings.ROLE_ADMIN=crowd-admin-group",
-                "rest-secure.authority-to-crowd-group-mappings.ROLE_USER=crowd-user-group");
-        AuthenticationManager delegatingManager = context.getBean(AuthenticationManager.class);
-        AuthenticationManagerBuilder authManagerBuilder = (AuthenticationManagerBuilder) getField(delegatingManager, "delegateBuilder");
-        ProviderManager authManager = (ProviderManager) getField(authManagerBuilder.getObject(), "parent");
-        assertEquals("There should be one AuthenticationProvider configured.", 1, authManager.getProviders().size());
-        assertEquals("The AuthenticationProvider should be a RemoteCrowdAuthenticationProvider.", RemoteCrowdAuthenticationProvider.class, authManager.getProviders().get(0).getClass());        
+        new ApplicationContextRunner()
+                .withConfiguration(AutoConfigurations.of(WebMvcAutoConfiguration.class,
+                        CrowdAuthenticationAutoConfig.class,
+                        JacksonAutoConfiguration.class,
+                        HttpMessageConvertersAutoConfiguration.class,
+                        WebSecurityAutoConfig.class))
+                .withPropertyValues("rest-secure.authority-to-crowd-group-mappings.ROLE_ADMIN=crowd-admin-group",
+                "rest-secure.authority-to-crowd-group-mappings.ROLE_USER=crowd-user-group")
+                .run(ctx -> {
+                    AuthenticationManager delegatingManager = ctx.getBean(AuthenticationManager.class);
+                    AuthenticationManagerBuilder authManagerBuilder = (AuthenticationManagerBuilder) getField(delegatingManager, "delegateBuilder");
+                    ProviderManager authManager = (ProviderManager) getField(authManagerBuilder.getObject(), "parent");
+                    assertEquals("There should be one AuthenticationProvider configured.", 1, authManager.getProviders().size());
+                    assertEquals("The AuthenticationProvider should be a RemoteCrowdAuthenticationProvider.", RemoteCrowdAuthenticationProvider.class,
+                            authManager.getProviders().get(0).getClass());
+                });
     }
     
     @Test(expected = BeanCreationException.class)
