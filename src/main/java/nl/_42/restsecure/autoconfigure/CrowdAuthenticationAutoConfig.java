@@ -1,8 +1,11 @@
 package nl._42.restsecure.autoconfigure;
 
 import java.util.Map.Entry;
+import java.util.Properties;
 import java.util.Set;
 
+import com.atlassian.crowd.service.client.ClientProperties;
+import com.atlassian.crowd.service.soap.client.SoapClientPropertiesImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,8 +30,8 @@ import com.atlassian.crowd.service.cache.CacheAwareAuthenticationManager;
  * Autoconfigures Crowd when a crowd-integration-springsecurity jar and a crowd.properties are found on the application's classpath.
  * When a crowd-group-to-role.properties is found on the application's classpath, these mappings will be used by the {@link CrowdUserDetailsService}
  */
-@ConditionalOnResource(resources = { "classpath:/applicationContext-CrowdClient.xml", "classpath:/crowd.properties" })
-@ImportResource("classpath:/applicationContext-CrowdClient.xml")
+@ConditionalOnResource(resources = { "classpath:/applicationContext-CrowdClient.xml" })
+@ImportResource("classpath:/crowd-beans.xml")
 @Configuration
 @EnableConfigurationProperties(RestSecureProperties.class)
 public class CrowdAuthenticationAutoConfig {
@@ -47,14 +50,8 @@ public class CrowdAuthenticationAutoConfig {
     private RestSecureProperties props;
 
     @Bean
-    public FilterRegistrationBean registration(VerifyTokenFilter filter) {
-        FilterRegistrationBean registration = new FilterRegistrationBean(filter);
-        registration.setEnabled(false);
-        return registration;
-    }
-
-    @Bean
-    public AuthenticationProvider crowdAuthenticationProvider() throws Exception {
+    public AuthenticationProvider crowdAuthenticationProvider() {
+        httpAuthenticator.getSoapClientProperties().updateProperties(props.getCrowdProperties());
         return new RemoteCrowdAuthenticationProvider(crowdAuthenticationManager, httpAuthenticator, crowdUserDetailsService());
     }
 

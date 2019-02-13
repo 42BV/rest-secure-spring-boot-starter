@@ -141,7 +141,16 @@ If you want to override this bean, you can provide a custom `PasswordEncoder` im
 </dependency>
 ```
 - Provide your application with a `crowd-ehcache.xml` by adding it to the classpath. An example can be found in this project in directory: `src/test/resources/`.
-- Provide your application with a `crowd.properties` by adding it to the classpath. For more information on this file see: [Atlassian documentation](https://confluence.atlassian.com/crowd/integrating-crowd-with-spring-security-174752019.html) chapter 2.3.
+- Provide your application with crowd client properties by adding them to application.yml: 
+```
+rest-secure:
+  crowd-properties:
+    crowd.server.url=https://crowdserver.com
+    application.name=app
+    application.password=pw
+    session.validationinterval=0
+```
+For more information on this file see: [Atlassian documentation](https://confluence.atlassian.com/crowd/integrating-crowd-with-spring-security-174752019.html) chapter 2.3.
 - If you want to map your custom application authorities to crowd-groups you can add these to your application.yml 
 (Note that this only works for a 1 to 1 cardinality between authority and crowd-group):
 

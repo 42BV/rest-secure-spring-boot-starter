@@ -51,8 +51,11 @@ public class WebSecurityAutoConfigTest extends AbstractApplicationContextTest {
                         JacksonAutoConfiguration.class,
                         HttpMessageConvertersAutoConfiguration.class,
                         WebSecurityAutoConfig.class))
-                .withPropertyValues("rest-secure.authority-to-crowd-group-mappings.ROLE_ADMIN=crowd-admin-group",
-                "rest-secure.authority-to-crowd-group-mappings.ROLE_USER=crowd-user-group")
+                .withPropertyValues(
+                        "rest-secure.authority-to-crowd-group-mappings.ROLE_ADMIN=crowd-admin-group",
+                        "rest-secure.authority-to-crowd-group-mappings.ROLE_USER=crowd-user-group",
+                        "rest-secure.crowd-properties.crowd.server.url=http://test.nl",
+                        "rest-secure.crowd-properties.application.name=rest-secure")
                 .run(ctx -> {
                     AuthenticationManager delegatingManager = ctx.getBean(AuthenticationManager.class);
                     AuthenticationManagerBuilder authManagerBuilder = (AuthenticationManagerBuilder) getField(delegatingManager, "delegateBuilder");
