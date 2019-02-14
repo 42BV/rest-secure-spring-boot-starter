@@ -145,10 +145,11 @@ If you want to override this bean, you can provide a custom `PasswordEncoder` im
 ```
 rest-secure:
   crowd-properties:
-    crowd.server.url=https://crowdserver.com
-    application.name=app
-    application.password=pw
-    session.validationinterval=0
+    crowd.server.url: https://crowdserver.com
+    application:
+      name: app
+      password: pw
+    session.validationinterval: 0
 ```
 For more information on this file see: [Atlassian documentation](https://confluence.atlassian.com/crowd/integrating-crowd-with-spring-security-174752019.html) chapter 2.3.
 - If you want to map your custom application authorities to crowd-groups you can add these to your application.yml 
