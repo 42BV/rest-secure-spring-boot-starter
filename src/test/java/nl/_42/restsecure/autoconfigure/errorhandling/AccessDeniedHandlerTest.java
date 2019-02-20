@@ -13,6 +13,7 @@ import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppC
 import javax.servlet.ServletContext;
 
 import nl._42.restsecure.autoconfigure.AbstractApplicationContextTest;
+import nl._42.restsecure.autoconfigure.authentication.WithUser;
 import nl._42.restsecure.autoconfigure.test.ActiveUserConfig;
 import nl._42.restsecure.autoconfigure.test.RestrictedEndpointsConfig;
 
@@ -23,6 +24,7 @@ import org.springframework.test.web.servlet.RequestBuilder;
 public class AccessDeniedHandlerTest extends AbstractApplicationContextTest {
 
     @Test
+    @WithUser("T(nl._42.restsecure.autoconfigure.test.AbstractUserDetailsServiceConfig.RegisteredUserBuilder).user().build()")
     public void forbiddenEndpoint_shouldFail_whenAdmin() throws Exception {
         getWebClient(RestrictedEndpointsConfig.class)
             .perform(get("/test/forbidden"))

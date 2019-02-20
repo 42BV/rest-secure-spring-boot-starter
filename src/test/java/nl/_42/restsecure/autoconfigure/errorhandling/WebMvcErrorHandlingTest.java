@@ -6,6 +6,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import nl._42.restsecure.autoconfigure.AbstractApplicationContextTest;
+import nl._42.restsecure.autoconfigure.authentication.WithUser;
 import nl._42.restsecure.autoconfigure.test.RestrictedEndpointsConfig;
 
 import org.junit.Test;
@@ -13,6 +14,7 @@ import org.junit.Test;
 public class WebMvcErrorHandlingTest extends AbstractApplicationContextTest {
 
     @Test
+    @WithUser("T(nl._42.restsecure.autoconfigure.test.AbstractUserDetailsServiceConfig.RegisteredUserBuilder).user().build()")
     public void forbiddenEndpoint_shouldFail_whenAdmin() throws Exception {
         getWebClient(RestrictedEndpointsConfig.class)
             .perform(get("/test/preauthorized"))

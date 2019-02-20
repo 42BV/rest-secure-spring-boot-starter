@@ -14,14 +14,17 @@ import nl._42.restsecure.autoconfigure.authentication.RegisteredUser;
 import nl._42.restsecure.autoconfigure.authentication.UserDetailsAdapter;
 
 import org.junit.After;
+import org.junit.runner.RunWith;
 import org.springframework.boot.autoconfigure.http.HttpMessageConvertersAutoConfiguration;
 import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration;
 import org.springframework.boot.test.util.ApplicationContextTestUtils;
 import org.springframework.mock.web.MockServletContext;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
 
+@RunWith(SpringJUnit4ClassRunner.class)
 public abstract class AbstractApplicationContextTest {
 
     protected AnnotationConfigWebApplicationContext context;
@@ -32,19 +35,18 @@ public abstract class AbstractApplicationContextTest {
             this.context.close();
         }
     }
-    
+
     protected MockMvc getWebClient(Class<?>... appConfig) {
         loadApplicationContext(appConfig);
         return webAppContextSetup(context)
             .apply(springSecurity())
             .defaultRequest(get("/")
                 .contentType(APPLICATION_JSON)
-                .with(csrf())
-                .with(user(new UserDetailsAdapter<RegisteredUser>(user().build()))))
+                .with(csrf()))
             .alwaysDo(log())
             .build();
     }
-   
+
     protected void loadApplicationContext() {
         this.context = load(new AnnotationConfigWebApplicationContext());
     }

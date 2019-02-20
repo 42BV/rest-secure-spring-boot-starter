@@ -19,7 +19,9 @@ import nl._42.restsecure.autoconfigure.test.InMemoryCrowdConfig;
 import nl._42.restsecure.autoconfigure.test.MockedCrowdAuthenticationProviderConfig;
 import nl._42.restsecure.autoconfigure.test.NoopPasswordEncoderConfig;
 
+import org.junit.Before;
 import org.junit.Test;
+import org.springframework.security.test.context.support.WithMockUser;
 
 public class AuthenticationControllerTest extends AbstractApplicationContextTest {
 
@@ -32,6 +34,7 @@ public class AuthenticationControllerTest extends AbstractApplicationContextTest
     }
 
     @Test
+    @WithUser("T(nl._42.restsecure.autoconfigure.test.AbstractUserDetailsServiceConfig.RegisteredUserBuilder).user().build()")
     public void currentUser_shouldSucceed_whenLoggedIn() throws Exception {
         getWebClient(ActiveUserConfig.class)
             .perform(get("/authentication/current"))
@@ -41,6 +44,7 @@ public class AuthenticationControllerTest extends AbstractApplicationContextTest
     }
 
     @Test
+    @WithUser("T(nl._42.restsecure.autoconfigure.test.AbstractUserDetailsServiceConfig.RegisteredUserBuilder).user().build()")
     public void currentUser_shouldSucceed_whenNotLoggedIn_andCustomWebSecurity() throws Exception {
         getWebClient(ActiveUserConfig.class, CustomWebSecurityAndHttpSecurityConfig.class)
             .perform(get("/authentication/current"))
@@ -50,6 +54,7 @@ public class AuthenticationControllerTest extends AbstractApplicationContextTest
     }
 
     @Test
+    @WithUser("T(nl._42.restsecure.autoconfigure.test.AbstractUserDetailsServiceConfig.RegisteredUserBuilder).user().build()")
     public void currentUser_shouldReturnCustomAuthenticationResult_withCustomAuthenticationResultProvider() throws Exception {
         getWebClient(AuthenticationResultProviderConfig.class)
             .perform(get("/authentication/current"))
