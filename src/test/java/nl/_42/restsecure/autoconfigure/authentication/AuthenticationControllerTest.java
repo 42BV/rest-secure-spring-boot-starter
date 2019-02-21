@@ -19,9 +19,7 @@ import nl._42.restsecure.autoconfigure.test.InMemoryCrowdConfig;
 import nl._42.restsecure.autoconfigure.test.MockedCrowdAuthenticationProviderConfig;
 import nl._42.restsecure.autoconfigure.test.NoopPasswordEncoderConfig;
 
-import org.junit.Before;
 import org.junit.Test;
-import org.springframework.security.test.context.support.WithMockUser;
 
 public class AuthenticationControllerTest extends AbstractApplicationContextTest {
 

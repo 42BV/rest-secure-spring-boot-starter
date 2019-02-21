@@ -12,7 +12,10 @@ import java.lang.annotation.*;
 public @interface WithUser {
 
     /**
-     * Specifies the username.
+     * SPeL expression resulting in a RegisteredUser to be used as logged in user.
+     *
+     * For example: @userBuilder.defaultUser()
+     *
      * @return
      */
     String value();

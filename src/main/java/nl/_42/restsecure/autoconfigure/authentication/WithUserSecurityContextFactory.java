@@ -54,7 +54,7 @@ public final class WithUserSecurityContextFactory implements
     private List<GrantedAuthority> buildAuthorities(RegisteredUser registeredUser) {
         return registeredUser.getAuthorities()
                 .stream()
-                .map(a -> new SimpleGrantedAuthority(a))
+                .map(authority -> new SimpleGrantedAuthority(authority))
                 .collect(toList());
     }
 
