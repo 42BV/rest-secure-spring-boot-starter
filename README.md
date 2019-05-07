@@ -127,20 +127,19 @@ If you want to override this bean, you can provide a custom `PasswordEncoder` im
 <dependency>
     <groupId>com.atlassian.crowd</groupId>
     <artifactId>crowd-integration-springsecurity</artifactId>
-    <version>1000.82.0</version>
-    <exclusions>
-        <exclusion>
-            <groupId>org.apache.struts</groupId>
-            <artifactId>struts2-core</artifactId>
-        </exclusion>
-        <exclusion>
-            <groupId>ognl</groupId>
-            <artifactId>ognl</artifactId>
-        </exclusion>
-    </exclusions>
+    <version>3.4.3</version>
 </dependency>
+<dependency>
+    <groupId>com.sun.xml.bind</groupId>
+    <artifactId>jaxb-core</artifactId>
+    <version>2.3.0.1</version>
+</dependency>
+<dependency>
+    <groupId>com.sun.xml.bind</groupId>
+    <artifactId>jaxb-impl</artifactId>
+    <version>2.3.0.1</version>
+</dependency>`
 ```
-- Provide your application with a `crowd-ehcache.xml` by adding it to the classpath. An example can be found in this project in directory: `src/test/resources/`.
 - Provide your application with crowd client properties by adding them to application.yml: 
 ```
 rest-secure:

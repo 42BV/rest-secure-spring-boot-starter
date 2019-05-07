@@ -10,24 +10,24 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-public class AuthenticationResultProviderConfig {
+public class AuthenticationResultProviderConfig extends AbstractUserDetailsServiceConfig {
 
     @Bean
     public AuthenticationResultProvider<RegisteredUser> authenticationResultProvider() {
-        return new AuthenticationResultProvider<RegisteredUser>() {
+        return user -> new AuthenticationResult() {
             @Override
-            public AuthenticationResult toAuthenticationResult(RegisteredUser user) {
-                return new AuthenticationResult() {                        
-                    @Override
-                    public String getUsername() {
-                        return "customized";
-                    }
-                    @Override
-                    public Set<String> getAuthorities() {
-                        return user.getAuthorities();
-                    }
-                };
-            }                
+            public String getUsername() {
+                return "customized";
+            }
+            @Override
+            public Set<String> getAuthorities() {
+                return user.getAuthorities();
+            }
         };
+    }
+
+    @Override
+    protected RegisteredUser foundUser() {
+        return RegisteredUserBuilder.user().build();
     }
 }

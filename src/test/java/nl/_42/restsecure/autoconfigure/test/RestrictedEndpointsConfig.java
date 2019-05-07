@@ -1,23 +1,21 @@
 package nl._42.restsecure.autoconfigure.test;
 
 import nl._42.restsecure.autoconfigure.RequestAuthorizationCustomizer;
+import nl._42.restsecure.autoconfigure.authentication.RegisteredUser;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configurers.ExpressionUrlAuthorizationConfigurer;
 
 @Configuration
-public class RestrictedEndpointsConfig {
+public class RestrictedEndpointsConfig extends AbstractUserDetailsServiceConfig {
 
     @Bean
     public RequestAuthorizationCustomizer requestAuthorizationCustomizer() {
-        return new RequestAuthorizationCustomizer() {
-            @Override
-            public ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry customize(
-                    ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry urlRegistry) {
-                return urlRegistry.antMatchers("/test/forbidden").hasRole("UNKNOWN");
-            }
-        };
+        return urlRegistry -> urlRegistry.antMatchers("/test/forbidden").hasRole("UNKNOWN");
+    }
+
+    @Override
+    protected RegisteredUser foundUser() {
+        return RegisteredUserBuilder.user().build();
     }
 }

@@ -117,7 +117,7 @@ public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
         } else {
             throw new IllegalStateException(
                     "Cannot configure security; either an AbstractUserDetailsService bean must be provided "
-                            + "or crowd-integration-springsecurity.jar with crowd.properties must be on the classpath.");
+                            + "or crowd-integration-springsecurity.jar must be on the classpath.");
         }
         if (customAuthenticationProviders != null) {
             List<AuthenticationProvider> providers = customAuthenticationProviders.get();

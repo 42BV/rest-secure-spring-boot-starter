@@ -18,7 +18,6 @@ import org.springframework.boot.autoconfigure.http.HttpMessageConvertersAutoConf
 import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
-import org.springframework.boot.test.context.runner.WebApplicationContextRunner;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -55,6 +54,7 @@ public class WebSecurityAutoConfigTest extends AbstractApplicationContextTest {
                         "rest-secure.authority-to-crowd-group-mappings.ROLE_ADMIN=crowd-admin-group",
                         "rest-secure.authority-to-crowd-group-mappings.ROLE_USER=crowd-user-group",
                         "rest-secure.crowd-properties.crowd.server.url=http://test.nl",
+                        "rest-secure.crowd-properties.application.password=faulty",
                         "rest-secure.crowd-properties.application.name=rest-secure")
                 .run(ctx -> {
                     AuthenticationManager delegatingManager = ctx.getBean(AuthenticationManager.class);
