@@ -22,6 +22,7 @@ public abstract class AbstractUserDetailsService<T extends RegisteredUser> imple
         if (user == null) {
             throw new UsernameNotFoundException("Username: '" + username + "' not found.");
         }
-        return new UserDetailsAdapter<T>(user);
+        return new UserDetailsAdapter<>(user);
     }
+
 }

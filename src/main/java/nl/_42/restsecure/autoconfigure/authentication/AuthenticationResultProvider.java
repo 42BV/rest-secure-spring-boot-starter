@@ -18,4 +18,5 @@ public interface AuthenticationResultProvider<T extends RegisteredUser> {
      * @return {@link AuthenticationResult}
      */
     AuthenticationResult toAuthenticationResult(T user);
+
 }

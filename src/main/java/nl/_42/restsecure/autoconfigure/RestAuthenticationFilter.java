@@ -1,20 +1,8 @@
 package nl._42.restsecure.autoconfigure;
 
-import static org.springframework.http.HttpMethod.POST;
-import static org.springframework.http.HttpStatus.UNAUTHORIZED;
-
-import java.io.IOException;
-
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import nl._42.restsecure.autoconfigure.authentication.CrowdUser;
-import nl._42.restsecure.autoconfigure.authentication.UserDetailsAdapter;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import nl._42.restsecure.autoconfigure.errorhandling.GenericErrorHandler;
-
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,9 +14,15 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import com.atlassian.crowd.integration.springsecurity.user.CrowdUserDetails;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import javax.servlet.Filter;
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+
+import static org.springframework.http.HttpMethod.POST;
+import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 
 /**
  * Handles the login POST request. Tries to Authenticate the given user credentials using the auto configured {@link AuthenticationManager}.
@@ -64,7 +58,6 @@ public class RestAuthenticationFilter extends OncePerRequestFilter {
             try {
                 log.info("Authenticating user: {}", form.username);
                 Authentication authentication = authenticationManager.authenticate(token);
-                authentication = convertIfNecessary(authentication);
                 SecurityContextHolder.getContext().setAuthentication(authentication);
                 request.setAttribute(LOGIN_FORM_JSON, loginFormJson);
                 chain.doFilter(request, response);
@@ -76,18 +69,6 @@ public class RestAuthenticationFilter extends OncePerRequestFilter {
         }
     }
 
-    private Authentication convertIfNecessary(Authentication authentication) {
-        if (!(authentication.getPrincipal() instanceof UserDetailsAdapter<?>)) {
-            log.info("Converting the Authentication principal to UserDetailsAdapter to enable @CurrentUser annotation.");
-            CrowdUserDetails crowdUserDetails = (CrowdUserDetails) authentication.getPrincipal();
-            return new UsernamePasswordAuthenticationToken(
-                    new UserDetailsAdapter<CrowdUser>(new CrowdUser(crowdUserDetails)),
-                    authentication.getCredentials(),
-                    authentication.getAuthorities());
-        }
-        return authentication;
-    }
-
     private void handleLoginFailure(HttpServletResponse response, AuthenticationException exception) throws IOException {
         SecurityContextHolder.getContext().setAuthentication(null);
         errorHandler.respond(response, UNAUTHORIZED, SERVER_LOGIN_FAILED_ERROR);
@@ -96,7 +77,10 @@ public class RestAuthenticationFilter extends OncePerRequestFilter {
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class LoginForm {
+
         public String username;
         public String password;
+
     }
+
 }

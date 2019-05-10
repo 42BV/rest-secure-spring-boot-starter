@@ -29,12 +29,12 @@ public class AuthenticationController {
     private AuthenticationResultProvider authenticationResultProvider;
     
     @PostMapping
-    AuthenticationResult authenticate(@CurrentUser RegisteredUser user) {
+    public AuthenticationResult authenticate(@CurrentUser RegisteredUser user) {
         return transform(user);
     }
 
     @GetMapping("/current")
-    AuthenticationResult current(@CurrentUser RegisteredUser user) {
+    public AuthenticationResult current(@CurrentUser RegisteredUser user) {
         return transform(user);
     }
 
@@ -42,8 +42,6 @@ public class AuthenticationController {
         AuthenticationResult authentication;
         if (authenticationResultProvider != null) {
             authentication = authenticationResultProvider.toAuthenticationResult(user);
-        } else if (user instanceof CrowdUser) {
-            authentication = new CrowdUserResult((CrowdUser) user);
         } else {
             authentication = new AuthenticationResult() {
                 @Override
@@ -61,4 +59,5 @@ public class AuthenticationController {
         }
         return authentication;
     }
+
 }
