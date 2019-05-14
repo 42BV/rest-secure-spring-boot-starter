@@ -2,16 +2,12 @@ package nl._42.restsecure.autoconfigure.test;
 
 import nl._42.restsecure.autoconfigure.authentication.AbstractUserDetailsService;
 import nl._42.restsecure.autoconfigure.authentication.RegisteredUser;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 
 import java.util.Collections;
 import java.util.Set;
 
 public abstract class AbstractUserDetailsServiceConfig {
-
-    private final Logger log = LoggerFactory.getLogger(getClass());
 
     @Bean
     public AbstractUserDetailsService<RegisteredUser> userDetailsService() {

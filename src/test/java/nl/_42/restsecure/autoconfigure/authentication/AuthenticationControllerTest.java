@@ -1,9 +1,11 @@
 package nl._42.restsecure.autoconfigure.authentication;
 
 import static nl._42.restsecure.autoconfigure.RestAuthenticationFilter.SERVER_LOGIN_FAILED_ERROR;
+import static nl._42.restsecure.autoconfigure.test.RememberMeServicesConfig.REMEMBER_ME_HEADER;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.anonymous;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -17,6 +19,7 @@ import nl._42.restsecure.autoconfigure.test.CustomWebSecurityAndHttpSecurityConf
 import nl._42.restsecure.autoconfigure.test.FailingTwoFactorAuthenticationFilterConfig;
 import nl._42.restsecure.autoconfigure.test.NoopPasswordEncoderConfig;
 
+import nl._42.restsecure.autoconfigure.test.RememberMeServicesConfig;
 import org.junit.Test;
 
 public class AuthenticationControllerTest extends AbstractApplicationContextTest {
@@ -64,6 +67,27 @@ public class AuthenticationControllerTest extends AbstractApplicationContextTest
             .andExpect(status().isOk())
             .andExpect(jsonPath("authorities[0]").value("ROLE_ADMIN"))
             .andExpect(jsonPath("username").value("username"));
+    }
+
+    @Test
+    public void authenticate_shouldSucceed_withRememberMeServices() throws Exception {
+        getWebClient(ActiveUserConfig.class, NoopPasswordEncoderConfig.class, RememberMeServicesConfig.class)
+                .perform(post("/authentication")
+                        .content("{\"username\": \"custom\", \"password\": \"password\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("authorities[0]").value("ROLE_ADMIN"))
+                .andExpect(jsonPath("username").value("username"))
+                .andExpect(header().string(REMEMBER_ME_HEADER, "success"));
+    }
+
+    @Test
+    public void authenticate_shouldFail_withRememberMeServices() throws Exception {
+        getWebClient(ActiveUserConfig.class, NoopPasswordEncoderConfig.class, RememberMeServicesConfig.class)
+                .perform(post("/authentication")
+                        .content("{\"username\": \"custom\", \"password\": \"other\"}"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("errorCode").value(SERVER_LOGIN_FAILED_ERROR))
+                .andExpect(header().string(REMEMBER_ME_HEADER, "failed"));
     }
 
     @Test

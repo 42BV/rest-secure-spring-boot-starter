@@ -31,4 +31,5 @@ public interface RegisteredUser {
     default boolean isEnabled() {
         return true;
     }
+
 }

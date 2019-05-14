@@ -12,14 +12,15 @@ Spring boot autoconfig for spring security in a REST environment
 
 ## Features
 
-- Auto-configures Spring Web Security with a customized UserDetailsService for internal database users storage or with crowd-integration-springsecurity for external crowd authentication.
+- Auto-configures Spring Web Security with a customized UserDetailsService for internal database users storage or any other authentication provider.
 - Spring Method Security is enabled: You can make use of `@PreAuthorize` and `@PostAuthorize`.
 - Customizable authentication endpoints provided:
     * POST `/authentication` - to be able to login clients should provide a json request body like `{ username: 'user@email.com', password: 'secret'}`.
     * GET `/authentication/current` - to obtain the current logged in user
+- Remember me support
 - CSRF protection by the [double submit cookie](https://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF)_Prevention_Cheat_Sheet#Double_Submit_Cookie) pattern. Implemented by using the [CsrfTokenRepository](https://docs.spring.io/spring-security/site/docs/current/reference/html/csrf.html#csrf-cookie).
 - The @CurrentUser annotation may be used to annotate a controller method argument to inject the current custom user.
-- This autoconfiguration does not make assumptions of how you implement the "authorities" of a User. Spring Security can interpret your authorities by looking at a prefix; if you prefix an authority with "ROLE_", the framework provides a specific role-checking-api. But you can always use the more generic authority-checking-api.
+- This auto configuration does not make assumptions of how you implement the "authorities" of a User. Spring Security can interpret your authorities by looking at a prefix; if you prefix an authority with "ROLE_", the framework provides a specific role-checking-api. But you can always use the more generic authority-checking-api.
     * For instance if you want to make use of "roles" and the Spring Security "hasRole(..)"-api methods, you must prefix your roles with the default "ROLE_".
     * If you want to avoid doing anything with prefixing, you are advised to make use of the more generic "hasAuthority(..)"-api methods.
 
@@ -35,8 +36,8 @@ Spring boot autoconfig for spring security in a REST environment
 ```xml
 <dependency>
     <groupId>nl.42</groupId>
-    <artifactId>rest-secure-spring-boot-starter</artifactId>
-    <version>6.0.0</version>
+    <artifactId>spring-boot-starter-security-rest</artifactId>
+    <version>6.1.0</version>
 </dependency>
 <dependency>
     <groupId>org.springframework.boot</groupId>
@@ -106,90 +107,20 @@ public class User implements RegisteredUser {
 - By default, a `BcryptPasswordEncoder` bean is added to the security config for password matching. Use this bean when you are encrypting passwords for your User domain object.
 If you want to override this bean, you can provide a custom `PasswordEncoder` implementation by adding it to your Spring `ApplicationContext`.
 
-## Setup for crowd users store
-
-- The maven dependencies you need:
-
-```xml
-<dependency>
-    <groupId>nl.42</groupId>
-    <artifactId>rest-secure-spring-boot-starter</artifactId>
-    <version>6.0.0</version>
-</dependency>
-<dependency>
-    <groupId>org.springframework.boot</groupId>
-    <artifactId>spring-boot-starter-web</artifactId>
-</dependency>
-<dependency>
-    <groupId>org.springframework.boot</groupId>
-    <artifactId>spring-boot-starter-security</artifactId>
-</dependency>
-<dependency>
-    <groupId>com.atlassian.crowd</groupId>
-    <artifactId>crowd-integration-springsecurity</artifactId>
-    <version>3.4.3</version>
-</dependency>
-<dependency>
-    <groupId>com.sun.xml.bind</groupId>
-    <artifactId>jaxb-core</artifactId>
-    <version>2.3.0.1</version>
-</dependency>
-<dependency>
-    <groupId>com.sun.xml.bind</groupId>
-    <artifactId>jaxb-impl</artifactId>
-    <version>2.3.0.1</version>
-</dependency>`
-```
-- Provide your application with crowd client properties by adding them to application.yml: 
-```
-rest-secure:
-  crowd-properties:
-    crowd.server.url: https://crowdserver.com
-    application:
-      name: app
-      password: pw
-    session.validationinterval: 0
-```
-For more information on this file see: [Atlassian documentation](https://confluence.atlassian.com/crowd/integrating-crowd-with-spring-security-174752019.html) chapter 2.3.
-- If you want to map your custom application authorities to crowd-groups you can add these to your application.yml 
-(Note that this only works for a 1 to 1 cardinality between authority and crowd-group):
-
- ```
- rest-secure:
-   authority-to-crowd-group-mappings:
-     ROLE_ADMIN: crowd-admin-group
-     ROLE_USER: crowd-user-group 
- ```
-- Put an implementation of `AbstractUserDetailsService<CrowdUser>` in your unittest configuration to be able to run spring boot webmvc tests:
-
-```java
-    @Profile("unit-test")
-    @Configuration
-    public class UnitTestAuthenticationStore {
-        @Bean
-        public PasswordEncoder passwordEncoder() {
-            return NoOpPasswordEncoder.getInstance();
-        }    
-        @Bean
-        public AbstractUserDetailsService<CrowdUser> userDetailsService() {
-            return new AbstractUserDetailsService<CrowdUser>() {
-                private Map<String, CrowdUser> users = new HashMap<>();
-                @PostConstruct
-                private void initUserStore() {
-                    users.put("janAdmin", new CrowdUser("janAdmin", "secret", newHashSet("ROLE_" + ADMIN.name())));
-                    users.put("janUser", new CrowdUser("janUser", "secret", newHashSet("ROLE_" + USER.name())));
-                }
-                @Override
-                protected CrowdUser findUserByUsername(String username) {
-                    return users.get(username);
-                }
-            };
-        }
-    }
-```
 ## Customization
 
-1. Adding custom filters:
+1. Adding custom authentication providers:
+- If you want to support another provider implementation, e.g. CROWD, register an `AutenticationProvider` or `AbstractUserDetailService` as `@Bean`.
+This implementation will be picked up automatically and used during authentication:
+
+```java
+@Bean
+public AuthenticationProvider crowdAuthenticationProvider() {
+    return new ...;
+}
+```
+
+2. Adding custom filters:
 - Use HttpSecurityCustomizer to add your custom filters to the `SpringSecurityFilterChain` and customize the `HttpSecurity` object in general:
 
 ```java
@@ -199,48 +130,16 @@ For more information on this file see: [Atlassian documentation](https://conflue
             @Override
             public HttpSecurity customize(HttpSecurity http) throws Exception {
                 http.addFilterBefore(rememberMeFilter(), AnonymousAuthenticationFilter.class)
-                        .addFilterBefore(rememberMeAuthenticationFilter(), AnonymousAuthenticationFilter.class)
-                        .addFilterAfter(httpLogFilter(), AnonymousAuthenticationFilter.class)
-                        .logout()
-                        .addLogoutHandler(rememberMeServices());
+                    .addFilterBefore(rememberMeAuthenticationFilter(), AnonymousAuthenticationFilter.class)
+                    .addFilterAfter(httpLogFilter(), AnonymousAuthenticationFilter.class)
+                    .logout().addLogoutHandler(rememberMeServices());
                 return http;
             }
         };
     }
 ```
-- Using the login request body json after the `RestAuthenticationFilter`:  
-The restsecure autoconfig puts a `RestAuthenticationFilter` just before the Spring Security's `AnonymousAuthenticationFilter`.  
-If you put a custom filter in between them (like the rememberMeFilter in the example above), you cannot read the request inputStream anymore when the request was a POST form login. This due to the fact that the `RestAuthenticationFilter` already has been reading the request inputStream to extract the usercredentials.  
-To be able to access this information in subsequent filters, the `RestAuthenticationFilter` puts the request body as a request attribute after reading. You can retreive the request body like this:
-
-```java
-import static nl._42.restsecure.autoconfigure.RestAuthenticationFilter.LOGIN_FORM_JSON;
-
-class RememberMeFilter extends OncePerRequestFilter {
-    private final AntPathRequestMatcher matcher;
-    private final ObjectMapper objectMapper;
-    private final RememberMeServices rememberMeServices;
-    RememberMeFilter(AntPathRequestMatcher matcher, ObjectMapper objectMapper, RememberMeServices rememberMeServices) {
-        this.matcher = matcher;
-        this.objectMapper = objectMapper;
-        this.rememberMeServices = rememberMeServices;
-    }
-    @Override
-    public void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
-        if (matcher.matches(request)) {
-            LoginForm form = objectMapper.readValue((String)request.getAttribute(LOGIN_FORM_JSON), LoginForm.class);
-            if (form.rememberMe) {
-                Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-                rememberMeServices.loginSuccess(request, response, authentication);
-            }
-        }
-        chain.doFilter(request, response);
-    }
-}
-```
-- Note that the `RestAuthenticationFilter` must be able to read form the inputStream when the request is a POST login. So make sure you do not add filters before this one that read the request inputStream or no login credentials can be read to be able to authenticate!
  
-2. Configuring request url authorization:
+3. Configuring request url authorization:
 - By default the authentication endpoints are configured accessible for any request, all other url's require full authentication. You may want to add url patterns in between these. Implement `RequestAuthorizationCustomizer` and add it as a `Bean` to the Spring `ApplicationContext`:
 
 ```java
@@ -260,7 +159,7 @@ public RequestAuthorizationCustomizer requestAuthorizationCustomizer() {
 }
 ```
 
-3. Customizing the authentication endpoints:
+4. Customizing the authentication endpoints:
 - The 2 authentication endpoints will return the following json by default:
    * POST /authentication and GET /authentication/current:
    
@@ -288,34 +187,6 @@ public class CustomAuthenticationResultProvider implements AuthenticationResultP
     }
 }
 ```
-- When using Crowd as Authentication method, the user argument will always be of type `CrowdUser`:
-
-```java
-@Component
-public class CustomAuthenticationResultProvider implements AuthenticationResultProvider<CrowdUser> {
-    @Autowired
-    private BeanMapper beanMapper;
-    @Override
-    public AuthenticationResult toAuthenticationResult(CrowdUser crowdUser) {
-        return beanMapper.map(crowdUser, CustomAuthenticationResult.class); 
-    }
-}
-```
-
-4. Adding custom `AuthenticationProvider`'s:
-- If you want to add an extra `AutenticationProvider` to the security config, implement the `CustomAuthenticationProviders` interface and add it as `Bean` to the Spring `ApplicationContext`:
-
-```java
-@Bean
-public CustomAuthenticationProviders customAuthenticationProviders() {
-    return new CustomAuthenticationProviders() {
-        @Override
-        public List<AuthenticationProvider> get() {
-            return asList(rememberMeAuthenticationProvider());
-        }
-    };
-}
-```
 
 5. Using the `WebSecurityCustomizer`:
 
@@ -331,7 +202,17 @@ public WebSecurityCustomizer webSecurityCustomizer() {
 }
 ```
 
-6. Errorhandling:
+6. Remember me (single sign on):
+- Register a `RememberMeServices` bean, this will be picked up automatically and used in the login filter
+
+```java
+@Bean
+public RememberMeServices rememberMeServices() {
+    return new MyRememberMeServices();
+}
+```
+
+7. Errorhandling:
 - An `@ExceptionHandler` method for handling the method security `AccessDeniedExcption` is added to a `@RestControllerAdvice` with `@Order(0)`. This way all custom `@ControllerAdvice` with `@ExceptionHandler` methods with default order will be processed hereafter. The http response will have a http status 403 with a json body:
 
 ```
@@ -348,4 +229,3 @@ Response body: `{ errorCode: 'SERVER.ACCESS_DENIED_ERROR'}`
    * Invalid session (e.g. timeout or after logout):  
 Http status: 401  
 Response body: `{ errorCode: 'SERVER.SESSION_INVALID_ERROR'}`
-

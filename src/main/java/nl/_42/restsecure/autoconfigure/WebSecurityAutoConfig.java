@@ -28,6 +28,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.AnonymousAuthenticationFilter;
+import org.springframework.security.web.authentication.RememberMeServices;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRepository;
@@ -82,6 +83,9 @@ public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired(required = false)
     private WebSecurityCustomizer webSecurityCustomizer;
+
+    @Autowired(required = false)
+    private RememberMeServices rememberMeServices;
 
     /**
      * Adds a {@link BCryptPasswordEncoder} to the {@link ApplicationContext} if no {@link PasswordEncoder} bean is found already.
@@ -163,7 +167,7 @@ public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
     }
    
     private Filter authenticationFilter() throws Exception {
-        return new RestAuthenticationFilter(errorHandler, authenticationManagerBean());
+        return new RestAuthenticationFilter(errorHandler, authenticationManagerBean(), rememberMeServices);
     }
     
     private ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry customize(
