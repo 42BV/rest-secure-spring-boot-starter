@@ -3,8 +3,8 @@
     <modelVersion>4.0.0</modelVersion>
     
     <groupId>nl.42</groupId>
-    <artifactId>spring-boot-starter-security-rest</artifactId>
-    <version>6.0.1-SNAPSHOT</version>
+    <artifactId>rest-secure-spring-boot-starter</artifactId>
+    <version>7.0.0-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>42 REST Secure Spring Boot Starter</name>
     <description>Spring boot starter/autoconfig for Spring security</description>
@@ -34,6 +34,10 @@
     <developers>
         <developer>
             <name>Bas de Vos</name>
+            <organization>42</organization>
+        </developer>
+        <developer>
+            <name>Jeroen van Schagen</name>
             <organization>42</organization>
         </developer>
     </developers>
@@ -111,7 +115,7 @@
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-dependencies</artifactId>
-                <version>2.1.4.RELEASE</version>
+                <version>2.1.5.RELEASE</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>

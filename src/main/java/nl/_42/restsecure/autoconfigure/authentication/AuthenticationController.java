@@ -1,6 +1,5 @@
 package nl._42.restsecure.autoconfigure.authentication;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,27 +16,20 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/authentication")
 public class AuthenticationController {
 
-    @Autowired(required = false)
-    private AuthenticationResultProvider authenticationResultProvider;
-    
+    private final AuthenticationResultProvider provider;
+
+    public AuthenticationController(AuthenticationResultProvider provider) {
+        this.provider = provider;
+    }
+
     @PostMapping
     public AuthenticationResult authenticate(@CurrentUser RegisteredUser user) {
-        return transform(user);
+        return current(user);
     }
 
     @GetMapping("/current")
     public AuthenticationResult current(@CurrentUser RegisteredUser user) {
-        return transform(user);
-    }
-
-    private AuthenticationResult transform(RegisteredUser user) {
-        AuthenticationResult authentication;
-        if (authenticationResultProvider != null) {
-            authentication = authenticationResultProvider.toAuthenticationResult(user);
-        } else {
-            authentication = new UserResult(user);
-        }
-        return authentication;
+        return provider.toResult(user);
     }
 
 }

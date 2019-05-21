@@ -9,7 +9,6 @@ import org.springframework.security.authentication.AuthenticationProvider;
 public class NullAuthenticationProviderConfig {
 
     @Bean
-    @Primary
     public AuthenticationProvider crowdAuthenticationProvider() {
         return null;
     }

@@ -2,6 +2,12 @@ package nl._42.restsecure.autoconfigure;
 
 import nl._42.restsecure.autoconfigure.authentication.AbstractUserDetailsService;
 import nl._42.restsecure.autoconfigure.authentication.AuthenticationController;
+import nl._42.restsecure.autoconfigure.authentication.AuthenticationResultProvider;
+import nl._42.restsecure.autoconfigure.authentication.CurrentUserArgumentResolver;
+import nl._42.restsecure.autoconfigure.authentication.DefaultAuthenticationResultProvider;
+import nl._42.restsecure.autoconfigure.authentication.DefaultUserProvider;
+import nl._42.restsecure.autoconfigure.authentication.UserProvider;
+import nl._42.restsecure.autoconfigure.authentication.UserResolver;
 import nl._42.restsecure.autoconfigure.errorhandling.GenericErrorHandler;
 import nl._42.restsecure.autoconfigure.errorhandling.RestAccessDeniedHandler;
 import org.slf4j.Logger;
@@ -33,6 +39,8 @@ import org.springframework.security.web.authentication.logout.HttpStatusReturnin
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRepository;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.web.method.support.HandlerMethodArgumentResolver;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import javax.servlet.Filter;
 import java.util.ArrayList;
@@ -52,7 +60,7 @@ import static org.springframework.security.web.csrf.CookieCsrfTokenRepository.wi
  */
 @Configuration
 @AutoConfigureAfter(WebMvcAutoConfiguration.class)
-@ComponentScan(basePackageClasses = {AuthenticationController.class, GenericErrorHandler.class})
+@ComponentScan(basePackageClasses = { AuthenticationController.class, GenericErrorHandler.class })
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
@@ -98,7 +106,27 @@ public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
         log.info("Adding default BCryptPasswordEncoder to ApplicationContext.");
         return new BCryptPasswordEncoder();
     }
-    
+
+    /**
+     * Adds an {@link UserProvider} to the {@link ApplicationContext} if no {@link UserProvider} bean is found already.
+     * @return UserMapper
+     */
+    @Bean
+    @ConditionalOnMissingBean(UserProvider.class)
+    public UserProvider userProvider() {
+        return new DefaultUserProvider();
+    }
+
+    /**
+     * Adds an {@link AuthenticationResultProvider} to the {@link ApplicationContext} if no {@link AuthenticationResultProvider} bean is found already.
+     * @return AuthenticationResultProvider
+     */
+    @Bean
+    @ConditionalOnMissingBean(AuthenticationResultProvider.class)
+    public AuthenticationResultProvider authenticationResultProvider() {
+        return new DefaultAuthenticationResultProvider();
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -195,6 +223,19 @@ public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
         CookieCsrfTokenRepository repository = withHttpOnlyFalse();
         repository.setCookiePath("/");
         return repository;
+    }
+
+    @Configuration
+    public static class WebSecurityMvcAutoConfig implements WebMvcConfigurer {
+
+        @Autowired
+        private UserResolver userResolver;
+
+        @Override
+        public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
+            resolvers.add(new CurrentUserArgumentResolver(userResolver));
+        }
+
     }
 
 }

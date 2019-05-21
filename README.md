@@ -36,8 +36,8 @@ Spring boot autoconfig for spring security in a REST environment
 ```xml
 <dependency>
     <groupId>nl.42</groupId>
-    <artifactId>spring-boot-starter-security-rest</artifactId>
-    <version>6.1.0</version>
+    <artifactId>rest-secure-spring-boot-starter</artifactId>
+    <version>7.0.0</version>
 </dependency>
 <dependency>
     <groupId>org.springframework.boot</groupId>
@@ -52,7 +52,43 @@ Spring boot autoconfig for spring security in a REST environment
     <artifactId>spring-boot-starter-security</artifactId>
 </dependency>
 ```
-- Make your custom User domain object implement the `RegisteredUser` interface (using the email fields as username):
+
+- Register a `UserDetailsService` or `AuthenticationProvider` and add it as a `Bean` to your Spring `ApplicationContext`:
+ 
+```java
+@Service
+class SpringUserDetailsService implements AbstractUserDetailsService<User> {
+    @Autowired
+    private UserRepository userRepository;
+    @Override
+    protected User findUserByUsername(String username) {
+        return userRepository.findByEmailIgnoreCase(username);
+    }
+}
+```
+
+When no user details service is registered we will automatically detect and use all registered authentication providers. This way
+we could even support multiple implementations at once, e.g. CROWD and JWT. Spring will automatically attempt to authenticate
+on all providers that support the authentication token:
+
+```java
+@Configuration
+class CustomSecurity {
+    @Bean
+    public AuthenticationProvider crowdAuthenticationProvider() {
+        return new CrowdAuthenticationProvider();
+    }
+}
+```
+
+- By default, a `BcryptPasswordEncoder` bean is added to the security config for password matching. Use this bean when you are encrypting passwords for your User domain object.
+If you want to override this bean, you can provide a custom `PasswordEncoder` implementation by adding it to your Spring `ApplicationContext`.
+
+## Customization
+
+1. Using a custom User domain object:
+
+To use a custom User object we should implement the `RegisteredUser` interface (using the email fields as username):
  
  ```java
 @Entity
@@ -79,21 +115,10 @@ public class User implements RegisteredUser {
     }
 }
  ```
-- Implement `AbstractUserDetailsService` and add it as a `Bean` to your Spring `ApplicationContext`:
- 
-```java
-@Service
-class SpringUserDetailsService extends AbstractUserDetailsService<User> {
-    @Autowired
-    private UserRepository userRepository;
-    @Override
-    protected User findUserByUsername(String username) {
-        return userRepository.findByEmailIgnoreCase(username);
-    }
-}
-```
-- If your custom User domain object has custom properties for "accountExpired", "accountLocked", "credentialsExpired" or "userEnabled", 
-you must override the corresponding default RegisteredUser methods:
+
+If your custom User domain object has custom properties for `accountExpired`, `accountLocked`, `credentialsExpired` or `userEnabled`, 
+you should override the corresponding default RegisteredUser methods. These methods are checked during a successful authentication, by
+default they are all valid.
 
 ```java
 public class User implements RegisteredUser {
@@ -104,23 +129,65 @@ public class User implements RegisteredUser {
     }
 }
 ```
-- By default, a `BcryptPasswordEncoder` bean is added to the security config for password matching. Use this bean when you are encrypting passwords for your User domain object.
-If you want to override this bean, you can provide a custom `PasswordEncoder` implementation by adding it to your Spring `ApplicationContext`.
 
-## Customization
-
-1. Adding custom authentication providers:
-- If you want to support another provider implementation, e.g. CROWD, register an `AutenticationProvider` or `AbstractUserDetailService` as `@Bean`.
-This implementation will be picked up automatically and used during authentication:
-
-```java
-@Bean
-public AuthenticationProvider crowdAuthenticationProvider() {
-    return new ...;
+To retrieve the `User` we either need to instruct our `UserDetailService` or `AuthenticationProvider` to return a `UserDetailsAdapter` containing the user.
+Or register a `UserProvider` capable of converting an `Authentication` into a `RegisteredUser`:
+ 
+ ```java
+@Service
+public class UserService implements UserProvider {
+    @Override
+    public User toUser(Authentication authentication) {
+        return userRepository.findByUsername(authentication.getName());
+    }
 }
 ```
 
-2. Adding custom filters:
+Registered user objects can be injected into any controller method, using the `@CurrentUser` annotation:
+
+```java
+@RestController
+@RequestMapping("/users")
+public class UserController {
+    @GetMapping("/me")
+    public RegisteredUser current(@CurrentUser RegisteredUser user) {
+        return user;
+    }
+}
+```
+
+And get returned by our global `/authentication` endpoints.
+
+2. Customizing the authentication endpoints:
+- The 2 authentication endpoints will return the following json by default:
+   * POST /authentication and GET /authentication/current:
+   
+```
+{
+    username: 'peter@email.com', 
+    authorities: ['ROLE_USER']
+}
+```
+
+- The json returned for /authentication and /authentication/current can be customized by implementing the `AuthenticationResultProvider` and adding it 
+as `Bean` to the Spring `ApplicationContext`:
+
+```java
+@Component
+public class UserResultProvider implements AuthenticationResultProvider<User> {
+    private final BeanMapper beanMapper;
+    @Override
+    public UserResult toResult(User user) {
+        UserResult result = beanMapper.map(user, UserResult.class);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        result.restorable = authentication instanceof LoginAsAuthentication;
+        result.fullyAuthenticated = authentication instanceof UsernamePasswordAuthenticationToken;
+        return result;
+    }
+}
+```
+
+3. Adding custom filters:
 - Use HttpSecurityCustomizer to add your custom filters to the `SpringSecurityFilterChain` and customize the `HttpSecurity` object in general:
 
 ```java
@@ -139,7 +206,7 @@ public AuthenticationProvider crowdAuthenticationProvider() {
     }
 ```
  
-3. Configuring request url authorization:
+4. Configuring request url authorization:
 - By default the authentication endpoints are configured accessible for any request, all other url's require full authentication. You may want to add url patterns in between these. Implement `RequestAuthorizationCustomizer` and add it as a `Bean` to the Spring `ApplicationContext`:
 
 ```java
@@ -156,35 +223,6 @@ public RequestAuthorizationCustomizer requestAuthorizationCustomizer() {
                 .antMatchers(GET, "/participations").not().anonymous();
         }
     };
-}
-```
-
-4. Customizing the authentication endpoints:
-- The 2 authentication endpoints will return the following json by default:
-   * POST /authentication and GET /authentication/current:
-   
-```
-{
-    username: 'peter@email.com', 
-    authorities: ['ROLE_USER']
-}
-```
-- The json returned for /authentication and /authentication/current can be customized by implementing the `AuthenticationResultProvider<T>` and adding it as `Bean` to the Spring `ApplicationContext`.
-Note on example below: `CustomAuthenticationResult` implements `AuthenticationResult`.
-
-```java
-@Component
-public class CustomAuthenticationResultProvider implements AuthenticationResultProvider<User> {
-    @Autowired
-    private BeanMapper beanMapper;
-    @Override
-    public AuthenticationResult toAuthenticationResult(User user) {
-        CustomAuthenticationResult result = beanMapper.map(user, CustomAuthenticationResult.class);
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        result.restorable = authentication instanceof LoginAsAuthentication;
-        result.fullyAuthenticated = authentication instanceof UsernamePasswordAuthenticationToken;
-        return result;
-    }
 }
 ```
 

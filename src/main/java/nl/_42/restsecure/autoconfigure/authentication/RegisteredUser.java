@@ -12,7 +12,9 @@ public interface RegisteredUser {
 
     String getUsername();
     
-    String getPassword();
+    default String getPassword() {
+        return "";
+    }
     
     Set<String> getAuthorities();
     
