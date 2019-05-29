@@ -19,15 +19,15 @@ public final class UserDetailsAdapter<T extends RegisteredUser> implements UserD
     
     private final T user;
     
-    public UserDetailsAdapter(T registeredUser) {
-        this.user = registeredUser;
+    public UserDetailsAdapter(T user) {
+        this.user = user;
     }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return user.getAuthorities().stream()
-                .map(SimpleGrantedAuthority::new)
-                .collect(toSet());
+                   .map(SimpleGrantedAuthority::new)
+                   .collect(toSet());
     }
 
     public T getUser() {

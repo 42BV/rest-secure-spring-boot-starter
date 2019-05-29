@@ -17,4 +17,5 @@ public class TestController {
     public void restrictedMethod() {
         // Intentionally left without implementation because the test will never reach this.
     }
+
 }

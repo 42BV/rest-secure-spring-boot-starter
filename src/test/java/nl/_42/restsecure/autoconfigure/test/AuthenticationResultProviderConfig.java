@@ -13,7 +13,7 @@ import org.springframework.context.annotation.Configuration;
 public class AuthenticationResultProviderConfig extends AbstractUserDetailsServiceConfig {
 
     @Bean
-    public AuthenticationResultProvider<RegisteredUser> authenticationResultProvider() {
+    public AuthenticationResultProvider authenticationResultProvider() {
         return user -> new AuthenticationResult() {
             @Override
             public String getUsername() {

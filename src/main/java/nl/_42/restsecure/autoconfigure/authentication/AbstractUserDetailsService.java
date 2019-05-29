@@ -17,11 +17,12 @@ public abstract class AbstractUserDetailsService<T extends RegisteredUser> imple
     protected abstract T findUserByUsername(String username);
     
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+    public UserDetailsAdapter<T> loadUserByUsername(String username) throws UsernameNotFoundException {
         T user = findUserByUsername(username);
         if (user == null) {
             throw new UsernameNotFoundException("Username: '" + username + "' not found.");
         }
-        return new UserDetailsAdapter<T>(user);
+        return new UserDetailsAdapter<>(user);
     }
+
 }

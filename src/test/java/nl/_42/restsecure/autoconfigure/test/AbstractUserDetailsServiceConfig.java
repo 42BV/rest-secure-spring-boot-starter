@@ -1,13 +1,11 @@
 package nl._42.restsecure.autoconfigure.test;
 
-import java.util.Set;
-
 import nl._42.restsecure.autoconfigure.authentication.AbstractUserDetailsService;
 import nl._42.restsecure.autoconfigure.authentication.RegisteredUser;
-
 import org.springframework.context.annotation.Bean;
 
-import com.google.common.collect.Sets;
+import java.util.Collections;
+import java.util.Set;
 
 public abstract class AbstractUserDetailsServiceConfig {
 
@@ -66,7 +64,7 @@ public abstract class AbstractUserDetailsServiceConfig {
 
                 @Override
                 public Set<String> getAuthorities() {
-                    return Sets.newHashSet("ROLE_ADMIN");
+                    return Collections.singleton("ROLE_ADMIN");
                 }
 
                 @Override
@@ -83,7 +81,10 @@ public abstract class AbstractUserDetailsServiceConfig {
                 public boolean isCredentialsExpired() {
                     return credentialsExpired;
                 }
+
             };
         }
+
     }
+
 }

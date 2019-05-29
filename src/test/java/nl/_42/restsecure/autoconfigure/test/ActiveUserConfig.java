@@ -13,4 +13,5 @@ public class ActiveUserConfig extends AbstractUserDetailsServiceConfig {
     protected RegisteredUser foundUser() {
         return user().build();
     }
+
 }
