@@ -21,6 +21,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -228,6 +229,7 @@ public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
     @Configuration
     public static class WebSecurityMvcAutoConfig implements WebMvcConfigurer {
 
+        @Lazy
         @Autowired
         private UserResolver userResolver;
 
