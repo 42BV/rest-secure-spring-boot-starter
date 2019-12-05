@@ -1,5 +1,14 @@
 package nl._42.restsecure.autoconfigure;
 
+import static org.springframework.http.HttpMethod.DELETE;
+import static org.springframework.security.core.context.SecurityContextHolder.MODE_INHERITABLETHREADLOCAL;
+import static org.springframework.security.web.csrf.CookieCsrfTokenRepository.withHttpOnlyFalse;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.servlet.Filter;
+
 import nl._42.restsecure.autoconfigure.authentication.AbstractUserDetailsService;
 import nl._42.restsecure.autoconfigure.authentication.AuthenticationController;
 import nl._42.restsecure.autoconfigure.authentication.AuthenticationResultProvider;
@@ -10,6 +19,7 @@ import nl._42.restsecure.autoconfigure.authentication.UserProvider;
 import nl._42.restsecure.autoconfigure.authentication.UserResolver;
 import nl._42.restsecure.autoconfigure.errorhandling.GenericErrorHandler;
 import nl._42.restsecure.autoconfigure.errorhandling.RestAccessDeniedHandler;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,14 +52,6 @@ import org.springframework.security.web.csrf.CsrfTokenRepository;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-
-import javax.servlet.Filter;
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.springframework.http.HttpMethod.DELETE;
-import static org.springframework.security.core.context.SecurityContextHolder.MODE_INHERITABLETHREADLOCAL;
-import static org.springframework.security.web.csrf.CookieCsrfTokenRepository.withHttpOnlyFalse;
 
 /**
  * Auto-configures Spring Web Security with a customized UserDetailsService for internal users storage or with crowd-integration-springsecurity for external crowd authentication.
@@ -145,13 +147,15 @@ public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
         if (userDetailsService != null) {
             log.info("Found UserDetailService in ApplicationContext.");
             auth.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder());
-        } else if (!authProviders.isEmpty()) {
+        }
+        if (!authProviders.isEmpty()) {
             log.info("Found AuthenticationProvider(s) in ApplicationContext.");
             authProviders.forEach((authProvider) -> {
                 log.info("\t Registering '{}' as authentication provider.", authProvider.getClass().getSimpleName());
                 auth.authenticationProvider(authProvider);
             });
-        } else {
+        }
+        if (userDetailsService == null && authProviders.isEmpty()) {
             throw new IllegalStateException(
                 "Cannot configure security; either a UserDetailsService or AuthenticationProvider bean must be present."
             );
