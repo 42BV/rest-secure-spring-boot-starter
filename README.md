@@ -67,8 +67,8 @@ class SpringUserDetailsService implements AbstractUserDetailsService<User> {
 }
 ```
 
-When no user details service is registered we will automatically detect and use all registered authentication providers. This way
-we could even support multiple implementations at once, e.g. CROWD and JWT. Spring will automatically attempt to authenticate
+We will also automatically detect and use all registered authentication providers. This way
+we could even support multiple implementations at once, e.g. local database, CROWD and JWT. Spring will automatically attempt to authenticate
 on all providers that support the authentication token:
 
 ```java
@@ -130,27 +130,32 @@ public class User implements RegisteredUser {
 }
 ```
 
-To retrieve the `User` we either need to instruct our `UserDetailService` or `AuthenticationProvider` to return a `UserDetailsAdapter` containing the user.
-Or register a `UserProvider` capable of converting an `Authentication` into a `RegisteredUser`:
+Some utilities of this library (@CurrentUser, AuthenticationResultProvider, see below) make use of the principal that is available in the SecurityContext. 
+If making use of the local database users setup, the authentication principal will be of type `UserDetailsAdapter` wrapping our custom implementation 
+of the `RegisteredUser` interface. The utils will have access to a user object of our `RegisteredUser` implementation type automatically.
+
+When adding an AuthenticationProvider with a UserDetailsService for other users storage (e.g. CROWD), we can register a `UserProvider` capable of converting 
+an `Authentication` into a `RegisteredUser` to ensure that the utilities are able to otain a user of correct type:
  
  ```java
 @Service
 public class UserService implements UserProvider {
     @Override
     public User toUser(Authentication authentication) {
-        return userRepository.findByUsername(authentication.getName());
+        CrowdUserDetails userDetails = (CrowdUserDetails) authentication.getPrincipal();
+        return userRepository.findByEmail(userDetails.getEmail());
     }
 }
 ```
 
-Registered user objects can be injected into any controller method, using the `@CurrentUser` annotation:
+`RegisteredUser` instances  can be injected into any controller method, using the `@CurrentUser` annotation:
 
 ```java
 @RestController
 @RequestMapping("/users")
 public class UserController {
     @GetMapping("/me")
-    public RegisteredUser current(@CurrentUser RegisteredUser user) {
+    public RegisteredUser current(@CurrentUser User user) {
         return user;
     }
 }
