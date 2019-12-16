@@ -1,8 +1,20 @@
 package nl._42.restsecure.autoconfigure;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import static org.springframework.http.HttpMethod.POST;
+import static org.springframework.http.HttpStatus.UNAUTHORIZED;
+
+import java.io.IOException;
+import java.util.Optional;
+
+import javax.servlet.Filter;
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import nl._42.restsecure.autoconfigure.authentication.AbstractRestAuthenticationSuccessHandler;
 import nl._42.restsecure.autoconfigure.errorhandling.GenericErrorHandler;
+
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,15 +27,8 @@ import org.springframework.security.web.authentication.RememberMeServices;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-
-import static org.springframework.http.HttpMethod.POST;
-import static org.springframework.http.HttpStatus.UNAUTHORIZED;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Handles the login POST request. Tries to Authenticate the given user credentials using the auto configured {@link AuthenticationManager}.
@@ -41,15 +46,24 @@ public class RestAuthenticationFilter extends OncePerRequestFilter {
     private final GenericErrorHandler errorHandler;
     private final AntPathRequestMatcher requestMatcher;
     private final AuthenticationManager authenticationManager;
-    private final RememberMeServices rememberMeServices;
     private final ObjectMapper objectMapper;
+    private Optional<RememberMeServices> rememberMeServices = Optional.empty();
+    private Optional<AbstractRestAuthenticationSuccessHandler> successHandler = Optional.empty();
 
-    public RestAuthenticationFilter(GenericErrorHandler handler, AuthenticationManager authenticationManager, RememberMeServices rememberMeServices) {
-        this.errorHandler = handler;
+    public RestAuthenticationFilter(GenericErrorHandler errorHandler,
+            AuthenticationManager authenticationManager) {
+        this.errorHandler = errorHandler;
         this.requestMatcher = new AntPathRequestMatcher("/authentication", POST.name());
         this.authenticationManager = authenticationManager;
-        this.rememberMeServices = rememberMeServices;
         this.objectMapper = new ObjectMapper();
+    }
+
+    public void setRememberMeServices(RememberMeServices rememberMeServices) {
+        this.rememberMeServices = Optional.ofNullable(rememberMeServices);
+    }
+
+    public void setAuthenticationSuccessHandler(AbstractRestAuthenticationSuccessHandler successHandler) {
+        this.successHandler = Optional.ofNullable(successHandler);
     }
 
     @Override
@@ -73,9 +87,8 @@ public class RestAuthenticationFilter extends OncePerRequestFilter {
             SecurityContextHolder.getContext().setAuthentication(authentication);
             request.setAttribute(LOGIN_FORM_JSON, loginFormJson);
 
-            if (rememberMeServices != null) {
-                rememberMeServices.loginSuccess(request, response, authentication);
-            }
+            successHandler.ifPresent(sh -> sh.onAuthenticationSuccess(request, response, authentication));
+            rememberMeServices.ifPresent(rms -> rms.loginSuccess(request, response, authentication));
 
             chain.doFilter(request, response);
         } catch (AuthenticationException ex) {
@@ -88,10 +101,7 @@ public class RestAuthenticationFilter extends OncePerRequestFilter {
 
         SecurityContextHolder.getContext().setAuthentication(null);
         errorHandler.respond(response, UNAUTHORIZED, SERVER_LOGIN_FAILED_ERROR);
-
-        if (rememberMeServices != null) {
-            rememberMeServices.loginFail(request, response);
-        }
+        rememberMeServices.ifPresent(rms -> rms.loginFail(request, response));
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)

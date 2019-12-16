@@ -272,3 +272,7 @@ Response body: `{ errorCode: 'SERVER.ACCESS_DENIED_ERROR'}`
    * Invalid session (e.g. timeout or after logout):  
 Http status: 401  
 Response body: `{ errorCode: 'SERVER.SESSION_INVALID_ERROR'}`
+
+8. Successful authentication handling:
+- If you want to add custom behaviour after each successful authentication, you can implement `AbstractRestAuthenticationSuccessHandler` and add it 
+as bean to your application context.

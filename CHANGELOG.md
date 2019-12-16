@@ -4,7 +4,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## [UNRELEASED]
+## [7.2.0] - 2019-12-16
+- Removed `/authentication/handshake` http security configuration and documentation because it was removed a few versions ago already (since 3.0.0).
+- Added the possibility to implement an `AbstractRestAuthenticationSuccessHandler` to customize behaviour after successful authentication.
+
+## [7.1.0] - 2019-12-05
+- Now it's possible to configure an AbstractUserDetailsService next to other AuthenticationProvider(s). 
+
+## [7.0.1] - 2019-05-29
+- Fixed circular dependency
+
+## [7.0.0] - 2019-05-29
 - REST authentication filter now supports `RememberMeServices`
 - Removed CROWD, separating library from any Authentication Provider implementation
  * For CROWD we suggest using the `spring-boot-starter-crowd`
