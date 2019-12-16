@@ -2,6 +2,7 @@ package nl._42.restsecure.autoconfigure.authentication;
 
 import static nl._42.restsecure.autoconfigure.RestAuthenticationFilter.SERVER_LOGIN_FAILED_ERROR;
 import static nl._42.restsecure.autoconfigure.test.RememberMeServicesConfig.REMEMBER_ME_HEADER;
+import static nl._42.restsecure.autoconfigure.test.RestAuthenticationSuccessHandlerConfig.AUTHENTICATION_SUCCESS_HEADER;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.anonymous;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -20,6 +21,8 @@ import nl._42.restsecure.autoconfigure.test.FailingTwoFactorAuthenticationFilter
 import nl._42.restsecure.autoconfigure.test.NoopPasswordEncoderConfig;
 
 import nl._42.restsecure.autoconfigure.test.RememberMeServicesConfig;
+import nl._42.restsecure.autoconfigure.test.RestAuthenticationSuccessHandlerConfig;
+
 import org.junit.Test;
 
 public class AuthenticationControllerTest extends AbstractApplicationContextTest {
@@ -70,7 +73,7 @@ public class AuthenticationControllerTest extends AbstractApplicationContextTest
     }
 
     @Test
-    public void authenticate_shouldSucceed_withRememberMeServices() throws Exception {
+    public void rememberMe_shouldSucceed_afterSuccessfulAuthentication() throws Exception {
         getWebClient(ActiveUserConfig.class, NoopPasswordEncoderConfig.class, RememberMeServicesConfig.class)
                 .perform(post("/authentication")
                         .content("{\"username\": \"custom\", \"password\": \"password\"}"))
@@ -81,13 +84,34 @@ public class AuthenticationControllerTest extends AbstractApplicationContextTest
     }
 
     @Test
-    public void authenticate_shouldFail_withRememberMeServices() throws Exception {
+    public void rememberMe_shouldFail_afterFailedAutentication() throws Exception {
         getWebClient(ActiveUserConfig.class, NoopPasswordEncoderConfig.class, RememberMeServicesConfig.class)
                 .perform(post("/authentication")
-                        .content("{\"username\": \"custom\", \"password\": \"other\"}"))
+                        .content("{\"username\": \"custom\", \"password\": \"wrong\"}"))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("errorCode").value(SERVER_LOGIN_FAILED_ERROR))
                 .andExpect(header().string(REMEMBER_ME_HEADER, "failed"));
+    }
+
+    @Test
+    public void successHanlder_shouldBeCalled_afterSuccessfulAuthentication() throws Exception {
+        getWebClient(ActiveUserConfig.class, NoopPasswordEncoderConfig.class, RestAuthenticationSuccessHandlerConfig.class)
+                .perform(post("/authentication")
+                        .content("{\"username\": \"custom\", \"password\": \"password\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("authorities[0]").value("ROLE_ADMIN"))
+                .andExpect(jsonPath("username").value("username"))
+                .andExpect(header().string(AUTHENTICATION_SUCCESS_HEADER, "username"));
+    }
+
+    @Test
+    public void successHanlder_shouldNotBeCalled_afterFailedAuthentication() throws Exception {
+        getWebClient(ActiveUserConfig.class, NoopPasswordEncoderConfig.class, RestAuthenticationSuccessHandlerConfig.class)
+                .perform(post("/authentication")
+                        .content("{\"username\": \"custom\", \"password\": \"wrong\"}"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("errorCode").value(SERVER_LOGIN_FAILED_ERROR))
+                .andExpect(header().doesNotExist(AUTHENTICATION_SUCCESS_HEADER));
     }
 
     @Test

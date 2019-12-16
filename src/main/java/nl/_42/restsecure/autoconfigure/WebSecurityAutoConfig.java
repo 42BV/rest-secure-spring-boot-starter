@@ -9,6 +9,7 @@ import java.util.List;
 
 import javax.servlet.Filter;
 
+import nl._42.restsecure.autoconfigure.authentication.AbstractRestAuthenticationSuccessHandler;
 import nl._42.restsecure.autoconfigure.authentication.AbstractUserDetailsService;
 import nl._42.restsecure.autoconfigure.authentication.AuthenticationController;
 import nl._42.restsecure.autoconfigure.authentication.AuthenticationResultProvider;
@@ -58,7 +59,6 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
  * Spring Method Security is enabled: You can make use of `@PreAuthorize` and `@PostAuthorize`.
  * Customizable authentication endpoints provided:
  * POST `/authentication` - to be able to login clients should provide a json request body like `{ username: 'user@email.com', password: 'secret'}`.
- * GET `/authentication/handshake` - to obtain the current csrf token
  * GET `/authentication/current` - to obtain the current logged in user
  */
 @Configuration
@@ -76,25 +76,20 @@ public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
     private RestAccessDeniedHandler accessDeniedHandler;
-
     @Autowired
     private GenericErrorHandler errorHandler;
-
+    @Autowired(required = false)
+    private AbstractRestAuthenticationSuccessHandler authenticationSuccessHandler;
     @Autowired(required = false)
     private AbstractUserDetailsService userDetailsService;
-
     @Autowired(required = false)
     private List<AuthenticationProvider> authProviders = new ArrayList<>();
-
     @Autowired(required = false)
     private RequestAuthorizationCustomizer authCustomizer;
-
     @Autowired(required = false)
     private HttpSecurityCustomizer httpCustomizer;
-
     @Autowired(required = false)
     private WebSecurityCustomizer webSecurityCustomizer;
-
     @Autowired(required = false)
     private RememberMeServices rememberMeServices;
 
@@ -183,24 +178,28 @@ public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
         ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry urlRegistry = http
             .addFilterBefore(authenticationFilter(), AnonymousAuthenticationFilter.class)
             .authorizeRequests()
-            .antMatchers("/authentication").permitAll()
-            .antMatchers("/authentication/handshake").permitAll();
+                .antMatchers("/authentication").permitAll();
         customize(urlRegistry)
             .anyRequest().fullyAuthenticated()
             .and()
-            .exceptionHandling()
-            .accessDeniedHandler(accessDeniedHandler)
-            .authenticationEntryPoint(accessDeniedHandler)
+                .exceptionHandling()
+                    .accessDeniedHandler(accessDeniedHandler)
+                    .authenticationEntryPoint(accessDeniedHandler)
             .and()
-            .logout()
-            .logoutRequestMatcher(new AntPathRequestMatcher("/authentication", DELETE.name()))
-            .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler())
-            .and().csrf().csrfTokenRepository(csrfTokenRepository());
+                .logout()
+                    .logoutRequestMatcher(new AntPathRequestMatcher("/authentication", DELETE.name()))
+                    .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler())
+            .and()
+                .csrf()
+                    .csrfTokenRepository(csrfTokenRepository());
         customize(http);
     }
    
     private Filter authenticationFilter() throws Exception {
-        return new RestAuthenticationFilter(errorHandler, authenticationManagerBean(), rememberMeServices);
+        RestAuthenticationFilter filter = new RestAuthenticationFilter(errorHandler, authenticationManagerBean());
+        filter.setAuthenticationSuccessHandler(authenticationSuccessHandler);
+        filter.setRememberMeServices(rememberMeServices);
+        return filter;
     }
     
     private ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry customize(
