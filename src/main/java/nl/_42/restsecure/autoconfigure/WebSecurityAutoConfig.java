@@ -1,7 +1,6 @@
 package nl._42.restsecure.autoconfigure;
 
 import static org.springframework.http.HttpMethod.DELETE;
-import static org.springframework.security.core.context.SecurityContextHolder.MODE_INHERITABLETHREADLOCAL;
 import static org.springframework.security.web.csrf.CookieCsrfTokenRepository.withHttpOnlyFalse;
 
 import java.util.ArrayList;
@@ -42,7 +41,6 @@ import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.annotation.web.configurers.ExpressionUrlAuthorizationConfigurer;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.AnonymousAuthenticationFilter;
@@ -69,10 +67,6 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
 
     private final Logger log = LoggerFactory.getLogger(WebSecurityAutoConfig.class);
-
-    static {
-        SecurityContextHolder.setStrategyName(MODE_INHERITABLETHREADLOCAL);
-    }
 
     @Autowired
     private RestAccessDeniedHandler accessDeniedHandler;
