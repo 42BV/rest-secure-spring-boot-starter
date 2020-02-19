@@ -1,5 +1,8 @@
 package nl._42.restsecure.autoconfigure.authentication;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,13 +26,14 @@ public class AuthenticationController {
     }
 
     @PostMapping
-    public AuthenticationResult authenticate(@CurrentUser RegisteredUser user) {
-        return current(user);
+    public AuthenticationResult authenticate(HttpServletRequest request,
+            HttpServletResponse response, @CurrentUser RegisteredUser user) {
+        return current(request, response, user);
     }
 
     @GetMapping("/current")
-    public AuthenticationResult current(@CurrentUser RegisteredUser user) {
-        return provider.toResult(user);
+    public AuthenticationResult current(HttpServletRequest request, HttpServletResponse response, @CurrentUser RegisteredUser user) {
+        return provider.toResult(request, response, user);
     }
 
 }

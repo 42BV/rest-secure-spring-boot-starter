@@ -88,7 +88,9 @@ public class RestAuthenticationFilter extends OncePerRequestFilter {
             request.setAttribute(LOGIN_FORM_JSON, loginFormJson);
 
             successHandler.ifPresent(sh -> sh.onAuthenticationSuccess(request, response, authentication));
-            rememberMeServices.ifPresent(rms -> rms.loginSuccess(request, response, authentication));
+            if (form.rememberMe) {
+                rememberMeServices.ifPresent(rms -> rms.loginSuccess(request, response, authentication));
+            }
 
             chain.doFilter(request, response);
         } catch (AuthenticationException ex) {
@@ -109,6 +111,7 @@ public class RestAuthenticationFilter extends OncePerRequestFilter {
 
         public String username;
         public String password;
+        public boolean rememberMe;
 
     }
 

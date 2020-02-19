@@ -14,7 +14,7 @@ public class AuthenticationResultProviderConfig extends AbstractUserDetailsServi
 
     @Bean
     public AuthenticationResultProvider authenticationResultProvider() {
-        return user -> new AuthenticationResult() {
+        return (request, response, user) -> new AuthenticationResult() {
             @Override
             public String getUsername() {
                 return "customized";

@@ -76,7 +76,7 @@ public class AuthenticationControllerTest extends AbstractApplicationContextTest
     public void rememberMe_shouldSucceed_afterSuccessfulAuthentication() throws Exception {
         getWebClient(ActiveUserConfig.class, NoopPasswordEncoderConfig.class, RememberMeServicesConfig.class)
                 .perform(post("/authentication")
-                        .content("{\"username\": \"custom\", \"password\": \"password\"}"))
+                        .content("{\"username\": \"custom\", \"password\": \"password\", \"rememberMe\":true}"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("authorities[0]").value("ROLE_ADMIN"))
                 .andExpect(jsonPath("username").value("username"))

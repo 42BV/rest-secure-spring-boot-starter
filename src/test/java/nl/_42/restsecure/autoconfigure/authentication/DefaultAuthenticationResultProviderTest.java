@@ -1,8 +1,8 @@
 package nl._42.restsecure.autoconfigure.authentication;
 
-import org.junit.Test;
-
 import static org.junit.Assert.assertEquals;
+
+import org.junit.Test;
 
 public class DefaultAuthenticationResultProviderTest {
 
@@ -12,7 +12,7 @@ public class DefaultAuthenticationResultProviderTest {
   public void to_result() {
     User user = new User("henk", "admin");
 
-    AuthenticationResult result = provider.toResult(user);
+    AuthenticationResult result = provider.toResult(null, null, user);
     assertEquals("henk", result.getUsername());
     assertEquals(user.getAuthorities(), result.getAuthorities());
   }
