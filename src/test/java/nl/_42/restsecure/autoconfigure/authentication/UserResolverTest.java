@@ -1,7 +1,6 @@
 package nl._42.restsecure.autoconfigure.authentication;
 
 import org.junit.Test;
-import org.mockito.Mockito;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -25,10 +24,7 @@ public class UserResolverTest {
   @Test
   public void resolve_adapter_shouldSucceed() {
     User user = new User("henk", "admin");
-    UserDetailsAdapter<User> details = new UserDetailsAdapter<>(user);
-
-    Authentication authentication = Mockito.mock(Authentication.class);
-    Mockito.when(authentication.getPrincipal()).thenReturn(details);
+    Authentication authentication = new AuthenticationAdapter(user);
 
     assertEquals(user, resolver.resolve(authentication));
   }
