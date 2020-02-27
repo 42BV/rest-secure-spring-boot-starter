@@ -1,14 +1,16 @@
 package nl._42.restsecure.autoconfigure.authentication;
 
+import nl._42.restsecure.autoconfigure.authentication.RegisteredUser;
+
 import java.util.Collections;
 import java.util.Set;
 
-class User implements RegisteredUser {
+public class User implements RegisteredUser {
 
   private final String username;
   private final String role;
 
-  User(String username, String role) {
+  public User(String username, String role) {
     this.username = username;
     this.role = role;
   }
