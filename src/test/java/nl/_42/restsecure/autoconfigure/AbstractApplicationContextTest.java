@@ -40,10 +40,6 @@ public abstract class AbstractApplicationContextTest {
             .alwaysDo(log())
             .build();
     }
-   
-    protected void loadApplicationContext() {
-        this.context = load(new AnnotationConfigWebApplicationContext());
-    }
 
     protected void loadApplicationContext(Class<?>... config) {
         AnnotationConfigWebApplicationContext appContext = new AnnotationConfigWebApplicationContext();
@@ -61,4 +57,5 @@ public abstract class AbstractApplicationContextTest {
         applicationContext.refresh();
         return applicationContext;
     }
+
 }

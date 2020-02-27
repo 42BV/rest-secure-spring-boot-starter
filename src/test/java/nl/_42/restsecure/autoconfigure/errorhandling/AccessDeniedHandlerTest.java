@@ -71,4 +71,5 @@ public class AccessDeniedHandlerTest extends AbstractApplicationContextTest {
             .andExpect(status().isUnauthorized())
             .andExpect(jsonPath("errorCode").value(SERVER_AUTHENTICATE_ERROR));
     }
+
 }
