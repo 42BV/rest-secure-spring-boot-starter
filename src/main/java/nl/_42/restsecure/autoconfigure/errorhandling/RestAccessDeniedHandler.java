@@ -5,10 +5,11 @@ import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 
 import java.io.IOException;
 
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
@@ -27,6 +28,7 @@ public class RestAccessDeniedHandler implements AccessDeniedHandler, Authenticat
     public static final String SERVER_SESSION_INVALID_ERROR = "SERVER.SESSION_TIMEOUT_ERROR";
     
     private final GenericErrorHandler errorHandler;
+    private final Logger log = LoggerFactory.getLogger(RestAccessDeniedHandler.class);
 
     @Autowired
     public RestAccessDeniedHandler(GenericErrorHandler handler) {
@@ -38,7 +40,8 @@ public class RestAccessDeniedHandler implements AccessDeniedHandler, Authenticat
      * {@inheritDoc}
      */
     @Override
-    public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException exception) throws IOException, ServletException {
+    public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException exception) throws IOException {
+        log.warn("Authorization failure!", exception);
         errorHandler.respond(response, FORBIDDEN, SERVER_ACCESS_DENIED_ERROR);
     }
 
@@ -47,7 +50,8 @@ public class RestAccessDeniedHandler implements AccessDeniedHandler, Authenticat
      * {@inheritDoc}
      */
     @Override
-    public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws IOException, ServletException {
+    public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws IOException {
+        log.warn("Authorization failure!", exception);
         String errorCode = SERVER_AUTHENTICATE_ERROR;
         if (request.getRequestedSessionId() != null
                 && !request.isRequestedSessionIdValid()) {
