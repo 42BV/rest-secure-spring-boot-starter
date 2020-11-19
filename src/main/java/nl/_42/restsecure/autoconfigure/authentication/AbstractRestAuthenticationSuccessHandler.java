@@ -17,11 +17,11 @@ public abstract class AbstractRestAuthenticationSuccessHandler<T extends Registe
 
     @Lazy
     @Autowired
-    private UserResolver userResolver;
+    private UserResolver<T> userResolver;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
-        doHandle(request, response, (T) userResolver.resolve(authentication));
+        doHandle(request, response, userResolver.resolve().orElseThrow(IllegalStateException::new));
     }
 
     protected abstract void doHandle(HttpServletRequest request, HttpServletResponse response, T user);

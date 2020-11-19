@@ -1,10 +1,10 @@
 package nl._42.restsecure.autoconfigure.authentication;
 
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.core.MethodParameter;
-
-import static org.junit.Assert.assertEquals;
 
 public class CurrentUserArgumentResolverTest {
 

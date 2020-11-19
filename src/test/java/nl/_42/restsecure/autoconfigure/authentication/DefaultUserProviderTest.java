@@ -1,14 +1,14 @@
 package nl._42.restsecure.autoconfigure.authentication;
 
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import java.util.Collections;
+
+import org.junit.jupiter.api.Test;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-
-import java.util.Collections;
-
-import static org.junit.Assert.assertEquals;
 
 public class DefaultUserProviderTest {
 

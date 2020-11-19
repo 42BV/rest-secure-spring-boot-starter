@@ -8,6 +8,8 @@ import java.util.List;
 
 import javax.servlet.Filter;
 
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import nl._42.restsecure.autoconfigure.authentication.AbstractRestAuthenticationSuccessHandler;
 import nl._42.restsecure.autoconfigure.authentication.AbstractUserDetailsService;
 import nl._42.restsecure.autoconfigure.authentication.AuthenticationController;
@@ -15,9 +17,12 @@ import nl._42.restsecure.autoconfigure.authentication.AuthenticationResultProvid
 import nl._42.restsecure.autoconfigure.authentication.CurrentUserArgumentResolver;
 import nl._42.restsecure.autoconfigure.authentication.DefaultAuthenticationResultProvider;
 import nl._42.restsecure.autoconfigure.authentication.DefaultUserProvider;
+import nl._42.restsecure.autoconfigure.authentication.RegisteredUser;
 import nl._42.restsecure.autoconfigure.authentication.UserProvider;
 import nl._42.restsecure.autoconfigure.authentication.UserResolver;
+import nl._42.restsecure.autoconfigure.errorhandling.DefaultLoginAuthenticationExceptionHandler;
 import nl._42.restsecure.autoconfigure.errorhandling.GenericErrorHandler;
+import nl._42.restsecure.autoconfigure.errorhandling.LoginAuthenticationExceptionHandler;
 import nl._42.restsecure.autoconfigure.errorhandling.RestAccessDeniedHandler;
 
 import org.slf4j.Logger;
@@ -31,7 +36,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -64,28 +68,23 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @ComponentScan(basePackageClasses = { AuthenticationController.class, GenericErrorHandler.class })
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
+@Setter(onMethod_={@Autowired(required = false)})
 public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
 
     private final Logger log = LoggerFactory.getLogger(WebSecurityAutoConfig.class);
+    private final RestAccessDeniedHandler accessDeniedHandler;
 
-    @Autowired
-    private RestAccessDeniedHandler accessDeniedHandler;
-    @Autowired
-    private GenericErrorHandler errorHandler;
-    @Autowired(required = false)
-    private AbstractRestAuthenticationSuccessHandler authenticationSuccessHandler;
-    @Autowired(required = false)
-    private AbstractUserDetailsService userDetailsService;
-    @Autowired(required = false)
+    private AbstractRestAuthenticationSuccessHandler<? extends RegisteredUser> authenticationSuccessHandler;
+    private AbstractUserDetailsService<? extends RegisteredUser> userDetailsService;
     private List<AuthenticationProvider> authProviders = new ArrayList<>();
-    @Autowired(required = false)
     private RequestAuthorizationCustomizer authCustomizer;
-    @Autowired(required = false)
     private HttpSecurityCustomizer httpCustomizer;
-    @Autowired(required = false)
     private WebSecurityCustomizer webSecurityCustomizer;
-    @Autowired(required = false)
     private RememberMeServices rememberMeServices;
+
+    public WebSecurityAutoConfig(RestAccessDeniedHandler accessDeniedHandler) {
+        this.accessDeniedHandler = accessDeniedHandler;
+    }
 
     /**
      * Adds a {@link BCryptPasswordEncoder} to the {@link ApplicationContext} if no {@link PasswordEncoder} bean is found already.
@@ -109,13 +108,19 @@ public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
         return new DefaultUserProvider();
     }
 
+    @Bean
+    @ConditionalOnMissingBean(LoginAuthenticationExceptionHandler.class)
+    public LoginAuthenticationExceptionHandler loginExceptionHandler(GenericErrorHandler errorHandler) {
+        return new DefaultLoginAuthenticationExceptionHandler(errorHandler);
+    }
+
     /**
      * Adds an {@link AuthenticationResultProvider} to the {@link ApplicationContext} if no {@link AuthenticationResultProvider} bean is found already.
      * @return AuthenticationResultProvider
      */
     @Bean
     @ConditionalOnMissingBean(AuthenticationResultProvider.class)
-    public AuthenticationResultProvider authenticationResultProvider() {
+    public AuthenticationResultProvider<? extends RegisteredUser> authenticationResultProvider() {
         return new DefaultAuthenticationResultProvider();
     }
 
@@ -139,7 +144,7 @@ public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
         }
         if (!authProviders.isEmpty()) {
             log.info("Found AuthenticationProvider(s) in ApplicationContext.");
-            authProviders.forEach((authProvider) -> {
+            authProviders.forEach(authProvider -> {
                 log.info("\t Registering '{}' as authentication provider.", authProvider.getClass().getSimpleName());
                 auth.authenticationProvider(authProvider);
             });
@@ -190,7 +195,7 @@ public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
     }
    
     private Filter authenticationFilter() throws Exception {
-        RestAuthenticationFilter filter = new RestAuthenticationFilter(errorHandler, authenticationManagerBean());
+        RestAuthenticationFilter filter = new RestAuthenticationFilter(loginExceptionHandler(null), authenticationManagerBean());
         filter.setAuthenticationSuccessHandler(authenticationSuccessHandler);
         filter.setRememberMeServices(rememberMeServices);
         return filter;
@@ -207,14 +212,13 @@ public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
         return urlRegistry;
     }
 
-    private HttpSecurity customize(HttpSecurity http) throws Exception {
+    private void customize(HttpSecurity http) throws Exception {
         if (httpCustomizer != null) {
             log.info("Found HttpSecurityCustomizer bean in ApplicationContext, custom configuring of HttpSecurity object started.");
-            return httpCustomizer.customize(http);
+            httpCustomizer.customize(http);
         } else {
             log.info("No HttpSecurityCustomizer bean found in ApplicationContext, no custom configuring of HttpSecurity object.");
         }
-        return http;
     }
 
     private CsrfTokenRepository csrfTokenRepository() {
@@ -224,11 +228,10 @@ public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
     }
 
     @Configuration
+    @RequiredArgsConstructor
     public static class WebSecurityMvcAutoConfig implements WebMvcConfigurer {
 
-        @Lazy
-        @Autowired
-        private UserResolver userResolver;
+        private final UserResolver userResolver;
 
         @Override
         public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {

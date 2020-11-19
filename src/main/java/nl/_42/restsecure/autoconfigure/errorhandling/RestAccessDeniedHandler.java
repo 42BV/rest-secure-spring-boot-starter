@@ -52,11 +52,9 @@ public class RestAccessDeniedHandler implements AccessDeniedHandler, Authenticat
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws IOException {
         log.warn("Authorization failure!", exception);
-        String errorCode = SERVER_AUTHENTICATE_ERROR;
-        if (request.getRequestedSessionId() != null
-                && !request.isRequestedSessionIdValid()) {
-            errorCode = SERVER_SESSION_INVALID_ERROR;
-        }
+        String errorCode = request.isRequestedSessionIdValid()
+                ? SERVER_AUTHENTICATE_ERROR
+                : SERVER_SESSION_INVALID_ERROR;
         errorHandler.respond(response, UNAUTHORIZED, errorCode);
     }
 }

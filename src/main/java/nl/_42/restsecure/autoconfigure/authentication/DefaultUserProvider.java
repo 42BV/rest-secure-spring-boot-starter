@@ -1,10 +1,10 @@
 package nl._42.restsecure.autoconfigure.authentication;
 
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 
 public class DefaultUserProvider implements UserProvider {
 

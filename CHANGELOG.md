@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [8.0.0] - 2020-11-19
+- Upgrade: From java 8 to java 11
+- Upgrade: From spring-boot 2.2 to 2.4
+- Upgrade: From junit 4 to 5
+- Upgrade: Pom no longer extends from sonatype pom which is deprecated
+- Changed: UserResolver bean is now typed and no longer needs Authentication as argument,
+also returns an Optional instead of a possible null value
+- Added: Extension point for handling AuthenticationExceptions during login
+- Fixed: Documentation fixes in readme.md
+
 ## [7.2.0] - 2019-12-16
 - Removed `/authentication/handshake` http security configuration and documentation because it was removed a few versions ago already (since 3.0.0).
 - Added the possibility to implement an `AbstractRestAuthenticationSuccessHandler` to customize behaviour after successful authentication.
