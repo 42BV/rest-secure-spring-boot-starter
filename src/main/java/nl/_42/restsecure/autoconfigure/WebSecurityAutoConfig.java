@@ -9,7 +9,6 @@ import java.util.List;
 import javax.servlet.Filter;
 
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 import nl._42.restsecure.autoconfigure.authentication.AbstractRestAuthenticationSuccessHandler;
 import nl._42.restsecure.autoconfigure.authentication.AbstractUserDetailsService;
 import nl._42.restsecure.autoconfigure.authentication.AuthenticationController;
@@ -68,7 +67,6 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @ComponentScan(basePackageClasses = { AuthenticationController.class, GenericErrorHandler.class })
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
-@Setter(onMethod_={@Autowired(required = false)})
 public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
 
     private final Logger log = LoggerFactory.getLogger(WebSecurityAutoConfig.class);
@@ -82,6 +80,44 @@ public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
     private WebSecurityCustomizer webSecurityCustomizer;
     private RememberMeServices rememberMeServices;
 
+    @Autowired(required = false)
+    public void setAuthenticationSuccessHandler(
+            AbstractRestAuthenticationSuccessHandler<? extends RegisteredUser> authenticationSuccessHandler) {
+        this.authenticationSuccessHandler = authenticationSuccessHandler;
+    }
+
+    @Autowired(required = false)
+    public void setUserDetailsService(
+            AbstractUserDetailsService<? extends RegisteredUser> userDetailsService) {
+        this.userDetailsService = userDetailsService;
+    }
+
+    @Autowired(required = false)
+    public void setAuthProviders(List<AuthenticationProvider> authProviders) {
+        this.authProviders = authProviders;
+    }
+
+    @Autowired(required = false)
+    public void setAuthCustomizer(RequestAuthorizationCustomizer authCustomizer) {
+        this.authCustomizer = authCustomizer;
+    }
+
+    @Autowired(required = false)
+    public void setHttpCustomizer(HttpSecurityCustomizer httpCustomizer) {
+        this.httpCustomizer = httpCustomizer;
+    }
+
+    @Autowired(required = false)
+    public void setWebSecurityCustomizer(WebSecurityCustomizer webSecurityCustomizer) {
+        this.webSecurityCustomizer = webSecurityCustomizer;
+    }
+
+    @Autowired(required = false)
+    public void setRememberMeServices(RememberMeServices rememberMeServices) {
+        this.rememberMeServices = rememberMeServices;
+    }
+
+    @Autowired(required = false)
     public WebSecurityAutoConfig(RestAccessDeniedHandler accessDeniedHandler) {
         this.accessDeniedHandler = accessDeniedHandler;
     }
