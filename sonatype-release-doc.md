@@ -18,4 +18,6 @@
 - Go to 'Staging Repositories'
 - Search on '42'
 - Select the artifact
+- Press 'close'
+- Wait for closing to finish
 - Press 'release'
