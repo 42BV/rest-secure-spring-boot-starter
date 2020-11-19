@@ -8,7 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import nl._42.restsecure.autoconfigure.AbstractApplicationContextTest;
 import nl._42.restsecure.autoconfigure.test.RestrictedEndpointsConfig;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class WebMvcErrorHandlingTest extends AbstractApplicationContextTest {
 

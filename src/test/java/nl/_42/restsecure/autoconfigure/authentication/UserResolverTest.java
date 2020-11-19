@@ -1,32 +1,28 @@
 package nl._42.restsecure.autoconfigure.authentication;
 
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import java.util.Collections;
+
+import org.junit.jupiter.api.Test;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-
-import java.util.Collections;
-
-import static org.junit.Assert.assertEquals;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 public class UserResolverTest {
 
-  private final UserResolver resolver = new UserResolver(
+  private final UserResolver<User> resolver = new UserResolver<>(
     new DefaultUserProvider()
   );
-
-  @Test
-  public void resolve_null_shouldReturnNull() {
-    assertEquals(null, resolver.resolve(null));
-  }
 
   @Test
   public void resolve_adapter_shouldSucceed() {
     User user = new User("henk", "admin");
     Authentication authentication = new AuthenticationAdapter(user);
-
-    assertEquals(user, resolver.resolve(authentication));
+    SecurityContextHolder.getContext().setAuthentication(authentication);
+    assertEquals(user, resolver.resolve().orElseThrow(IllegalStateException::new));
   }
 
   @Test
@@ -34,7 +30,8 @@ public class UserResolverTest {
     GrantedAuthority authority = new SimpleGrantedAuthority("admin");
     Authentication authentication = new UsernamePasswordAuthenticationToken("henk", "", Collections.singleton(authority));
 
-    RegisteredUser user = resolver.resolve(authentication);
+    SecurityContextHolder.getContext().setAuthentication(authentication);
+    RegisteredUser user = resolver.resolve().orElseThrow(IllegalStateException::new);
     assertEquals("henk", user.getUsername());
     assertEquals("", user.getPassword());
     assertEquals(Collections.singleton("admin"), user.getAuthorities());

@@ -16,7 +16,7 @@ import nl._42.restsecure.autoconfigure.AbstractApplicationContextTest;
 import nl._42.restsecure.autoconfigure.test.ActiveUserConfig;
 import nl._42.restsecure.autoconfigure.test.RestrictedEndpointsConfig;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.web.servlet.RequestBuilder;
 

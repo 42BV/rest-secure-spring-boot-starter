@@ -1,6 +1,6 @@
 package nl._42.restsecure.autoconfigure.authentication;
 
-import static nl._42.restsecure.autoconfigure.RestAuthenticationFilter.SERVER_LOGIN_FAILED_ERROR;
+import static nl._42.restsecure.autoconfigure.errorhandling.DefaultLoginAuthenticationExceptionHandler.SERVER_LOGIN_FAILED_ERROR;
 import static nl._42.restsecure.autoconfigure.test.RememberMeServicesConfig.REMEMBER_ME_HEADER;
 import static nl._42.restsecure.autoconfigure.test.RestAuthenticationSuccessHandlerConfig.AUTHENTICATION_SUCCESS_HEADER;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.anonymous;
@@ -19,11 +19,10 @@ import nl._42.restsecure.autoconfigure.test.CredentialsExpiredUserConfig;
 import nl._42.restsecure.autoconfigure.test.CustomWebSecurityAndHttpSecurityConfig;
 import nl._42.restsecure.autoconfigure.test.FailingTwoFactorAuthenticationFilterConfig;
 import nl._42.restsecure.autoconfigure.test.NoopPasswordEncoderConfig;
-
 import nl._42.restsecure.autoconfigure.test.RememberMeServicesConfig;
 import nl._42.restsecure.autoconfigure.test.RestAuthenticationSuccessHandlerConfig;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class AuthenticationControllerTest extends AbstractApplicationContextTest {
 

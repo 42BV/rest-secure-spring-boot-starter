@@ -1,12 +1,13 @@
 package nl._42.restsecure.autoconfigure.authentication;
 
-import nl._42.restsecure.autoconfigure.AbstractApplicationContextTest;
-import nl._42.restsecure.autoconfigure.test.ActiveUserConfig;
-import org.junit.Test;
-
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import nl._42.restsecure.autoconfigure.AbstractApplicationContextTest;
+import nl._42.restsecure.autoconfigure.test.ActiveUserConfig;
+
+import org.junit.jupiter.api.Test;
 
 public class UserControllerTest extends AbstractApplicationContextTest {
 

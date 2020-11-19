@@ -1,16 +1,17 @@
 package nl._42.restsecure.autoconfigure.authentication;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import static org.junit.Assert.assertEquals;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 public class UserDetailServiceTest {
 
   private InMemoryUserDetailService service;
 
-  @Before
+  @BeforeEach
   public void setUp() {
     service = new InMemoryUserDetailService();
   }
@@ -25,9 +26,9 @@ public class UserDetailServiceTest {
     assertEquals(user, details.getUser());
   }
 
-  @Test(expected = UsernameNotFoundException.class)
+  @Test
   public void loadUserByUsername_unknownUser_shouldFail() {
-    service.loadUserByUsername("unknown");
+    Assertions.assertThrows(UsernameNotFoundException.class, () -> service.loadUserByUsername("unknown"));
   }
 
 }

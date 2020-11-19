@@ -6,7 +6,6 @@ import java.io.IOException;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
@@ -19,8 +18,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @Component
 public class GenericErrorHandler {
 
-    @Autowired
-    private ObjectMapper objectMapper;
+    private final ObjectMapper objectMapper;
+
+    public GenericErrorHandler(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
+    }
 
     public void respond(HttpServletResponse response, HttpStatus status, String errorCode) throws IOException {
         response.setStatus(status.value());

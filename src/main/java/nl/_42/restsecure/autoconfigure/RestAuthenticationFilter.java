@@ -1,7 +1,6 @@
 package nl._42.restsecure.autoconfigure;
 
 import static org.springframework.http.HttpMethod.POST;
-import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -13,7 +12,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import nl._42.restsecure.autoconfigure.authentication.AbstractRestAuthenticationSuccessHandler;
-import nl._42.restsecure.autoconfigure.errorhandling.GenericErrorHandler;
+import nl._42.restsecure.autoconfigure.errorhandling.LoginAuthenticationExceptionHandler;
 
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
@@ -39,20 +38,19 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class RestAuthenticationFilter extends OncePerRequestFilter {
     
     public static final String LOGIN_FORM_JSON = "loginFormJson";
-    public static final String SERVER_LOGIN_FAILED_ERROR = "SERVER.LOGIN_FAILED_ERROR";
 
     private final Logger log = LoggerFactory.getLogger(RestAuthenticationFilter.class);
     
-    private final GenericErrorHandler errorHandler;
+    private final LoginAuthenticationExceptionHandler loginExceptionHandler;
     private final AntPathRequestMatcher requestMatcher;
     private final AuthenticationManager authenticationManager;
     private final ObjectMapper objectMapper;
     private Optional<RememberMeServices> rememberMeServices = Optional.empty();
     private Optional<AbstractRestAuthenticationSuccessHandler> successHandler = Optional.empty();
 
-    public RestAuthenticationFilter(GenericErrorHandler errorHandler,
+    public RestAuthenticationFilter(LoginAuthenticationExceptionHandler loginExceptionHandler,
             AuthenticationManager authenticationManager) {
-        this.errorHandler = errorHandler;
+        this.loginExceptionHandler = loginExceptionHandler;
         this.requestMatcher = new AntPathRequestMatcher("/authentication", POST.name());
         this.authenticationManager = authenticationManager;
         this.objectMapper = new ObjectMapper();
@@ -100,9 +98,8 @@ public class RestAuthenticationFilter extends OncePerRequestFilter {
 
     private void handleLoginFailure(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws IOException {
         log.warn("Authentication failure!", exception);
-
         SecurityContextHolder.getContext().setAuthentication(null);
-        errorHandler.respond(response, UNAUTHORIZED, SERVER_LOGIN_FAILED_ERROR);
+        loginExceptionHandler.handle(request, response, exception);
         rememberMeServices.ifPresent(rms -> rms.loginFail(request, response));
     }
 

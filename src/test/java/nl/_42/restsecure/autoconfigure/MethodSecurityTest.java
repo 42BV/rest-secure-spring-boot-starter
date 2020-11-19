@@ -1,20 +1,22 @@
 package nl._42.restsecure.autoconfigure;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.function.Supplier;
+
 import nl._42.restsecure.autoconfigure.authentication.AuthenticationAdapter;
 import nl._42.restsecure.autoconfigure.authentication.RegisteredUser;
 import nl._42.restsecure.autoconfigure.authentication.User;
 import nl._42.restsecure.autoconfigure.test.MethodSecurityConfig;
 import nl._42.restsecure.autoconfigure.test.SecuredService;
-import org.junit.Test;
+
+import org.junit.jupiter.api.Test;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
-
-import java.util.function.Supplier;
-
-import static org.junit.Assert.assertTrue;
 
 public class MethodSecurityTest extends AbstractApplicationContextTest {
 
@@ -32,10 +34,10 @@ public class MethodSecurityTest extends AbstractApplicationContextTest {
     assertTrue(runAs(user, securedService::authenticated));
   }
 
-  @Test(expected = AuthenticationCredentialsNotFoundException.class)
+  @Test
   public void authenticated_shouldFail_whenAnonymous() {
     SecuredService securedService = getSecuredService();
-    assertTrue(securedService.authenticated());
+    assertThrows(AuthenticationCredentialsNotFoundException.class, () -> assertTrue(securedService.authenticated()));
   }
 
   @Test
@@ -46,18 +48,18 @@ public class MethodSecurityTest extends AbstractApplicationContextTest {
     assertTrue(runAs(admin, securedService::admin));
   }
 
-  @Test(expected = AccessDeniedException.class)
+  @Test
   public void admin_shouldFail_whenUser() {
     SecuredService securedService = getSecuredService();
 
     User user = new User("user", "ROLE_user");
-    assertTrue(runAs(user, securedService::admin));
+    assertThrows(AccessDeniedException.class, () -> runAs(user, securedService::admin));
   }
 
-  @Test(expected = AuthenticationCredentialsNotFoundException.class)
+  @Test
   public void admin_shouldFail_whenAnonymous() {
     SecuredService securedService = getSecuredService();
-    assertTrue(securedService.admin());
+    assertThrows(AuthenticationCredentialsNotFoundException.class, () -> securedService.admin());
   }
 
   private <T> T runAs(RegisteredUser user, Supplier<T> supplier) {
