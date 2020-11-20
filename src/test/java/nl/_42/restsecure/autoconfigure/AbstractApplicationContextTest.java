@@ -53,7 +53,8 @@ public abstract class AbstractApplicationContextTest {
                 WebMvcAutoConfiguration.class,
                 JacksonAutoConfiguration.class,
                 HttpMessageConvertersAutoConfiguration.class,
-                WebSecurityAutoConfig.class);
+                WebSecurityAutoConfig.class,
+                WebSecurityMvcAutoConfig.class);
         applicationContext.setServletContext(new MockServletContext());
         applicationContext.refresh();
         return applicationContext;
