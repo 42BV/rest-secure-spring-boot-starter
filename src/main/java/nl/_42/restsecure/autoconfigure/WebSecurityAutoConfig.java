@@ -8,17 +8,14 @@ import java.util.List;
 
 import javax.servlet.Filter;
 
-import lombok.RequiredArgsConstructor;
 import nl._42.restsecure.autoconfigure.authentication.AbstractRestAuthenticationSuccessHandler;
 import nl._42.restsecure.autoconfigure.authentication.AbstractUserDetailsService;
 import nl._42.restsecure.autoconfigure.authentication.AuthenticationController;
 import nl._42.restsecure.autoconfigure.authentication.AuthenticationResultProvider;
-import nl._42.restsecure.autoconfigure.authentication.CurrentUserArgumentResolver;
 import nl._42.restsecure.autoconfigure.authentication.DefaultAuthenticationResultProvider;
 import nl._42.restsecure.autoconfigure.authentication.DefaultUserProvider;
 import nl._42.restsecure.autoconfigure.authentication.RegisteredUser;
 import nl._42.restsecure.autoconfigure.authentication.UserProvider;
-import nl._42.restsecure.autoconfigure.authentication.UserResolver;
 import nl._42.restsecure.autoconfigure.errorhandling.DefaultLoginAuthenticationExceptionHandler;
 import nl._42.restsecure.autoconfigure.errorhandling.GenericErrorHandler;
 import nl._42.restsecure.autoconfigure.errorhandling.LoginAuthenticationExceptionHandler;
@@ -52,8 +49,6 @@ import org.springframework.security.web.authentication.logout.HttpStatusReturnin
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRepository;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
-import org.springframework.web.method.support.HandlerMethodArgumentResolver;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
  * Auto-configures Spring Web Security with a customized UserDetailsService for internal users storage or with crowd-integration-springsecurity for external crowd authentication.
@@ -262,18 +257,4 @@ public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
         repository.setCookiePath("/");
         return repository;
     }
-
-    @Configuration
-    @RequiredArgsConstructor
-    public static class WebSecurityMvcAutoConfig implements WebMvcConfigurer {
-
-        private final UserResolver userResolver;
-
-        @Override
-        public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
-            resolvers.add(new CurrentUserArgumentResolver(userResolver));
-        }
-
-    }
-
 }
