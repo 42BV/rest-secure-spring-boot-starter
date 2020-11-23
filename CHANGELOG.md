@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [8.0.1] - 2020-11-23
+- Fix: circular dependency issue fixed for UserResolver in WebSecurityMvcAutoConfig
+
 ## [8.0.0] - 2020-11-19
 - Upgrade: From java 8 to java 11
 - Upgrade: From spring-boot 2.2 to 2.4

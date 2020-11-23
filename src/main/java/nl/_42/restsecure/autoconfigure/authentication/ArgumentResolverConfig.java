@@ -1,11 +1,8 @@
-package nl._42.restsecure.autoconfigure;
+package nl._42.restsecure.autoconfigure.authentication;
 
 import java.util.List;
 
 import lombok.RequiredArgsConstructor;
-import nl._42.restsecure.autoconfigure.authentication.CurrentUserArgumentResolver;
-import nl._42.restsecure.autoconfigure.authentication.RegisteredUser;
-import nl._42.restsecure.autoconfigure.authentication.UserResolver;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
@@ -13,7 +10,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
 @RequiredArgsConstructor
-public class WebSecurityMvcAutoConfig implements WebMvcConfigurer {
+public class ArgumentResolverConfig implements WebMvcConfigurer {
 
     private final UserResolver<RegisteredUser> userResolver;
 

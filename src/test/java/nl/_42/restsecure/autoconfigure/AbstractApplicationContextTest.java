@@ -9,6 +9,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.log;
 import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppContextSetup;
 
+import nl._42.restsecure.autoconfigure.authentication.ArgumentResolverConfig;
 import nl._42.restsecure.autoconfigure.authentication.UserDetailsAdapter;
 
 import org.junit.jupiter.api.AfterEach;
@@ -54,7 +55,7 @@ public abstract class AbstractApplicationContextTest {
                 JacksonAutoConfiguration.class,
                 HttpMessageConvertersAutoConfiguration.class,
                 WebSecurityAutoConfig.class,
-                WebSecurityMvcAutoConfig.class);
+                ArgumentResolverConfig.class);
         applicationContext.setServletContext(new MockServletContext());
         applicationContext.refresh();
         return applicationContext;
