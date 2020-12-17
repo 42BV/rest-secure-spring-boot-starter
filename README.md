@@ -1,5 +1,5 @@
 [![Build Status](https://github.com/42BV/rest-secure-spring-boot-starter/workflows/Java%20CI%20with%20Maven/badge.svg)](https://github.com/42BV/rest-secure-spring-boot-starter/actions?query=workflow%3A%22Java+CI+with+Maven%22)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/3f361d897c0c45afb6d0dae3dba16709)](https://www.codacy.com/app/sptdevos/rest-secure-spring-boot-starter?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=42BV/rest-secure-spring-boot-starter&amp;utm_campaign=Badge_Grade)
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/fc6f224a2c0e40a893521b320637ad3e)](https://www.codacy.com/gh/42BV/rest-secure-spring-boot-starter/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=42BV/rest-secure-spring-boot-starter&amp;utm_campaign=Badge_Grade)
 [![BCH compliance](https://bettercodehub.com/edge/badge/42BV/rest-secure-spring-boot-starter?branch=master)](https://bettercodehub.com/)
 [![codecov](https://codecov.io/gh/42BV/rest-secure-spring-boot-starter/branch/master/graph/badge.svg)](https://codecov.io/gh/42BV/rest-secure-spring-boot-starter)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/nl.42/rest-secure-spring-boot-starter/badge.svg)](https://maven-badges.herokuapp.com/maven-central/nl.42/rest-secure-spring-boot-starter)
