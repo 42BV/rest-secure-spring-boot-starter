@@ -17,6 +17,7 @@ Spring boot autoconfig for spring security in a REST environment
 - Customizable authentication endpoints provided:
     * POST `/authentication` - to be able to login clients should provide a json request body like `{ username: 'user@email.com', password: 'secret'}`.
     * GET `/authentication/current` - to obtain the current logged in user
+    * DELETE `/authentication` - to logout the current logged in user
 - Remember me support
 - CSRF protection by the [double submit cookie](https://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF)_Prevention_Cheat_Sheet#Double_Submit_Cookie) pattern. Implemented by using the [CsrfTokenRepository](https://docs.spring.io/spring-security/site/docs/current/reference/html/csrf.html#csrf-cookie).
 - The @CurrentUser annotation may be used to annotate a controller method argument to inject the current custom user.
