@@ -25,3 +25,6 @@ jobs:
     - name: Build with Maven
       run: mvn clean verify
     - uses: codecov/codecov-action@v1
+    - uses: codacy/codacy-analysis-cli-action@master
+      with:
+        project-token: ${{ secrets.CODACY_API_TOKEN }}
