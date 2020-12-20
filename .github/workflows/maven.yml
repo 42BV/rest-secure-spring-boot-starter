@@ -33,8 +33,4 @@ jobs:
       run: mvn clean verify
     - name: Code coverage with Codecov  
       uses: codecov/codecov-action@v1
-    - name: Codacy static code analysis
-      uses: codacy/codacy-analysis-cli-action@master
-      with:
-        project-token: ${{ secrets.CODACY_API_TOKEN }}
 
