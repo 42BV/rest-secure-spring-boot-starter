@@ -37,7 +37,7 @@ public class MethodSecurityTest extends AbstractApplicationContextTest {
   @Test
   public void authenticated_shouldFail_whenAnonymous() {
     SecuredService securedService = getSecuredService();
-    assertThrows(AuthenticationCredentialsNotFoundException.class, () -> assertTrue(securedService.authenticated()));
+    assertThrows(AuthenticationCredentialsNotFoundException.class, securedService::authenticated);
   }
 
   @Test
@@ -59,7 +59,7 @@ public class MethodSecurityTest extends AbstractApplicationContextTest {
   @Test
   public void admin_shouldFail_whenAnonymous() {
     SecuredService securedService = getSecuredService();
-    assertThrows(AuthenticationCredentialsNotFoundException.class, () -> securedService.admin());
+    assertThrows(AuthenticationCredentialsNotFoundException.class, securedService::admin);
   }
 
   private <T> T runAs(RegisteredUser user, Supplier<T> supplier) {
@@ -75,9 +75,9 @@ public class MethodSecurityTest extends AbstractApplicationContextTest {
   }
 
   private SecuredService getSecuredService() {
+    SecurityContextHolder.clearContext();
     loadApplicationContext(MethodSecurityConfig.class);
     this.context.refresh();
-
     return context.getBean(SecuredService.class);
   }
 

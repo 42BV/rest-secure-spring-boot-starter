@@ -112,7 +112,6 @@ public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
         this.rememberMeServices = rememberMeServices;
     }
 
-    @Autowired(required = false)
     public WebSecurityAutoConfig(RestAccessDeniedHandler accessDeniedHandler) {
         this.accessDeniedHandler = accessDeniedHandler;
     }
