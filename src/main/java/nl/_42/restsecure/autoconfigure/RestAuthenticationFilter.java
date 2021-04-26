@@ -1,9 +1,20 @@
 package nl._42.restsecure.autoconfigure;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import static org.springframework.http.HttpMethod.POST;
+
+import java.io.IOException;
+import java.io.Reader;
+import java.util.Optional;
+
+import javax.servlet.Filter;
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import nl._42.restsecure.autoconfigure.authentication.AbstractRestAuthenticationSuccessHandler;
 import nl._42.restsecure.autoconfigure.errorhandling.LoginAuthenticationExceptionHandler;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -15,16 +26,8 @@ import org.springframework.security.web.authentication.RememberMeServices;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.io.Reader;
-import java.util.Optional;
-
-import static org.springframework.http.HttpMethod.POST;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Handles the login POST request. Tries to Authenticate the given user credentials using the auto configured {@link AuthenticationManager}.
@@ -71,7 +74,7 @@ public class RestAuthenticationFilter extends OncePerRequestFilter {
     }
 
     private void doLogin(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
-        String loginFormJson = read(request.getReader());
+        String loginFormJson = read(request);
         LoginForm form = objectMapper.readValue(loginFormJson, LoginForm.class);
         UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(form.username, form.password);
 
@@ -93,16 +96,13 @@ public class RestAuthenticationFilter extends OncePerRequestFilter {
         }
     }
 
-    private String read(Reader reader) {
-        try {
+    private String read(HttpServletRequest request) {
+        try (Reader reader = request.getReader()) {
             StringBuilder builder = new StringBuilder();
-
             int result;
             while ((result = reader.read()) != -1) {
                 builder.append((char) result);
             }
-
-            reader.close();
             return builder.toString();
         } catch (IOException ioe) {
             throw new IllegalStateException("Could not use reader", ioe);
