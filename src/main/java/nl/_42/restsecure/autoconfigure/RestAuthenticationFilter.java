@@ -13,6 +13,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import nl._42.restsecure.autoconfigure.authentication.AbstractRestAuthenticationSuccessHandler;
+import nl._42.restsecure.autoconfigure.errorhandling.LogUtil;
 import nl._42.restsecure.autoconfigure.errorhandling.LoginAuthenticationExceptionHandler;
 
 import org.slf4j.Logger;
@@ -110,7 +111,7 @@ public class RestAuthenticationFilter extends OncePerRequestFilter {
     }
 
     private void handleLoginFailure(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws IOException {
-        log.warn("Authentication failure!", exception);
+        LogUtil.logAuthenticationFailure(log, exception);
         SecurityContextHolder.getContext().setAuthentication(null);
         loginExceptionHandler.handle(request, response, exception);
         rememberMeServices.ifPresent(rms -> rms.loginFail(request, response));
