@@ -16,6 +16,7 @@ import nl._42.restsecure.autoconfigure.authentication.DefaultAuthenticationResul
 import nl._42.restsecure.autoconfigure.authentication.DefaultUserProvider;
 import nl._42.restsecure.autoconfigure.authentication.RegisteredUser;
 import nl._42.restsecure.autoconfigure.authentication.UserProvider;
+import nl._42.restsecure.autoconfigure.authentication.mfa.MfaAuthenticationProvider;
 import nl._42.restsecure.autoconfigure.errorhandling.DefaultLoginAuthenticationExceptionHandler;
 import nl._42.restsecure.autoconfigure.errorhandling.GenericErrorHandler;
 import nl._42.restsecure.autoconfigure.errorhandling.LoginAuthenticationExceptionHandler;
@@ -162,16 +163,18 @@ public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
     public AuthenticationManager authenticationManagerBean() throws Exception {
         return super.authenticationManagerBean();
     }
-    
+
     /**
      * {@inheritDoc}
      */
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        if (userDetailsService != null) {
-            log.info("Found UserDetailService in ApplicationContext.");
+        // If the MfaAuthenticationProvider is configured, do *not* register the userDetailsService. This because the DaoAuthenticationProvider it creates would bypass the MFA.
+        if (userDetailsService != null && !isMfaAuthenticationProviderConfigured()) {
+            log.info("Found UserDetailService in ApplicationContext. Setting up a DaoAuthenticationProvider with this UserDetailService");
             auth.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder());
         }
+
         if (!authProviders.isEmpty()) {
             log.info("Found AuthenticationProvider(s) in ApplicationContext.");
             authProviders.forEach(authProvider -> {
@@ -223,14 +226,14 @@ public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
                     .csrfTokenRepository(csrfTokenRepository());
         customize(http);
     }
-   
+
     private Filter authenticationFilter() throws Exception {
         RestAuthenticationFilter filter = new RestAuthenticationFilter(loginExceptionHandler(null), authenticationManagerBean());
         filter.setAuthenticationSuccessHandler(authenticationSuccessHandler);
         filter.setRememberMeServices(rememberMeServices);
         return filter;
     }
-    
+
     private ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry customize(
             ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry urlRegistry) {
         if (authCustomizer != null) {
@@ -255,5 +258,9 @@ public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
         CookieCsrfTokenRepository repository = withHttpOnlyFalse();
         repository.setCookiePath("/");
         return repository;
+    }
+
+    private boolean isMfaAuthenticationProviderConfigured() {
+        return authProviders.stream().anyMatch(authenticationProvider -> authenticationProvider instanceof MfaAuthenticationProvider);
     }
 }

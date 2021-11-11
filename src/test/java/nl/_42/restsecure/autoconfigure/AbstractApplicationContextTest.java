@@ -9,6 +9,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.log;
 import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppContextSetup;
 
+import dev.samstevens.totp.spring.autoconfigure.TotpAutoConfiguration;
 import nl._42.restsecure.autoconfigure.authentication.ArgumentResolverConfig;
 import nl._42.restsecure.autoconfigure.authentication.UserDetailsAdapter;
 
@@ -23,14 +24,14 @@ import org.springframework.web.context.support.AnnotationConfigWebApplicationCon
 public abstract class AbstractApplicationContextTest {
 
     protected AnnotationConfigWebApplicationContext context;
-    
+
     @AfterEach
     public void tearDown() {
         if (this.context != null) {
             this.context.close();
         }
     }
-    
+
     protected MockMvc getWebClient(Class<?>... appConfig) {
         loadApplicationContext(appConfig);
         return webAppContextSetup(context)
@@ -55,7 +56,10 @@ public abstract class AbstractApplicationContextTest {
                 JacksonAutoConfiguration.class,
                 HttpMessageConvertersAutoConfiguration.class,
                 WebSecurityAutoConfig.class,
-                ArgumentResolverConfig.class);
+                ArgumentResolverConfig.class,
+                TotpAutoConfiguration.class,
+                MfaSecurityAutoConfig.class);
+
         applicationContext.setServletContext(new MockServletContext());
         applicationContext.refresh();
         return applicationContext;

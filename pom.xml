@@ -11,12 +11,12 @@
     <description>Spring boot starter/autoconfig for Spring security</description>
     <inceptionYear>2017</inceptionYear>
     <url>http://www.42.nl</url>
-    
+
     <organization>
         <name>42 BV</name>
         <url>http://blog.42.nl/</url>
     </organization>
-    
+
     <licenses>
         <license>
             <name>The Apache Software License, Version 2.0</name>
@@ -24,14 +24,14 @@
             <distribution>repo</distribution>
         </license>
     </licenses>
-    
+
     <scm>
         <url>https://github.com/42BV/rest-secure-spring-boot-starter</url>
         <connection>scm:git:https://github.com/42BV/rest-secure-spring-boot-starter.git</connection>
         <developerConnection>scm:git:https://github.com/42BV/rest-secure-spring-boot-starter.git</developerConnection>
       <tag>HEAD</tag>
     </scm>
-    
+
     <developers>
         <developer>
             <name>Bas de Vos</name>
@@ -42,7 +42,7 @@
             <organization>42</organization>
         </developer>
     </developers>
-    
+
     <distributionManagement>
         <snapshotRepository>
             <id>ossrh</id>
@@ -53,15 +53,25 @@
             <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
         </repository>
     </distributionManagement>
-    
+
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
-        <spring-boot.version>2.4.5</spring-boot.version>
+        <spring-boot.version>2.5.6</spring-boot.version>
+        <totp-spring-boot-starter.version>1.7.1</totp-spring-boot-starter.version>
+
+        <dependency-check-maven-plugin.version>6.5.0</dependency-check-maven-plugin.version>
+        <jacoco-maven-plugin.version>0.8.6</jacoco-maven-plugin.version>
+        <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
+        <maven-gpg-plugin.version>1.6</maven-gpg-plugin.version>
+        <maven-javadoc-plugin.version>3.2.0</maven-javadoc-plugin.version>
+        <maven-release-plugin.version>2.5.3</maven-release-plugin.version>
+        <maven-source-plugin.version>3.2.1</maven-source-plugin.version>
+        <maven-surefire-plugin.version>2.22.2</maven-surefire-plugin.version>
     </properties>
-    
+
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -81,6 +91,11 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
             <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>dev.samstevens.totp</groupId>
+            <artifactId>totp-spring-boot-starter</artifactId>
+            <version>${totp-spring-boot-starter.version}</version>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
@@ -123,17 +138,17 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
-                    <version>3.8.1</version>
+                    <version>${maven-compiler-plugin.version}</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
-                    <version>2.22.2</version>
+                    <version>${maven-surefire-plugin.version}</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-release-plugin</artifactId>
-                    <version>2.5.3</version>
+                    <version>${maven-release-plugin.version}</version>
                     <configuration>
                         <mavenExecutorId>forked-path</mavenExecutorId>
                         <useReleaseProfile>false</useReleaseProfile>
@@ -147,7 +162,7 @@
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.8.6</version>
+                <version>${jacoco-maven-plugin.version}</version>
                 <executions>
                     <execution>
                         <goals>
@@ -166,7 +181,7 @@
             <plugin>
                 <groupId>org.owasp</groupId>
                 <artifactId>dependency-check-maven</artifactId>
-                <version>6.1.5</version>
+                <version>${dependency-check-maven-plugin.version}</version>
                 <configuration>
                     <failBuildOnAnyVulnerability>true</failBuildOnAnyVulnerability>
                     <skipProvidedScope>true</skipProvidedScope>
@@ -187,7 +202,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-javadoc-plugin</artifactId>
-                        <version>3.2.0</version>
+                        <version>${maven-javadoc-plugin.version}</version>
                         <configuration>
                             <source>${maven.compiler.source}</source>
                         </configuration>
@@ -203,7 +218,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-source-plugin</artifactId>
-                        <version>3.2.1</version>
+                        <version>${maven-source-plugin.version}</version>
                         <executions>
                             <execution>
                                 <id>attach-sources</id>
@@ -216,7 +231,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-gpg-plugin</artifactId>
-                        <version>1.6</version>
+                        <version>${maven-gpg-plugin.version}</version>
                         <executions>
                             <execution>
                                 <id>sign-artifacts</id>

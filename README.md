@@ -19,6 +19,7 @@ Spring boot autoconfig for spring security in a REST environment
     * GET `/authentication/current` - to obtain the current logged in user
     * DELETE `/authentication` - to logout the current logged in user
 - Remember me support
+- Support for two-factor authentication (2FA).
 - CSRF protection by the [double submit cookie](https://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF)_Prevention_Cheat_Sheet#Double_Submit_Cookie) pattern. Implemented by using the [CsrfTokenRepository](https://docs.spring.io/spring-security/site/docs/current/reference/html/csrf.html#csrf-cookie).
 - The @CurrentUser annotation may be used to annotate a controller method argument to inject the current custom user.
 - Note the UserResolver spring bean that is added to your appication context, conveniently get the current logged in user from the SecurityContext!
@@ -26,7 +27,7 @@ Spring boot autoconfig for spring security in a REST environment
     * For instance if you want to make use of "roles" and the Spring Security "hasRole(..)"-api methods, you must prefix your roles with the default "ROLE_".
     * If you want to avoid doing anything with prefixing, you are advised to make use of the more generic "hasAuthority(..)"-api methods.
 
-## Setup for internal database users store
+## Setup for internal database users store (username and password authentication)
 
 - You must have the following components in your application:
    * A database table where the users are stored.
@@ -87,6 +88,108 @@ class CustomSecurity {
 
 - By default, a `BcryptPasswordEncoder` bean is added to the security config for password matching. Use this bean when you are encrypting passwords for your User domain object.
 If you want to override this bean, you can provide a custom `PasswordEncoder` implementation by adding it to your Spring `ApplicationContext`.
+
+## Setup for multi-factor authentication (MFA, 2FA)
+Rest-secure optionally supports multi-factor authentication using Time-based One-Time Password (TOTP). 
+This allows requiring users to enter a verification code to sign in (e.g. from Google Authenticator, Microsoft authenticator or similar apps)
+
+To setup multi-factor authentication, follow the following steps:
+### Setup internal database authentication
+- Perform the steps **up to configuring a custom auth provider** in [Setup for internal database users store (username and password authentication)](#setup-for-internal-database-users-store-username-and-password-authentication)
+
+### Configure the MFA authentication provider
+- Configure the `MfaAuthenticationProvider` in your Spring `ApplicationContext`:
+
+```java
+@Configuration
+class CustomSecurity {
+    @Bean
+    public MfaAuthenticationProvider mfaAuthenticationProvider(SpringUserDetailsService userDetailsService, PasswordEncoder passwordEncoder, MfaValidationService mfaValidationService) {
+        MfaAuthenticationProvider authenticationProvider = new MfaAuthenticationProvider();
+        authenticationProvider.setUserDetailsService(userDetailsService);
+        authenticationProvider.setPasswordEncoder(passwordEncoder);
+        authenticationProvider.setMfaValidationService(mfaValidationService);
+        return authenticationProvider;
+    }
+}
+```
+- In this example, the `SpringUserDetailsService` is the custom implementation of `UserDetailsService` which you've had to set up in [Setup internal database authentication](#setup-internal-database-authentication).
+- `PasswordEncoder` and `MfaValidationService` are beans provided by `rest-secure-spring-boot-starter`
+
+You'll need a custom User domain object (see [Using a custom User domain object](#using-a-custom-user-domain-object)). Make sure this object implements the following methods:
+- `isMfaConfigured()`: Indicates whether this user has successfully configured MFA. The user *must* have entered at least one valid verification code in order to configure MFA!
+- `getMfaSecretKey()`: Contains the secret key to validate the MFA against. This key may *never* be exposed on endpoints!
+- `isMfaMandatory()`: Indicates whether this user is obliged to use MFA. Can be a check based on user roles, or if MFA is always required simply return `true`
+
+### Configure the filter for mandatory MFA authentication (if needed)
+If `isMfaMandatory()` is implemented, Define the `MfaSetupRequiredFilter` in your Spring `ApplicationContext` and add it to the filter chain using the `HttpSecurityCustomizer`:
+
+```java
+@Configuration
+class CustomSecurity {
+    @Bean
+    public MfaSetupRequiredFilter mfaSetupRequiredFilter(ObjectMapper objectMapper) {
+        MfaSetupRequiredFilter mfaSetupRequiredFilter = new MfaSetupRequiredFilter();
+    
+        // Add any excluded URLs to your filter if needed
+        mfaSetupRequiredFilter.getExcludedRequests().add(new AntPathRequestMatcher("/enums/**", GET.name()));
+        mfaSetupRequiredFilter.getExcludedRequests().add(new AntPathRequestMatcher("/mfa-setup/**", GET.name()));
+        
+        // Add any custom logic check exclusions to your filter if needed
+        mfaSetupRequiredFilter.getExclusionChecks().add((req, res) -> SecurityContextHolder.getContext().getAuthentication() instanceof LoginAsAuthentication);
+    
+        mfaSetupRequiredFilter.setObjectMapper(objectMapper);
+    
+        return mfaSetupRequiredFilter;
+    }
+
+    @Bean
+    public HttpSecurityCustomizer httpSecurityCustomizer() {
+        return http -> http
+                // Other config of your application may be located here. Keep that if it exists.
+                .addFilterAfter(mfaSetupRequiredFilter(null), AnonymousAuthenticationFilter.class);
+    }
+}
+```
+
+### Add issuer name to the application config
+Add the name of the application for display in the authenticator app to `application.yml`:
+
+```yaml
+totp:
+  issuer: Your Application Name Goes Here
+```
+
+### Implementing the configuration and validation endpoints
+Finally, your application needs to implement 3 endpoints to let users perform MFA configuration:
+- Request MFA activation code (QR code) (should call `mfaSetupService.generateSecret()`, store the secret key and call `mfaSetupService.generateQrCode(secret, label)`). 
+  - The `label` will appear in the user's authenticator app and must be something like the user's username or email address.
+- Configure MFA authentication (the user supplies a valid authentication code, verify it using `mfaValidationService.validateMfaCode(secret, code)` and set `isMfaConfigured` to true to confirm using MFA)
+- Disable MFA authentication (optional), removes `mfaSecretKey` and `isMfaConfigured` for this User.
+
+### Requirements of the configuration and validation endpoints
+Below you'll find more detailed requirements of each endpoint:
+#### Request activation code endpoint
+- This endpoint may only be called when `isMfaConfigured` of this user returns `false`
+- The output contains a base64-encoded PNG of the QR code (DATA URI). This can be used in HTML img elements to show the QR code
+- This will assign the `mfaSecretKey` of this user.
+
+#### Configure MFA authentication
+- This endpoint may only be called when `isMfaConfigured` returns `false` and `getMfaSecretKey` of the User object returns a secret key
+- The user **must** supply at least one valid authentication code (validate using `mfaValidationService.verifyMfaCode(secret, code)`)
+- Calling this endpoint will set `isMfaConfigured` to `true` for this User.
+
+#### Disable MFA authentication
+- This endpoint may only be called when `isMfaConfigured` for this user returns `true`
+- This endpoint may only be called when the user is signed in (and thus has entered a valid MFA code...)
+  - Optionally, you can require the user to enter another MFA code when disabling MFA.
+
+### Overriding any of the provided beans
+- By default, a `BcryptPasswordEncoder` bean is added to the security config for password matching. Use this bean when you are encrypting passwords for your User domain object.
+  - If you want to override this bean, you can provide a custom `PasswordEncoder` implementation by adding it to your Spring `ApplicationContext`.
+- The `MfaValidationService` and `MfaSetupService` beans are automatically created by `rest-secure-spring-boot-starter`. 
+  - If you want to override these beans, you can provide a custom `MfaValidationService` or `MfaSetupService` implementation by adding it to your Spring `ApplicationContext`.
+
 
 ## Customization
 
