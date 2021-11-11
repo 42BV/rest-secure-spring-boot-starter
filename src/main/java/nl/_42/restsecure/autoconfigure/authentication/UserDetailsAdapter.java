@@ -16,9 +16,9 @@ import org.springframework.security.core.userdetails.UserDetails;
  * @param <T> the type of the custom user.
  */
 public final class UserDetailsAdapter<T extends RegisteredUser> implements UserDetails {
-    
+
     private final T user;
-    
+
     public UserDetailsAdapter(T user) {
         this.user = user;
     }
@@ -33,7 +33,7 @@ public final class UserDetailsAdapter<T extends RegisteredUser> implements UserD
     public T getUser() {
         return user;
     }
-    
+
     @Override
     public String getPassword() {
         return user.getPassword();
@@ -64,4 +64,11 @@ public final class UserDetailsAdapter<T extends RegisteredUser> implements UserD
         return user.isEnabled();
     }
 
+    public boolean isMfaConfigured() {
+        return user.isMfaConfigured();
+    }
+
+    public boolean isMfaMandatory() {
+        return user.isMfaMandatory();
+    }
 }

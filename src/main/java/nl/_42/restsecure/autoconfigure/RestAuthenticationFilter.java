@@ -13,13 +13,14 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import nl._42.restsecure.autoconfigure.authentication.AbstractRestAuthenticationSuccessHandler;
+import nl._42.restsecure.autoconfigure.authentication.mfa.MfaAuthenticationToken;
 import nl._42.restsecure.autoconfigure.errorhandling.LogUtil;
 import nl._42.restsecure.autoconfigure.errorhandling.LoginAuthenticationExceptionHandler;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -33,15 +34,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 /**
  * Handles the login POST request. Tries to Authenticate the given user credentials using the auto configured {@link AuthenticationManager}.
  * Expects the request body to contain json like:
- * <code>{ username: 'user@email.com', password: 'secret' }</code> 
+ * <code>{ username: 'user@email.com', password: 'secret' }</code>
  * After a successful login, sets the read json as request attribute. This to enable subsequent {@link Filter}'s to obtain this information.
  */
 public class RestAuthenticationFilter extends OncePerRequestFilter {
-    
+
     public static final String LOGIN_FORM_JSON = "loginFormJson";
 
     private final Logger log = LoggerFactory.getLogger(RestAuthenticationFilter.class);
-    
+
     private final LoginAuthenticationExceptionHandler loginExceptionHandler;
     private final AntPathRequestMatcher requestMatcher;
     private final AuthenticationManager authenticationManager;
@@ -77,7 +78,7 @@ public class RestAuthenticationFilter extends OncePerRequestFilter {
     private void doLogin(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
         String loginFormJson = read(request);
         LoginForm form = objectMapper.readValue(loginFormJson, LoginForm.class);
-        UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(form.username, form.password);
+        AbstractAuthenticationToken token = new MfaAuthenticationToken(form.username, form.password, form.verificationCode);
 
         try {
             log.info("Authenticating user: {}", form.username);
@@ -123,6 +124,7 @@ public class RestAuthenticationFilter extends OncePerRequestFilter {
         public String username;
         public String password;
         public boolean rememberMe;
+        public String verificationCode;
 
     }
 
