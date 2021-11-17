@@ -121,8 +121,8 @@ You'll need a custom User domain object (see [Using a custom User domain object]
 - `getMfaSecretKey()`: Contains the secret key to validate the MFA against. This key may *never* be exposed on endpoints!
 - `isMfaMandatory()`: Indicates whether this user is obliged to use MFA. Can be a check based on user roles, or if MFA is always required simply return `true`
 
-### Configure the filter for mandatory MFA authentication (if needed)
-If `isMfaMandatory()` is implemented, Define the `MfaSetupRequiredFilter` in your Spring `ApplicationContext` and add it to the filter chain using the `HttpSecurityCustomizer`:
+### If (some) users are mandatory to use MFA: Configure the filter for mandatory MFA authentication (IMPORTANT!)
+If `isMfaMandatory()` is implemented (meaning it can return `true` in some case), you **must** define an implementation of the `MfaSetupRequiredFilter` in your Spring `ApplicationContext` and add it to the filter chain using the `HttpSecurityCustomizer`:
 
 ```java
 @Configuration
@@ -151,6 +151,9 @@ class CustomSecurity {
     }
 }
 ```
+
+⚠️ ⚠️
+Forgetting to add this filter will **NOT** enforce the mandatory MFA authentication for users that meeds the criteria!!
 
 ### Add issuer name to the application config
 Add the name of the application for display in the authenticator app to `application.yml`:
