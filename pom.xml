@@ -5,7 +5,7 @@
 
     <groupId>nl.42</groupId>
     <artifactId>rest-secure-spring-boot-starter</artifactId>
-    <version>9.0.1-SNAPSHOT</version>
+    <version>9.0.1</version>
     <packaging>jar</packaging>
     <name>42 REST Secure Spring Boot Starter</name>
     <description>Spring boot starter/autoconfig for Spring security</description>
@@ -29,7 +29,7 @@
         <url>https://github.com/42BV/rest-secure-spring-boot-starter</url>
         <connection>scm:git:https://github.com/42BV/rest-secure-spring-boot-starter.git</connection>
         <developerConnection>scm:git:https://github.com/42BV/rest-secure-spring-boot-starter.git</developerConnection>
-      <tag>HEAD</tag>
+      <tag>9.0.1</tag>
     </scm>
 
     <developers>
