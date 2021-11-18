@@ -43,8 +43,20 @@ public class MfaSetupServiceImpl implements MfaSetupService {
      * @throws MfaException If the QR code cannot be generated.
      */
     public String generateQrCode(String secret, String label) throws MfaException {
+        if (label == null || label.equals("")) {
+            throw new MfaException("Label cannot be blank!", null);
+        }
+
+        String labelWithIssuer;
+
+        if (label.contains(issuer + ":")) {
+            labelWithIssuer = label;
+        } else {
+            labelWithIssuer = String.format("%s:%s", issuer, label);
+        }
+
         QrData data = qrDataFactory.newBuilder()
-            .label(label)
+            .label(labelWithIssuer)
             .secret(secret)
             .issuer(issuer)
             .build();
