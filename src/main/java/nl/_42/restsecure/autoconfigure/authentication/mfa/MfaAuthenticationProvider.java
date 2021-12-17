@@ -1,10 +1,11 @@
 package nl._42.restsecure.autoconfigure.authentication.mfa;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import nl._42.restsecure.autoconfigure.authentication.RegisteredUser;
 import nl._42.restsecure.autoconfigure.authentication.UserDetailsAdapter;
-import nl._42.restsecure.autoconfigure.errorhandling.DefaultLoginAuthenticationExceptionHandler;
 
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -20,7 +21,14 @@ public class MfaAuthenticationProvider extends DaoAuthenticationProvider {
     public static final String SERVER_MFA_CODE_REQUIRED_ERROR = "SERVER.MFA_CODE_REQUIRED_ERROR";
     public static final String DETAILS_MFA_SETUP_REQUIRED = "DETAILS.MFA_SETUP_REQUIRED";
 
+    private boolean customVerificationStepsRegistered = false;
+    private List<MfaVerificationCheck> verificationChecks;
     private MfaValidationService mfaValidationService;
+
+    public void setVerificationChecks(List<MfaVerificationCheck> verificationChecks) {
+        this.customVerificationStepsRegistered = true;
+        this.verificationChecks = verificationChecks;
+    }
 
     public void setMfaValidationService(MfaValidationService mfaValidationService) {
         this.mfaValidationService = mfaValidationService;
@@ -30,6 +38,15 @@ public class MfaAuthenticationProvider extends DaoAuthenticationProvider {
     protected void doAfterPropertiesSet() {
         super.doAfterPropertiesSet();
         Assert.notNull(this.mfaValidationService, "A MfaValidationService must be set");
+        if (!this.customVerificationStepsRegistered) {
+            this.verificationChecks = List.of(new MfaTotpVerificationCheck(mfaValidationService));
+        } else {
+            Assert.isTrue(this.verificationChecks != null && !this.verificationChecks.isEmpty(), "At least one verification check must be provided");
+            if (verificationChecks.stream().noneMatch(check -> check instanceof MfaTotpVerificationCheck)) {
+                verificationChecks = new ArrayList<>(verificationChecks); // Ensure we are a mutable list.
+                verificationChecks.add(new MfaTotpVerificationCheck(mfaValidationService));
+            }
+        }
     }
 
     @Override
@@ -45,9 +62,18 @@ public class MfaAuthenticationProvider extends DaoAuthenticationProvider {
                 if (mfaAuthenticationToken.getVerificationCode() == null || mfaAuthenticationToken.getVerificationCode().equals("")) {
                     throw new InsufficientAuthenticationException(SERVER_MFA_CODE_REQUIRED_ERROR);
                 }
-                // If invalid code supplied, authentication has failed.
-                if (!mfaValidationService.verifyMfaCode(((UserDetailsAdapter<?>) userDetails).getUser().getMfaSecretKey(), mfaAuthenticationToken.getVerificationCode())) {
-                    throw new BadCredentialsException(DefaultLoginAuthenticationExceptionHandler.SERVER_LOGIN_FAILED_ERROR);
+
+                boolean verificationSucceeded = false;
+
+                for (MfaVerificationCheck verificationCheck : verificationChecks) {
+                    if (verificationCheck.validate(userDetailsAdapter.getUser(), mfaAuthenticationToken)) {
+                        verificationSucceeded = true;
+                        break;
+                    }
+                }
+
+                if (!verificationSucceeded) {
+                    throw new IllegalStateException("At least one verification check must either have succeeded or thrown an AuthenticationException. Check the verifications passed to .setVerificationChecks() for any unmatched scenarios.");
                 }
                 // If mfa is mandatory for this user, but not setup, indicate it must be setup first.
             } else if (userDetailsAdapter.isMfaMandatory()) {

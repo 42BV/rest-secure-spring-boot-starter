@@ -363,6 +363,18 @@ class CustomSecurity {
 }
 ```
 
+### Adding custom MFA verification checks (e.g. email, SMS)
+The `MfaAuthenticationProvider` supports custom authentication checks in addition to the default TOTP validator.
+If, for example, some portion of users receive their code through other means, it may be needed to add a custom verification check.
+
+Note that the default TOTP check *always* gets added to the chain. 
+If it is not already supplied in the list of custom checks, it will be added after the last custom verification check.
+
+A verification check should behave as following:
+- If the user is successfully authenticated using the given verification code, return `true`. The user will be logged in and no other checks will be performed.
+- If the check is not applicable to this user (e.g. this user does not receive codes using SMS), return `false`. The next check will then be executed.
+- If the user has supplied incorrect credentials, the check must throw a subclass of `AuthenticationException` to abort the chain of checks and return a login error.
+
 ### Remember me (single sign on)
 - Register a `RememberMeServices` bean, this will be picked up automatically and used in the login filter
 
