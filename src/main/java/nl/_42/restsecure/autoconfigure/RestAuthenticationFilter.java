@@ -26,6 +26,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.RememberMeServices;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -44,18 +45,39 @@ public class RestAuthenticationFilter extends OncePerRequestFilter {
     private final Logger log = LoggerFactory.getLogger(RestAuthenticationFilter.class);
 
     private final LoginAuthenticationExceptionHandler loginExceptionHandler;
-    private final AntPathRequestMatcher requestMatcher;
+    private final RequestMatcher requestMatcher;
     private final AuthenticationManager authenticationManager;
     private final ObjectMapper objectMapper;
     private Optional<RememberMeServices> rememberMeServices = Optional.empty();
     private Optional<AbstractRestAuthenticationSuccessHandler> successHandler = Optional.empty();
 
+    /**
+     * Creates an authentication filter with a default Ant path matcher on POST /authentication and a default ObjectMapper.
+     * @param loginExceptionHandler handler method for when exceptions occur
+     * @param authenticationManager authentication manager
+     */
     public RestAuthenticationFilter(LoginAuthenticationExceptionHandler loginExceptionHandler,
             AuthenticationManager authenticationManager) {
+        this(loginExceptionHandler, authenticationManager, new AntPathRequestMatcher("/authentication", POST.name()), new ObjectMapper());
+    }
+
+    /**
+     * Creates an authentication filter where you can specify the request matcher and ObjectMapper.
+     * @param loginExceptionHandler handler method for when exceptions occur
+     * @param authenticationManager authentication manager
+     * @param requestMatcher request matcher to test if the filter should be applied
+     * @param objectMapper jackson objectmapper
+     */
+    public RestAuthenticationFilter(
+            LoginAuthenticationExceptionHandler loginExceptionHandler,
+            AuthenticationManager authenticationManager,
+            RequestMatcher requestMatcher,
+            ObjectMapper objectMapper
+    ) {
         this.loginExceptionHandler = loginExceptionHandler;
-        this.requestMatcher = new AntPathRequestMatcher("/authentication", POST.name());
         this.authenticationManager = authenticationManager;
-        this.objectMapper = new ObjectMapper();
+        this.requestMatcher = requestMatcher;
+        this.objectMapper = objectMapper;
     }
 
     public void setRememberMeServices(RememberMeServices rememberMeServices) {
