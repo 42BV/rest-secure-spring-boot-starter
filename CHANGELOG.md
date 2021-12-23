@@ -5,6 +5,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
+- Now throwing an Exception in the RequestAuthorizationCustomizer's customize method so that
+  you don't have to wrap exceptions in RuntimeExceptions if they are thrown in the implementing
+  methods.
+
+## [10.0.1] - 2021-12-20
 - Added: additional constructor with customisable request matcher and ObjectMapper.
 
 ## [10.0.0] - 2021-12-17
