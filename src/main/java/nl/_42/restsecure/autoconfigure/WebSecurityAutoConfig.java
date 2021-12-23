@@ -235,7 +235,7 @@ public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
     }
 
     private ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry customize(
-            ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry urlRegistry) {
+            ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry urlRegistry) throws Exception {
         if (authCustomizer != null) {
             log.info("Found RequestAuthorization bean in ApplicationContext, custom configuring of urlRegistry object started.");
             return authCustomizer.customize(urlRegistry);
