@@ -1,6 +1,6 @@
 package nl._42.restsecure.autoconfigure.errorhandling;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.IOException;
 
@@ -28,7 +28,8 @@ class DefaultLoginAuthenticationExceptionHandlerTest {
             DefaultLoginAuthenticationExceptionHandler handler = new DefaultLoginAuthenticationExceptionHandler(new GenericErrorHandler(new ObjectMapper()));
 
             MockHttpServletResponse response = new MockHttpServletResponse();
-            handler.handle(new MockHttpServletRequest(), response, new InsufficientAuthenticationException(MfaAuthenticationProvider.SERVER_MFA_CODE_REQUIRED_ERROR));
+            handler.handle(new MockHttpServletRequest(), response,
+                    new InsufficientAuthenticationException(MfaAuthenticationProvider.SERVER_MFA_CODE_REQUIRED_ERROR));
 
             assertEquals(HttpStatus.UNAUTHORIZED.value(), response.getStatus());
             assertEquals("{\"errorCode\":\"SERVER.MFA_CODE_REQUIRED_ERROR\"}", response.getContentAsString());
@@ -44,7 +45,8 @@ class DefaultLoginAuthenticationExceptionHandlerTest {
             MockHttpServletResponse response3 = new MockHttpServletResponse();
             // Case 1 is the MFA case, but with exception class of another type (thus should not be picked up)
             handler.handle(new MockHttpServletRequest(), response1, new BadCredentialsException(MfaAuthenticationProvider.SERVER_MFA_CODE_REQUIRED_ERROR));
-            handler.handle(new MockHttpServletRequest(), response2, new BadCredentialsException(DefaultLoginAuthenticationExceptionHandler.SERVER_LOGIN_FAILED_ERROR));
+            handler.handle(new MockHttpServletRequest(), response2,
+                    new BadCredentialsException(DefaultLoginAuthenticationExceptionHandler.SERVER_LOGIN_FAILED_ERROR));
             handler.handle(new MockHttpServletRequest(), response3, new BadCredentialsException("Invalid username or password"));
 
             assertEquals(HttpStatus.UNAUTHORIZED.value(), response1.getStatus());

@@ -1,6 +1,8 @@
 package nl._42.restsecure.autoconfigure.authentication.mfa;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import nl._42.restsecure.autoconfigure.authentication.UserDetailsAdapter;
 import nl._42.restsecure.autoconfigure.errorhandling.DefaultLoginAuthenticationExceptionHandler;

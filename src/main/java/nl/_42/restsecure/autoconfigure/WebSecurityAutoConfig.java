@@ -6,8 +6,7 @@ import static org.springframework.security.web.csrf.CookieCsrfTokenRepository.wi
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.servlet.Filter;
-
+import lombok.extern.slf4j.Slf4j;
 import nl._42.restsecure.autoconfigure.authentication.AbstractRestAuthenticationSuccessHandler;
 import nl._42.restsecure.autoconfigure.authentication.AbstractUserDetailsService;
 import nl._42.restsecure.autoconfigure.authentication.AuthenticationController;
@@ -22,8 +21,6 @@ import nl._42.restsecure.autoconfigure.errorhandling.GenericErrorHandler;
 import nl._42.restsecure.autoconfigure.errorhandling.LoginAuthenticationExceptionHandler;
 import nl._42.restsecure.autoconfigure.errorhandling.RestAccessDeniedHandler;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
@@ -38,12 +35,12 @@ import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.annotation.web.configurers.ExpressionUrlAuthorizationConfigurer;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AnonymousAuthenticationFilter;
 import org.springframework.security.web.authentication.RememberMeServices;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
@@ -58,14 +55,13 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
  * POST `/authentication` - to be able to login clients should provide a json request body like `{ username: 'user@email.com', password: 'secret'}`.
  * GET `/authentication/current` - to obtain the current logged in user
  */
+@Slf4j
 @Configuration
 @AutoConfigureAfter(WebMvcAutoConfiguration.class)
 @ComponentScan(basePackageClasses = { AuthenticationController.class, GenericErrorHandler.class })
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
-public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
-
-    private final Logger log = LoggerFactory.getLogger(WebSecurityAutoConfig.class);
+public class WebSecurityAutoConfig {
     private final RestAccessDeniedHandler accessDeniedHandler;
 
     private AbstractRestAuthenticationSuccessHandler<? extends RegisteredUser> authenticationSuccessHandler;
@@ -73,7 +69,6 @@ public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
     private List<AuthenticationProvider> authProviders = new ArrayList<>();
     private RequestAuthorizationCustomizer authCustomizer;
     private HttpSecurityCustomizer httpCustomizer;
-    private WebSecurityCustomizer webSecurityCustomizer;
     private RememberMeServices rememberMeServices;
 
     @Autowired(required = false)
@@ -104,11 +99,6 @@ public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
     }
 
     @Autowired(required = false)
-    public void setWebSecurityCustomizer(WebSecurityCustomizer webSecurityCustomizer) {
-        this.webSecurityCustomizer = webSecurityCustomizer;
-    }
-
-    @Autowired(required = false)
     public void setRememberMeServices(RememberMeServices rememberMeServices) {
         this.rememberMeServices = rememberMeServices;
     }
@@ -119,6 +109,7 @@ public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
 
     /**
      * Adds a {@link BCryptPasswordEncoder} to the {@link ApplicationContext} if no {@link PasswordEncoder} bean is found already.
+     *
      * @return PasswordEncoder
      */
     @Bean
@@ -131,6 +122,7 @@ public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
 
     /**
      * Adds an {@link UserProvider} to the {@link ApplicationContext} if no {@link UserProvider} bean is found already.
+     *
      * @return UserMapper
      */
     @Bean
@@ -145,8 +137,15 @@ public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
         return new DefaultLoginAuthenticationExceptionHandler(errorHandler);
     }
 
+    @Bean
+    @ConditionalOnMissingBean(WebSecurityCustomizer.class)
+    public WebSecurityCustomizer webSecurityCustomizer() {
+        return web -> log.info("No WebSecurityCustomizer bean found in ApplicationContext, no custom configuring of WebSecurity object.");
+    }
+
     /**
      * Adds an {@link AuthenticationResultProvider} to the {@link ApplicationContext} if no {@link AuthenticationResultProvider} bean is found already.
+     *
      * @return AuthenticationResultProvider
      */
     @Bean
@@ -155,20 +154,10 @@ public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
         return new DefaultAuthenticationResultProvider();
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Bean
-    @Override
-    public AuthenticationManager authenticationManagerBean() throws Exception {
-        return super.authenticationManagerBean();
-    }
+    public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
+        AuthenticationManagerBuilder auth = http.getSharedObject(AuthenticationManagerBuilder.class);
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         // If the MfaAuthenticationProvider is configured, do *not* register the userDetailsService. This because the DaoAuthenticationProvider it creates would bypass the MFA.
         if (userDetailsService != null && !isMfaAuthenticationProviderConfigured()) {
             log.info("Found UserDetailService in ApplicationContext. Setting up a DaoAuthenticationProvider with this UserDetailService");
@@ -184,32 +173,22 @@ public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
         }
         if (userDetailsService == null && authProviders.isEmpty()) {
             throw new IllegalStateException(
-                "Cannot configure security; either a UserDetailsService or AuthenticationProvider bean must be present."
+                    "Cannot configure security; either a UserDetailsService or AuthenticationProvider bean must be present."
             );
         }
+
+        return auth.build();
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void configure(WebSecurity web) throws Exception {
-        if (webSecurityCustomizer != null) {
-            log.info("Found WebSecurityCustomizer bean in ApplicationContext, custom configuring of WebSecurity object started.");
-            webSecurityCustomizer.configure(web);
-        } else {
-            log.info("No WebSecurityCustomizer bean found in ApplicationContext, no custom configuring of WebSecurity object.");
-        }
-    }
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http, AuthenticationManager authenticationManager) throws Exception {
+        RestAuthenticationFilter filter = new RestAuthenticationFilter(loginExceptionHandler(null), authenticationManager);
+        filter.setAuthenticationSuccessHandler(authenticationSuccessHandler);
+        filter.setRememberMeServices(rememberMeServices);
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected void configure(HttpSecurity http) throws Exception {
         ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry urlRegistry = http
-            .addFilterBefore(authenticationFilter(), AnonymousAuthenticationFilter.class)
-            .authorizeRequests()
+                .addFilterBefore(filter, AnonymousAuthenticationFilter.class)
+                .authorizeRequests()
                 .antMatchers("/authentication").permitAll();
         customize(urlRegistry)
             .anyRequest().fullyAuthenticated()
@@ -225,13 +204,8 @@ public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
                 .csrf()
                     .csrfTokenRepository(csrfTokenRepository());
         customize(http);
-    }
 
-    private Filter authenticationFilter() throws Exception {
-        RestAuthenticationFilter filter = new RestAuthenticationFilter(loginExceptionHandler(null), authenticationManagerBean());
-        filter.setAuthenticationSuccessHandler(authenticationSuccessHandler);
-        filter.setRememberMeServices(rememberMeServices);
-        return filter;
+        return http.build();
     }
 
     private ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry customize(
@@ -261,6 +235,6 @@ public class WebSecurityAutoConfig extends WebSecurityConfigurerAdapter {
     }
 
     private boolean isMfaAuthenticationProviderConfigured() {
-        return authProviders.stream().anyMatch(authenticationProvider -> authenticationProvider instanceof MfaAuthenticationProvider);
+        return authProviders.stream().anyMatch(MfaAuthenticationProvider.class::isInstance);
     }
 }

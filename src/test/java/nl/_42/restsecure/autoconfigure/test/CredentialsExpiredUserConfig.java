@@ -13,5 +13,4 @@ public class CredentialsExpiredUserConfig extends AbstractUserDetailsServiceConf
     protected RegisteredUser foundUser() {
         return user().withCredentialsExpired(true).build();
     }
-
 }

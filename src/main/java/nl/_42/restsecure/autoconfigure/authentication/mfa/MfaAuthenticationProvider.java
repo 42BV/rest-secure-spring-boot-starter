@@ -53,9 +53,7 @@ public class MfaAuthenticationProvider extends DaoAuthenticationProvider {
     protected void additionalAuthenticationChecks(UserDetails userDetails, UsernamePasswordAuthenticationToken authentication) throws AuthenticationException {
         super.additionalAuthenticationChecks(userDetails, authentication);
 
-        if (userDetails instanceof UserDetailsAdapter) {
-            UserDetailsAdapter<? extends RegisteredUser> userDetailsAdapter = (UserDetailsAdapter<?>) userDetails;
-
+        if (userDetails instanceof UserDetailsAdapter<? extends RegisteredUser> userDetailsAdapter) {
             if (userDetailsAdapter.isMfaConfigured()) {
                 MfaAuthenticationToken mfaAuthenticationToken = (MfaAuthenticationToken) authentication;
                 // If no code supplied, indicate a code is needed.
@@ -66,14 +64,15 @@ public class MfaAuthenticationProvider extends DaoAuthenticationProvider {
                 boolean verificationSucceeded = false;
 
                 for (MfaVerificationCheck verificationCheck : verificationChecks) {
-                    if (verificationCheck.validate(userDetailsAdapter.getUser(), mfaAuthenticationToken)) {
+                    if (verificationCheck.validate(userDetailsAdapter.user(), mfaAuthenticationToken)) {
                         verificationSucceeded = true;
                         break;
                     }
                 }
 
                 if (!verificationSucceeded) {
-                    throw new IllegalStateException("At least one verification check must either have succeeded or thrown an AuthenticationException. Check the verifications passed to .setVerificationChecks() for any unmatched scenarios.");
+                    throw new IllegalStateException(
+                            "At least one verification check must either have succeeded or thrown an AuthenticationException. Check the verifications passed to .setVerificationChecks() for any unmatched scenarios.");
                 }
                 // If mfa is mandatory for this user, but not setup, indicate it must be setup first.
             } else if (userDetailsAdapter.isMfaMandatory()) {

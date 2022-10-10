@@ -4,8 +4,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-import nl._42.restsecure.autoconfigure.authentication.User;
-
 public class MockMfaValidationService implements MfaValidationService {
 
     private Map<String, String> secretsAndCodes = new HashMap<>();

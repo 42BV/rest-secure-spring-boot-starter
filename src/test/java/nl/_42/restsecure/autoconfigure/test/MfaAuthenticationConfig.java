@@ -5,7 +5,6 @@ import nl._42.restsecure.autoconfigure.authentication.InMemoryUserDetailService;
 import nl._42.restsecure.autoconfigure.authentication.mfa.MfaAuthenticationProvider;
 import nl._42.restsecure.autoconfigure.authentication.mfa.MfaSetupRequiredFilter;
 import nl._42.restsecure.autoconfigure.authentication.mfa.MfaValidationService;
-import nl._42.restsecure.autoconfigure.authentication.mfa.MockMfaValidationService;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

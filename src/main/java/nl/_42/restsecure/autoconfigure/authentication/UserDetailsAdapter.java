@@ -15,23 +15,13 @@ import org.springframework.security.core.userdetails.UserDetails;
  *
  * @param <T> the type of the custom user.
  */
-public final class UserDetailsAdapter<T extends RegisteredUser> implements UserDetails {
-
-    private final T user;
-
-    public UserDetailsAdapter(T user) {
-        this.user = user;
-    }
+public record UserDetailsAdapter<T extends RegisteredUser>(T user) implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return user.getAuthorities().stream()
-                   .map(SimpleGrantedAuthority::new)
-                   .collect(toSet());
-    }
-
-    public T getUser() {
-        return user;
+                .map(SimpleGrantedAuthority::new)
+                .collect(toSet());
     }
 
     @Override

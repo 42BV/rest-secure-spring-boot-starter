@@ -7,28 +7,28 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
-public class UserDetailServiceTest {
+class UserDetailServiceTest {
 
-  private InMemoryUserDetailService service;
+    private InMemoryUserDetailService service;
 
-  @BeforeEach
-  public void setUp() {
-    service = new InMemoryUserDetailService();
-  }
+    @BeforeEach
+    void setUp() {
+        service = new InMemoryUserDetailService();
+    }
 
-  @Test
-  public void loadUserByUsername_shouldSucceed() {
-    User user = new User("henk", "admin");
+    @Test
+    void loadUserByUsername_shouldSucceed() {
+        User user = new User("henk", "admin");
 
-    service.register(user);
+        service.register(user);
 
-    UserDetailsAdapter<User> details = service.loadUserByUsername("henk");
-    assertEquals(user, details.getUser());
-  }
+        UserDetailsAdapter<User> details = service.loadUserByUsername("henk");
+        assertEquals(user, details.user());
+    }
 
-  @Test
-  public void loadUserByUsername_unknownUser_shouldFail() {
-    Assertions.assertThrows(UsernameNotFoundException.class, () -> service.loadUserByUsername("unknown"));
-  }
+    @Test
+    void loadUserByUsername_unknownUser_shouldFail() {
+        Assertions.assertThrows(UsernameNotFoundException.class, () -> service.loadUserByUsername("unknown"));
+    }
 
 }

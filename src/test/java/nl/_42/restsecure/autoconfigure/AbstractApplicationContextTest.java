@@ -35,13 +35,13 @@ public abstract class AbstractApplicationContextTest {
     protected MockMvc getWebClient(Class<?>... appConfig) {
         loadApplicationContext(appConfig);
         return webAppContextSetup(context)
-            .apply(springSecurity())
-            .defaultRequest(get("/")
-                .contentType(APPLICATION_JSON)
-                .with(csrf())
-                .with(user(new UserDetailsAdapter<>(user().build()))))
-            .alwaysDo(log())
-            .build();
+                .apply(springSecurity())
+                .defaultRequest(get("/")
+                        .contentType(APPLICATION_JSON)
+                        .with(csrf())
+                        .with(user(new UserDetailsAdapter<>(user().build()))))
+                .alwaysDo(log())
+                .build();
     }
 
     protected void loadApplicationContext(Class<?>... config) {
@@ -64,5 +64,4 @@ public abstract class AbstractApplicationContextTest {
         applicationContext.refresh();
         return applicationContext;
     }
-
 }

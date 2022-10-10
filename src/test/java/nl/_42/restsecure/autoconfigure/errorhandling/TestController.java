@@ -8,14 +8,13 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/test")
 public class TestController {
-    
-    @PreAuthorize("hasRole('ROLE_UNKNOWN')")
-    @GetMapping("/preauthorized")
+
     /**
      * Empty REST endpoint for @PreAuthorize testing.
      */
+    @PreAuthorize("hasRole('ROLE_UNKNOWN')")
+    @GetMapping("/preauthorized")
     public void restrictedMethod() {
         // Intentionally left without implementation because the test will never reach this.
     }
-
 }

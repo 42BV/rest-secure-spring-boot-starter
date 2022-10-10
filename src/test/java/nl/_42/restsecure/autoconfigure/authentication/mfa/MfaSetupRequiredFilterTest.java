@@ -1,7 +1,8 @@
 package nl._42.restsecure.autoconfigure.authentication.mfa;
 
-import static org.junit.jupiter.api.Assertions.*;
-
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -30,6 +31,7 @@ class MfaSetupRequiredFilterTest extends AbstractApplicationContextTest {
 
     private final UsernamePasswordAuthenticationToken authenticationWithValidMfaConfiguration = new MfaAuthenticationToken("user1", "*****", "123456");
     private final UsernamePasswordAuthenticationToken authenticationWithInvalidMfaConfiguration = new MfaAuthenticationToken("user2", "*****", "234567");
+
     {
         authenticationWithInvalidMfaConfiguration.setDetails(MfaAuthenticationProvider.DETAILS_MFA_SETUP_REQUIRED);
     }

@@ -13,5 +13,4 @@ public class AccountLockedUserConfig extends AbstractUserDetailsServiceConfig {
     protected RegisteredUser foundUser() {
         return user().withAccountLocked(true).build();
     }
-
 }

@@ -1,29 +1,28 @@
 package nl._42.restsecure.autoconfigure.authentication;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.core.MethodParameter;
 
-public class CurrentUserArgumentResolverTest {
+class CurrentUserArgumentResolverTest {
 
-  private final CurrentUserArgumentResolver resolver = new CurrentUserArgumentResolver(null);
+    private final CurrentUserArgumentResolver resolver = new CurrentUserArgumentResolver(null);
 
-  @Test
-  public void supports_true() {
-    MethodParameter parameter = Mockito.mock(MethodParameter.class);
-    CurrentUser annotation = Mockito.mock(CurrentUser.class);
-    Mockito.when(parameter.getParameterAnnotation(CurrentUser.class)).thenReturn(annotation);
+    @Test
+    void supports_true() {
+        MethodParameter parameter = Mockito.mock(MethodParameter.class);
+        CurrentUser annotation = Mockito.mock(CurrentUser.class);
+        Mockito.when(parameter.getParameterAnnotation(CurrentUser.class)).thenReturn(annotation);
 
-    assertEquals(true, resolver.supportsParameter(parameter));
-  }
+        assertTrue(resolver.supportsParameter(parameter));
+    }
 
-  @Test
-  public void supports_false() {
-    MethodParameter parameter = Mockito.mock(MethodParameter.class);
-
-    assertEquals(false, resolver.supportsParameter(parameter));
-  }
-
+    @Test
+    void supports_false() {
+        MethodParameter parameter = Mockito.mock(MethodParameter.class);
+        assertFalse(resolver.supportsParameter(parameter));
+    }
 }

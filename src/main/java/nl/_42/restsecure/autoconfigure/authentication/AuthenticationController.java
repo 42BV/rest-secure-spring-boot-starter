@@ -35,5 +35,4 @@ public class AuthenticationController {
     public AuthenticationResult current(HttpServletRequest request, HttpServletResponse response, @CurrentUser RegisteredUser user) {
         return provider.toResult(request, response, user);
     }
-
 }

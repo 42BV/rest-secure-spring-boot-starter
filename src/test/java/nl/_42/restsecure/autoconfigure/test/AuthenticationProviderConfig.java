@@ -9,19 +9,18 @@ import org.springframework.security.core.AuthenticationException;
 @Configuration
 public class AuthenticationProviderConfig {
 
-  @Bean
-  public AuthenticationProvider authenticationProvider() {
-    return new AuthenticationProvider() {
-      @Override
-      public Authentication authenticate(Authentication authentication) throws AuthenticationException {
-        return authentication;
-      }
+    @Bean
+    public AuthenticationProvider authenticationProvider() {
+        return new AuthenticationProvider() {
+            @Override
+            public Authentication authenticate(Authentication authentication) throws AuthenticationException {
+                return authentication;
+            }
 
-      @Override
-      public boolean supports(Class<?> authentication) {
-        return true;
-      }
-    };
-  }
-
+            @Override
+            public boolean supports(Class<?> authentication) {
+                return true;
+            }
+        };
+    }
 }
