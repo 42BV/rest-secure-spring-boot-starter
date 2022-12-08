@@ -12,4 +12,15 @@ public class UserController {
     public RegisteredUser me(@CurrentUser RegisteredUser user) {
         return user;
     }
+
+    @GetMapping("/optional")
+    public RegisteredUser optional(@CurrentUser(required = false) RegisteredUser user) {
+        return user;
+    }
+
+    @GetMapping("/custom")
+    public RegisteredUser custom(@OptionalUser RegisteredUser user) {
+        return user;
+    }
+
 }

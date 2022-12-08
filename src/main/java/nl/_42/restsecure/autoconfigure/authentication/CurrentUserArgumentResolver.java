@@ -1,10 +1,14 @@
 package nl._42.restsecure.autoconfigure.authentication;
 
 import org.springframework.core.MethodParameter;
+import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
+
+import java.util.Objects;
+import java.util.Optional;
 
 public final class CurrentUserArgumentResolver implements HandlerMethodArgumentResolver {
 
@@ -16,12 +20,21 @@ public final class CurrentUserArgumentResolver implements HandlerMethodArgumentR
 
     @Override
     public boolean supportsParameter(MethodParameter parameter) {
-        return parameter.getParameterAnnotation(CurrentUser.class) != null;
+        return AnnotationUtils.getAnnotation(parameter.getParameter(), CurrentUser.class) != null;
     }
 
     @Override
     public RegisteredUser resolveArgument(MethodParameter parameter, ModelAndViewContainer container, NativeWebRequest webRequest,
             WebDataBinderFactory binderFactory) {
-        return userResolver.resolve().orElseThrow(IllegalStateException::new);
+        CurrentUser annotation = AnnotationUtils.getAnnotation(parameter.getParameter(), CurrentUser.class);
+        Objects.requireNonNull(annotation, "Mapping must be annotated with the @CurrentUser annotation");
+
+        Optional<RegisteredUser> user = userResolver.resolve();
+        if (annotation.required()) {
+            return user.orElseThrow(() -> new IllegalStateException("No current user found"));
+        }
+
+        return user.orElse(null);
     }
+
 }
