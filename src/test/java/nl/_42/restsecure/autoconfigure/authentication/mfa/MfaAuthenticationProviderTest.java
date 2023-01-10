@@ -1,6 +1,11 @@
 package nl._42.restsecure.autoconfigure.authentication.mfa;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -88,7 +93,7 @@ class MfaAuthenticationProviderTest {
                 assertTrue(authentication.isAuthenticated());
                 assertTrue(authentication instanceof UsernamePasswordAuthenticationToken);
                 UserDetailsAdapter<UserWithPassword> userDetailsAdapter = (UserDetailsAdapter<UserWithPassword>) authentication.getPrincipal();
-                assertEquals(user, userDetailsAdapter.getUser());
+                assertEquals(user, userDetailsAdapter.user());
                 assertNull(authentication.getDetails());
             }
 
@@ -121,7 +126,7 @@ class MfaAuthenticationProviderTest {
                 assertTrue(authentication.isAuthenticated());
                 assertTrue(authentication instanceof UsernamePasswordAuthenticationToken);
                 UserDetailsAdapter<UserWithPassword> userDetailsAdapter = (UserDetailsAdapter<UserWithPassword>) authentication.getPrincipal();
-                assertEquals(user, userDetailsAdapter.getUser());
+                assertEquals(user, userDetailsAdapter.user());
                 assertEquals(MfaAuthenticationProvider.DETAILS_MFA_SETUP_REQUIRED, authentication.getDetails());
             }
 
@@ -137,7 +142,7 @@ class MfaAuthenticationProviderTest {
                 assertTrue(authentication.isAuthenticated());
                 assertTrue(authentication instanceof UsernamePasswordAuthenticationToken);
                 UserDetailsAdapter<UserWithPassword> userDetailsAdapter = (UserDetailsAdapter<UserWithPassword>) authentication.getPrincipal();
-                assertEquals(user, userDetailsAdapter.getUser());
+                assertEquals(user, userDetailsAdapter.user());
                 assertEquals(MfaAuthenticationProvider.DETAILS_MFA_SETUP_REQUIRED, authentication.getDetails());
             }
         }
@@ -158,7 +163,7 @@ class MfaAuthenticationProviderTest {
                 assertTrue(authentication.isAuthenticated());
                 assertTrue(authentication instanceof UsernamePasswordAuthenticationToken);
                 UserDetailsAdapter<UserWithPassword> userDetailsAdapter = (UserDetailsAdapter<UserWithPassword>) authentication.getPrincipal();
-                assertEquals(user, userDetailsAdapter.getUser());
+                assertEquals(user, userDetailsAdapter.user());
                 assertNull(authentication.getDetails());
             }
 
@@ -175,7 +180,7 @@ class MfaAuthenticationProviderTest {
                 assertTrue(authentication.isAuthenticated());
                 assertTrue(authentication instanceof UsernamePasswordAuthenticationToken);
                 UserDetailsAdapter<UserWithPassword> userDetailsAdapter = (UserDetailsAdapter<UserWithPassword>) authentication.getPrincipal();
-                assertEquals(user, userDetailsAdapter.getUser());
+                assertEquals(user, userDetailsAdapter.user());
                 assertNull(authentication.getDetails());
             }
 
@@ -258,7 +263,8 @@ class MfaAuthenticationProviderTest {
                 inMemoryUserDetailService.register(user);
                 mockMfaValidationService.register("secret-key", "123456");
 
-                MfaAuthenticationToken token = new MfaAuthenticationToken("username", "password", "654321"); // This key should not be checked since the custom check succeeds.
+                MfaAuthenticationToken token = new MfaAuthenticationToken("username", "password",
+                        "654321"); // This key should not be checked since the custom check succeeds.
                 Authentication authentication = provider.authenticate(token);
 
                 assertTrue(authentication.isAuthenticated());
@@ -357,7 +363,9 @@ class MfaAuthenticationProviderTest {
                 MfaAuthenticationToken tokenInvalid = new MfaAuthenticationToken("username", "password", "654321");
                 IllegalStateException e = assertThrows(IllegalStateException.class, () -> provider.authenticate(tokenInvalid));
 
-                assertEquals("At least one verification check must either have succeeded or thrown an AuthenticationException. Check the verifications passed to .setVerificationChecks() for any unmatched scenarios.", e.getMessage());
+                assertEquals(
+                        "At least one verification check must either have succeeded or thrown an AuthenticationException. Check the verifications passed to .setVerificationChecks() for any unmatched scenarios.",
+                        e.getMessage());
                 assertTrue(checkPerformed.get());
                 assertEquals(user, userFromCheck[0]);
                 assertEquals(tokenInvalid, authenticationTokenFromCheck[0]);

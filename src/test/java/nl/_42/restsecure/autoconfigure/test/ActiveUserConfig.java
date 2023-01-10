@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class ActiveUserConfig extends AbstractUserDetailsServiceConfig {
-    
+
     @Override
     protected RegisteredUser foundUser() {
         return user().build();

@@ -15,8 +15,8 @@ public class WebMvcErrorHandlingTest extends AbstractApplicationContextTest {
     @Test
     public void forbiddenEndpoint_shouldFail_whenAdmin() throws Exception {
         getWebClient(RestrictedEndpointsConfig.class)
-            .perform(get("/test/preauthorized"))
-            .andExpect(status().isForbidden())
-            .andExpect(jsonPath("errorCode").value(SERVER_ACCESS_DENIED_ERROR));
+                .perform(get("/test/preauthorized"))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("errorCode").value(SERVER_ACCESS_DENIED_ERROR));
     }
 }

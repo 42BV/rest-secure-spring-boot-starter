@@ -22,10 +22,10 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-public class WebSecurityAutoConfigTest extends AbstractApplicationContextTest {
+class WebSecurityAutoConfigTest extends AbstractApplicationContextTest {
 
     @Test
-    public void autoConfig_shouldConfigureSecurity_withService() {
+    void autoConfig_shouldConfigureSecurity_withService() {
         loadApplicationContext(ActiveUserConfig.class);
         this.context.refresh();
 
@@ -41,9 +41,8 @@ public class WebSecurityAutoConfigTest extends AbstractApplicationContextTest {
         assertTrue(user.isAccountNonLocked());
     }
 
-
     @Test
-    public void autoConfig_shouldConfigureSecurity_withServiceAndMfaProvider_shouldNotGenerateDaoAuthenticationProvider() {
+    void autoConfig_shouldConfigureSecurity_withServiceAndMfaProvider_shouldNotGenerateDaoAuthenticationProvider() {
         loadApplicationContext(ActiveUserAndMfaConfig.class);
         this.context.refresh();
 
@@ -71,13 +70,13 @@ public class WebSecurityAutoConfigTest extends AbstractApplicationContextTest {
     }
 
     @Test
-    public void autoConfig_shouldConfigureSecurity_withProvider() {
+    void autoConfig_shouldConfigureSecurity_withProvider() {
         loadApplicationContext(AuthenticationProviderConfig.class);
         this.context.refresh();
     }
 
     @Test
-    public void autoConfig_shouldFail_withoutAuthenticationProvider() {
+    void autoConfig_shouldFail_withoutAuthenticationProvider() {
         assertThrows(BeanCreationException.class, () -> loadApplicationContext(NullAuthenticationProviderConfig.class));
     }
 

@@ -15,11 +15,10 @@ public interface AuthenticationResultProvider<T extends RegisteredUser> {
     /**
      * Translates the given {@link RegisteredUser} implementation to an {@link AuthenticationResult}.
      *
-     * @param request {@link HttpServletRequest}
+     * @param request  {@link HttpServletRequest}
      * @param response {@link HttpServletResponse}
-     * @param user {@link RegisteredUser}
+     * @param user     {@link RegisteredUser}
      * @return {@link AuthenticationResult}
      */
     AuthenticationResult toResult(HttpServletRequest request, HttpServletResponse response, T user);
-
 }

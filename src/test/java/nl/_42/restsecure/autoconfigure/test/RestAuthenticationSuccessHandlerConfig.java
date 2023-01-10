@@ -15,8 +15,8 @@ public class RestAuthenticationSuccessHandlerConfig {
     public static final String AUTHENTICATION_SUCCESS_HEADER = "AuthenticationSuccessful";
 
     @Bean
-    public AbstractRestAuthenticationSuccessHandler successHandler() {
-        return new AbstractRestAuthenticationSuccessHandler() {
+    public AbstractRestAuthenticationSuccessHandler<?> successHandler() {
+        return new AbstractRestAuthenticationSuccessHandler<>() {
             @Override
             protected void doHandle(HttpServletRequest request, HttpServletResponse response, RegisteredUser user) {
                 response.setHeader(AUTHENTICATION_SUCCESS_HEADER, user.getUsername());

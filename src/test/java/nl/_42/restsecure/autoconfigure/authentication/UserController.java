@@ -8,9 +8,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/users")
 public class UserController {
 
-  @GetMapping("/me")
-  public RegisteredUser me(@CurrentUser RegisteredUser user) {
-    return user;
-  }
-
+    @GetMapping("/me")
+    public RegisteredUser me(@CurrentUser RegisteredUser user) {
+        return user;
+    }
 }

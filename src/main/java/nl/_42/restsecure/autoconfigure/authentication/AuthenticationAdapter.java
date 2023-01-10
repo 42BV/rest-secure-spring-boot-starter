@@ -8,16 +8,16 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
  */
 public class AuthenticationAdapter extends UsernamePasswordAuthenticationToken {
 
-  /**
-   * Create a new authentication based on a user.
-   * @param user the registered user
-   */
-  public AuthenticationAdapter(RegisteredUser user) {
-    this(new UserDetailsAdapter(user));
-  }
+    /**
+     * Create a new authentication based on a user.
+     *
+     * @param user the registered user
+     */
+    public AuthenticationAdapter(RegisteredUser user) {
+        this(new UserDetailsAdapter<>(user));
+    }
 
-  private AuthenticationAdapter(UserDetailsAdapter details) {
-    super(details,"", details.getAuthorities());
-  }
-
+    private AuthenticationAdapter(UserDetailsAdapter<?> details) {
+        super(details, "", details.getAuthorities());
+    }
 }

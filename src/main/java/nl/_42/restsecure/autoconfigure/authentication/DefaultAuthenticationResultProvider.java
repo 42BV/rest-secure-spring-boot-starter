@@ -7,21 +7,19 @@ import javax.servlet.http.HttpServletResponse;
 
 public class DefaultAuthenticationResultProvider implements AuthenticationResultProvider<RegisteredUser> {
 
-  @Override
-  public AuthenticationResult toResult(HttpServletRequest request, HttpServletResponse response, RegisteredUser user) {
-    return new AuthenticationResult() {
+    @Override
+    public AuthenticationResult toResult(HttpServletRequest request, HttpServletResponse response, RegisteredUser user) {
+        return new AuthenticationResult() {
 
-      @Override
-      public String getUsername() {
-        return user.getUsername();
-      }
+            @Override
+            public String getUsername() {
+                return user.getUsername();
+            }
 
-      @Override
-      public Set<String> getAuthorities() {
-        return user.getAuthorities();
-      }
-
-    };
-  }
-
+            @Override
+            public Set<String> getAuthorities() {
+                return user.getAuthorities();
+            }
+        };
+    }
 }

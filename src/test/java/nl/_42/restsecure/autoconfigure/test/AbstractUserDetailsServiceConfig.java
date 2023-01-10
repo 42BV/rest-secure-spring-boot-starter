@@ -1,17 +1,18 @@
 package nl._42.restsecure.autoconfigure.test;
 
-import nl._42.restsecure.autoconfigure.authentication.AbstractUserDetailsService;
-import nl._42.restsecure.autoconfigure.authentication.RegisteredUser;
-import org.springframework.context.annotation.Bean;
-
 import java.util.Collections;
 import java.util.Set;
+
+import nl._42.restsecure.autoconfigure.authentication.AbstractUserDetailsService;
+import nl._42.restsecure.autoconfigure.authentication.RegisteredUser;
+
+import org.springframework.context.annotation.Bean;
 
 public abstract class AbstractUserDetailsServiceConfig {
 
     @Bean
     public AbstractUserDetailsService<RegisteredUser> userDetailsService() {
-        return new AbstractUserDetailsService<RegisteredUser>() {
+        return new AbstractUserDetailsService<>() {
             @Override
             public RegisteredUser findUserByUsername(String username) {
                 return foundUser();
@@ -81,10 +82,7 @@ public abstract class AbstractUserDetailsServiceConfig {
                 public boolean isCredentialsExpired() {
                     return credentialsExpired;
                 }
-
             };
         }
-
     }
-
 }

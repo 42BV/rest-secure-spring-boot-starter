@@ -1,6 +1,6 @@
 package nl._42.restsecure.autoconfigure;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import dev.samstevens.totp.code.CodeVerifier;
 import dev.samstevens.totp.code.DefaultCodeVerifier;
@@ -15,15 +15,13 @@ import nl._42.restsecure.autoconfigure.authentication.mfa.MfaSetupServiceImpl;
 import nl._42.restsecure.autoconfigure.authentication.mfa.MfaValidationService;
 import nl._42.restsecure.autoconfigure.authentication.mfa.MfaValidationServiceImpl;
 import nl._42.restsecure.autoconfigure.test.MfaAuthenticationConfig;
-import nl._42.restsecure.autoconfigure.test.MockMfaAuthenticationConfig;
 
 import org.junit.jupiter.api.Test;
 
 class MfaSecurityAutoConfigTest extends AbstractApplicationContextTest {
 
-
     @Test
-    public void autoConfig_shouldConfigureMfaServices() {
+    void autoConfig_shouldConfigureMfaServices() {
         loadApplicationContext(MfaAuthenticationConfig.class);
         this.context.refresh();
 

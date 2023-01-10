@@ -13,5 +13,4 @@ public class AccountExpiredUserConfig extends AbstractUserDetailsServiceConfig {
     protected RegisteredUser foundUser() {
         return user().withAccountExpired(true).build();
     }
-
 }

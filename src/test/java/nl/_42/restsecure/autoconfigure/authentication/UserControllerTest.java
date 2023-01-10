@@ -14,10 +14,9 @@ public class UserControllerTest extends AbstractApplicationContextTest {
     @Test
     public void me_shouldSucceed_whenLoggedIn() throws Exception {
         getWebClient(ActiveUserConfig.class)
-            .perform(get("/users/me"))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("authorities[0]").value("ROLE_ADMIN"))
-            .andExpect(jsonPath("username").value("username"));
+                .perform(get("/users/me"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("authorities[0]").value("ROLE_ADMIN"))
+                .andExpect(jsonPath("username").value("username"));
     }
-
 }

@@ -5,7 +5,7 @@ package nl._42.restsecure.autoconfigure.errorhandling;
  */
 public class GenericErrorResult {
 
-    private String errorCode;
+    private final String errorCode;
 
     public GenericErrorResult(String code) {
         this.errorCode = code;

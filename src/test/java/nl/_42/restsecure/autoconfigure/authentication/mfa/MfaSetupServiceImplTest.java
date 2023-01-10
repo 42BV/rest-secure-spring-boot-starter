@@ -1,6 +1,10 @@
 package nl._42.restsecure.autoconfigure.authentication.mfa;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -46,7 +50,8 @@ class MfaSetupServiceImplTest {
         @Test
         @DisplayName("should call secret generator to generate a hash")
         void shouldCallRealSecretGEneratorToGenerateHash() {
-            MfaSetupServiceImpl setupService = new MfaSetupServiceImpl(new DefaultSecretGenerator(), new QrDataFactory(HashingAlgorithm.SHA1, 6, 30), new ZxingPngQrGenerator(), "Rest-secure");
+            MfaSetupServiceImpl setupService = new MfaSetupServiceImpl(new DefaultSecretGenerator(), new QrDataFactory(HashingAlgorithm.SHA1, 6, 30),
+                    new ZxingPngQrGenerator(), "Rest-secure");
             String[] secrets = new String[10_000];
 
             for (int i = 0; i < 10000; i++) {
@@ -64,7 +69,8 @@ class MfaSetupServiceImplTest {
         @Test
         @DisplayName("Encodes generated qr code in base64")
         void generatesQrCode() throws MfaException {
-            MfaSetupServiceImpl setupService = new MfaSetupServiceImpl(new DefaultSecretGenerator(), new QrDataFactory(HashingAlgorithm.SHA1, 6, 30), new ZxingPngQrGenerator(), "Rest-secure");
+            MfaSetupServiceImpl setupService = new MfaSetupServiceImpl(new DefaultSecretGenerator(), new QrDataFactory(HashingAlgorithm.SHA1, 6, 30),
+                    new ZxingPngQrGenerator(), "Rest-secure");
             String qr = setupService.generateQrCode(setupService.generateSecret(), "test-user");
 
             assertTrue(qr.startsWith("data:image/png;base64,"));
@@ -94,7 +100,8 @@ class MfaSetupServiceImplTest {
 
             String issuer = "Rest-secure Test Issuer";
 
-            MfaSetupServiceImpl setupService = new MfaSetupServiceImpl(mockSecretGenerator, new QrDataFactory(HashingAlgorithm.SHA1, 6, 30), mockQrGenerator, issuer);
+            MfaSetupServiceImpl setupService = new MfaSetupServiceImpl(mockSecretGenerator, new QrDataFactory(HashingAlgorithm.SHA1, 6, 30), mockQrGenerator,
+                    issuer);
 
             String labelWithoutIssuer = "fake-issuer:test-user@example.com";
             String qr = setupService.generateQrCode(setupService.generateSecret(), labelWithoutIssuer);
@@ -110,7 +117,9 @@ class MfaSetupServiceImplTest {
             assertEquals("SHA1", generatedQrData.getAlgorithm());
             assertEquals(30, generatedQrData.getPeriod());
             assertEquals(6, generatedQrData.getDigits());
-            assertEquals("otpauth://totp/Rest-secure%20Test%20Issuer%3Afake-issuer%3Atest-user%40example.com?secret=XK6PZWX6RK46LBGRXSYRN7RE2X56UQD7&issuer=Rest-secure%20Test%20Issuer&algorithm=SHA1&digits=6&period=30", generatedQrData.getUri());
+            assertEquals(
+                    "otpauth://totp/Rest-secure%20Test%20Issuer%3Afake-issuer%3Atest-user%40example.com?secret=XK6PZWX6RK46LBGRXSYRN7RE2X56UQD7&issuer=Rest-secure%20Test%20Issuer&algorithm=SHA1&digits=6&period=30",
+                    generatedQrData.getUri());
 
             // Generate a QR with the issuer already in the label, this should not add the issuer again.
             String labelWithIssuer = "Rest-secure Test Issuer:test-user@example.com";
@@ -125,14 +134,17 @@ class MfaSetupServiceImplTest {
             assertEquals("SHA1", generatedQrData.getAlgorithm());
             assertEquals(30, generatedQrData.getPeriod());
             assertEquals(6, generatedQrData.getDigits());
-            assertEquals("otpauth://totp/Rest-secure%20Test%20Issuer%3Atest-user%40example.com?secret=XK6PZWX6RK46LBGRXSYRN7RE2X56UQD7&issuer=Rest-secure%20Test%20Issuer&algorithm=SHA1&digits=6&period=30", generatedQrData.getUri());
+            assertEquals(
+                    "otpauth://totp/Rest-secure%20Test%20Issuer%3Atest-user%40example.com?secret=XK6PZWX6RK46LBGRXSYRN7RE2X56UQD7&issuer=Rest-secure%20Test%20Issuer&algorithm=SHA1&digits=6&period=30",
+                    generatedQrData.getUri());
 
         }
 
         @Test
         @DisplayName("throws if label is null or empty")
         void throwsForMissingLabel() {
-            MfaSetupServiceImpl setupService = new MfaSetupServiceImpl(new DefaultSecretGenerator(), new QrDataFactory(HashingAlgorithm.SHA1, 6, 30), new ZxingPngQrGenerator(), "Rest-secure");
+            MfaSetupServiceImpl setupService = new MfaSetupServiceImpl(new DefaultSecretGenerator(), new QrDataFactory(HashingAlgorithm.SHA1, 6, 30),
+                    new ZxingPngQrGenerator(), "Rest-secure");
             MfaException e1 = assertThrows(MfaException.class, () -> setupService.generateQrCode(setupService.generateSecret(), null));
             MfaException e2 = assertThrows(MfaException.class, () -> setupService.generateQrCode(setupService.generateSecret(), ""));
 

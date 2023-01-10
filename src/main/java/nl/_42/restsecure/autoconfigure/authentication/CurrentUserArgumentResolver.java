@@ -8,20 +8,20 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 
 public final class CurrentUserArgumentResolver implements HandlerMethodArgumentResolver {
 
-  private final UserResolver<RegisteredUser> userResolver;
+    private final UserResolver<RegisteredUser> userResolver;
 
-  public CurrentUserArgumentResolver(UserResolver userResolver) {
-    this.userResolver = userResolver;
-  }
+    public CurrentUserArgumentResolver(UserResolver<RegisteredUser> userResolver) {
+        this.userResolver = userResolver;
+    }
 
-  @Override
-  public boolean supportsParameter(MethodParameter parameter) {
-    return parameter.getParameterAnnotation(CurrentUser.class) != null;
-  }
+    @Override
+    public boolean supportsParameter(MethodParameter parameter) {
+        return parameter.getParameterAnnotation(CurrentUser.class) != null;
+    }
 
-  @Override
-  public RegisteredUser resolveArgument(MethodParameter parameter, ModelAndViewContainer container, NativeWebRequest webRequest, WebDataBinderFactory binderFactory) {
-    return userResolver.resolve().orElseThrow(IllegalStateException::new);
-  }
-
+    @Override
+    public RegisteredUser resolveArgument(MethodParameter parameter, ModelAndViewContainer container, NativeWebRequest webRequest,
+            WebDataBinderFactory binderFactory) {
+        return userResolver.resolve().orElseThrow(IllegalStateException::new);
+    }
 }
