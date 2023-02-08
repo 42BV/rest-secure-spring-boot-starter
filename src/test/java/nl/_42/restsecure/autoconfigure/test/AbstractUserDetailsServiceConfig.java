@@ -3,6 +3,7 @@ package nl._42.restsecure.autoconfigure.test;
 import java.util.Collections;
 import java.util.Set;
 
+import nl._42.restsecure.autoconfigure.RequestAuthorizationCustomizer;
 import nl._42.restsecure.autoconfigure.authentication.AbstractUserDetailsService;
 import nl._42.restsecure.autoconfigure.authentication.RegisteredUser;
 
@@ -18,6 +19,11 @@ public abstract class AbstractUserDetailsServiceConfig {
                 return foundUser();
             }
         };
+    }
+
+    @Bean
+    public RequestAuthorizationCustomizer requestAuthorizationCustomizer() {
+        return registry -> registry.antMatchers("/users/**").permitAll();
     }
 
     protected abstract RegisteredUser foundUser();
@@ -84,5 +90,7 @@ public abstract class AbstractUserDetailsServiceConfig {
                 }
             };
         }
+
     }
+
 }
