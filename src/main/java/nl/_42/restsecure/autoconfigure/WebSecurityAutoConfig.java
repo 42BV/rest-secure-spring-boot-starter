@@ -1,11 +1,5 @@
 package nl._42.restsecure.autoconfigure;
 
-import static org.springframework.http.HttpMethod.DELETE;
-import static org.springframework.security.web.csrf.CookieCsrfTokenRepository.withHttpOnlyFalse;
-
-import java.util.ArrayList;
-import java.util.List;
-
 import lombok.extern.slf4j.Slf4j;
 import nl._42.restsecure.autoconfigure.authentication.AbstractRestAuthenticationSuccessHandler;
 import nl._42.restsecure.autoconfigure.authentication.AbstractUserDetailsService;
@@ -20,7 +14,6 @@ import nl._42.restsecure.autoconfigure.errorhandling.DefaultLoginAuthenticationE
 import nl._42.restsecure.autoconfigure.errorhandling.GenericErrorHandler;
 import nl._42.restsecure.autoconfigure.errorhandling.LoginAuthenticationExceptionHandler;
 import nl._42.restsecure.autoconfigure.errorhandling.RestAccessDeniedHandler;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
@@ -47,6 +40,12 @@ import org.springframework.security.web.authentication.logout.HttpStatusReturnin
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRepository;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.springframework.http.HttpMethod.DELETE;
+import static org.springframework.security.web.csrf.CookieCsrfTokenRepository.withHttpOnlyFalse;
 
 /**
  * Auto-configures Spring Web Security with a customized UserDetailsService for internal users storage or with crowd-integration-springsecurity for external crowd authentication.
@@ -186,10 +185,15 @@ public class WebSecurityAutoConfig {
         filter.setAuthenticationSuccessHandler(authenticationSuccessHandler);
         filter.setRememberMeServices(rememberMeServices);
 
+        http
+            .authenticationManager(authenticationManager)
+            .setSharedObject(AuthenticationManager.class, authenticationManager);
+
         ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry urlRegistry = http
                 .addFilterBefore(filter, AnonymousAuthenticationFilter.class)
                 .authorizeRequests()
                 .antMatchers("/authentication").permitAll();
+
         customize(urlRegistry)
             .anyRequest().fullyAuthenticated()
             .and()
@@ -203,6 +207,7 @@ public class WebSecurityAutoConfig {
             .and()
                 .csrf()
                     .csrfTokenRepository(csrfTokenRepository());
+
         customize(http);
 
         return http.build();
