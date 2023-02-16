@@ -1,13 +1,12 @@
 package nl._42.restsecure.autoconfigure.test;
 
-import java.util.Collections;
-import java.util.Set;
-
 import nl._42.restsecure.autoconfigure.RequestAuthorizationCustomizer;
 import nl._42.restsecure.autoconfigure.authentication.AbstractUserDetailsService;
 import nl._42.restsecure.autoconfigure.authentication.RegisteredUser;
-
 import org.springframework.context.annotation.Bean;
+
+import java.util.Collections;
+import java.util.Set;
 
 public abstract class AbstractUserDetailsServiceConfig {
 
@@ -23,7 +22,7 @@ public abstract class AbstractUserDetailsServiceConfig {
 
     @Bean
     public RequestAuthorizationCustomizer requestAuthorizationCustomizer() {
-        return registry -> registry.antMatchers("/users/**").permitAll();
+        return registry -> registry.requestMatchers("/users/**").permitAll();
     }
 
     protected abstract RegisteredUser foundUser();

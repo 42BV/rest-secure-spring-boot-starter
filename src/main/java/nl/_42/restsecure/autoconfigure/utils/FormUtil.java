@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import nl._42.restsecure.autoconfigure.form.FormValues;
 import nl._42.restsecure.autoconfigure.form.LoginForm;

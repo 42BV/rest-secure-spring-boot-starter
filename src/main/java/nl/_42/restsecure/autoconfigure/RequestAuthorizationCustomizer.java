@@ -3,7 +3,7 @@ package nl._42.restsecure.autoconfigure;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configurers.ExpressionUrlAuthorizationConfigurer;
+import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer;
 
 /**
  * Implement this interface and add it as {@link Bean} to the {@link ApplicationContext} to customize the auto configured url registry.
@@ -11,5 +11,6 @@ import org.springframework.security.config.annotation.web.configurers.Expression
  */
 public interface RequestAuthorizationCustomizer {
 
-    ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry customize(ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry urlRegistry) throws Exception;
+    AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry customize(AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry urlRegistry) throws Exception;
+
 }

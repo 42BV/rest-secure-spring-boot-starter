@@ -1,6 +1,7 @@
 package nl._42.restsecure.autoconfigure.test;
 
 import nl._42.restsecure.autoconfigure.HttpSecurityCustomizer;
+import nl._42.restsecure.autoconfigure.RequestAuthorizationCustomizer;
 import nl._42.restsecure.autoconfigure.authentication.InMemoryUserDetailService;
 import nl._42.restsecure.autoconfigure.authentication.mfa.MfaAuthenticationProvider;
 import nl._42.restsecure.autoconfigure.authentication.mfa.MfaSetupRequiredFilter;
@@ -20,8 +21,12 @@ public class MockMfaAuthenticationConfig {
 
     @Bean
     public HttpSecurityCustomizer httpSecurityCustomizer() {
-        return http -> http
-                .addFilterBefore(mfaSetupRequiredFilter(), AnonymousAuthenticationFilter.class);
+        return http -> http .addFilterBefore(mfaSetupRequiredFilter(), AnonymousAuthenticationFilter.class);
+    }
+
+    @Bean
+    public RequestAuthorizationCustomizer requestAuthorizationCustomizer() {
+        return registry -> registry.requestMatchers("/users/**").permitAll();
     }
 
     @Bean

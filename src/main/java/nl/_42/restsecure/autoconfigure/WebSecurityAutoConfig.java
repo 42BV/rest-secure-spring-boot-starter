@@ -27,10 +27,11 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
-import org.springframework.security.config.annotation.web.configurers.ExpressionUrlAuthorizationConfigurer;
+import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -59,7 +60,7 @@ import static org.springframework.security.web.csrf.CookieCsrfTokenRepository.wi
 @AutoConfigureAfter(WebMvcAutoConfiguration.class)
 @ComponentScan(basePackageClasses = { AuthenticationController.class, GenericErrorHandler.class })
 @EnableWebSecurity
-@EnableGlobalMethodSecurity(prePostEnabled = true)
+@EnableMethodSecurity
 public class WebSecurityAutoConfig {
     private final RestAccessDeniedHandler accessDeniedHandler;
 
@@ -189,10 +190,10 @@ public class WebSecurityAutoConfig {
             .authenticationManager(authenticationManager)
             .setSharedObject(AuthenticationManager.class, authenticationManager);
 
-        ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry urlRegistry = http
-                .addFilterBefore(filter, AnonymousAuthenticationFilter.class)
-                .authorizeRequests()
-                .antMatchers("/authentication").permitAll();
+        AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry urlRegistry = http
+            .addFilterBefore(filter, AnonymousAuthenticationFilter.class)
+            .authorizeHttpRequests()
+            .requestMatchers("/authentication").permitAll();
 
         customize(urlRegistry)
             .anyRequest().fullyAuthenticated()
@@ -213,8 +214,8 @@ public class WebSecurityAutoConfig {
         return http.build();
     }
 
-    private ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry customize(
-            ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry urlRegistry) throws Exception {
+    private AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry customize(
+            AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry urlRegistry) throws Exception {
         if (authCustomizer != null) {
             log.info("Found RequestAuthorization bean in ApplicationContext, custom configuring of urlRegistry object started.");
             return authCustomizer.customize(urlRegistry);
