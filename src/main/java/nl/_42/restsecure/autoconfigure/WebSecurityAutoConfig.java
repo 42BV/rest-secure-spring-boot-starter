@@ -26,7 +26,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
-import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -38,8 +37,13 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AnonymousAuthenticationFilter;
 import org.springframework.security.web.authentication.RememberMeServices;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
+import org.springframework.security.web.context.DelegatingSecurityContextRepository;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
+import org.springframework.security.web.context.RequestAttributeSecurityContextRepository;
+import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRepository;
+import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 import java.util.ArrayList;
@@ -173,7 +177,7 @@ public class WebSecurityAutoConfig {
         }
         if (userDetailsService == null && authProviders.isEmpty()) {
             throw new IllegalStateException(
-                    "Cannot configure security; either a UserDetailsService or AuthenticationProvider bean must be present."
+                "Cannot configure security; either a UserDetailsService or AuthenticationProvider bean must be present."
             );
         }
 
@@ -181,19 +185,25 @@ public class WebSecurityAutoConfig {
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http, AuthenticationManager authenticationManager) throws Exception {
-        RestAuthenticationFilter filter = new RestAuthenticationFilter(loginExceptionHandler(null), authenticationManager);
+    public SecurityFilterChain filterChain(HttpSecurity http, LoginAuthenticationExceptionHandler exceptionHandler, AuthenticationManager authenticationManager) throws Exception {
+        SecurityContextRepository securityContextRepository = securityContextRepository();
+
+        RestAuthenticationFilter filter = new RestAuthenticationFilter(exceptionHandler, securityContextRepository, authenticationManager);
         filter.setAuthenticationSuccessHandler(authenticationSuccessHandler);
         filter.setRememberMeServices(rememberMeServices);
 
         http
+            .securityContext(securityContext ->
+                securityContext.securityContextRepository(securityContextRepository)
+            )
             .authenticationManager(authenticationManager)
             .setSharedObject(AuthenticationManager.class, authenticationManager);
 
-        AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry urlRegistry = http
-            .addFilterBefore(filter, AnonymousAuthenticationFilter.class)
-            .authorizeHttpRequests()
-            .requestMatchers("/authentication").permitAll();
+        AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry urlRegistry =
+            http
+                .addFilterBefore(filter, AnonymousAuthenticationFilter.class)
+                .authorizeHttpRequests()
+                .requestMatchers("/authentication").permitAll();
 
         customize(urlRegistry)
             .anyRequest().fullyAuthenticated()
@@ -207,11 +217,20 @@ public class WebSecurityAutoConfig {
                     .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler())
             .and()
                 .csrf()
+                    .csrfTokenRequestHandler(csrfRequestHandler())
                     .csrfTokenRepository(csrfTokenRepository());
 
         customize(http);
 
         return http.build();
+    }
+
+    @Bean
+    public DelegatingSecurityContextRepository securityContextRepository() {
+        return new DelegatingSecurityContextRepository(
+            new RequestAttributeSecurityContextRepository(),
+            new HttpSessionSecurityContextRepository()
+        );
     }
 
     private AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry customize(
@@ -238,6 +257,12 @@ public class WebSecurityAutoConfig {
         CookieCsrfTokenRepository repository = withHttpOnlyFalse();
         repository.setCookiePath("/");
         return repository;
+    }
+
+    private CsrfTokenRequestAttributeHandler csrfRequestHandler() {
+        CsrfTokenRequestAttributeHandler csrfTokenHandler = new CsrfTokenRequestAttributeHandler();
+        csrfTokenHandler.setCsrfRequestAttributeName("_csrf");
+        return csrfTokenHandler;
     }
 
     private boolean isMfaAuthenticationProviderConfigured() {

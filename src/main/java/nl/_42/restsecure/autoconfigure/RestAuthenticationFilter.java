@@ -1,16 +1,10 @@
 package nl._42.restsecure.autoconfigure;
 
-import static org.springframework.http.HttpMethod.POST;
-
-import java.io.IOException;
-import java.util.Optional;
-
 import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-
 import lombok.extern.slf4j.Slf4j;
 import nl._42.restsecure.autoconfigure.authentication.AbstractRestAuthenticationSuccessHandler;
 import nl._42.restsecure.autoconfigure.authentication.mfa.MfaAuthenticationToken;
@@ -19,16 +13,22 @@ import nl._42.restsecure.autoconfigure.errorhandling.LoginAuthenticationExceptio
 import nl._42.restsecure.autoconfigure.form.FormValues;
 import nl._42.restsecure.autoconfigure.form.LoginForm;
 import nl._42.restsecure.autoconfigure.utils.FormUtil;
-
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.RememberMeServices;
+import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
+
+import java.io.IOException;
+import java.util.Optional;
+
+import static org.springframework.http.HttpMethod.POST;
 
 /**
  * Handles the login POST request. Tries to Authenticate the given user credentials using the auto configured {@link AuthenticationManager}.
@@ -41,9 +41,13 @@ public class RestAuthenticationFilter extends OncePerRequestFilter {
 
     public static final String LOGIN_FORM_JSON = "loginFormJson";
 
+    private static final AntPathRequestMatcher DEFAULT_MATCHER = new AntPathRequestMatcher("/authentication", POST.name());
+
     private final LoginAuthenticationExceptionHandler loginExceptionHandler;
-    private final RequestMatcher requestMatcher;
+    private final SecurityContextRepository securityContextRepository;
     private final AuthenticationManager authenticationManager;
+    private final RequestMatcher requestMatcher;
+
     private Optional<RememberMeServices> rememberMeServices = Optional.empty();
     private Optional<AbstractRestAuthenticationSuccessHandler> successHandler = Optional.empty();
 
@@ -53,9 +57,11 @@ public class RestAuthenticationFilter extends OncePerRequestFilter {
      * @param loginExceptionHandler handler method for when exceptions occur
      * @param authenticationManager authentication manager
      */
-    public RestAuthenticationFilter(LoginAuthenticationExceptionHandler loginExceptionHandler,
-            AuthenticationManager authenticationManager) {
-        this(loginExceptionHandler, authenticationManager, new AntPathRequestMatcher("/authentication", POST.name()));
+    public RestAuthenticationFilter(
+        LoginAuthenticationExceptionHandler loginExceptionHandler,
+        SecurityContextRepository securityContextRepository,
+        AuthenticationManager authenticationManager) {
+        this(loginExceptionHandler, securityContextRepository, authenticationManager, DEFAULT_MATCHER);
     }
 
     /**
@@ -66,11 +72,13 @@ public class RestAuthenticationFilter extends OncePerRequestFilter {
      * @param requestMatcher        request matcher to test if the filter should be applied
      */
     public RestAuthenticationFilter(
-            LoginAuthenticationExceptionHandler loginExceptionHandler,
-            AuthenticationManager authenticationManager,
-            RequestMatcher requestMatcher
+        LoginAuthenticationExceptionHandler loginExceptionHandler,
+        SecurityContextRepository securityContextRepository,
+        AuthenticationManager authenticationManager,
+        RequestMatcher requestMatcher
     ) {
         this.loginExceptionHandler = loginExceptionHandler;
+        this.securityContextRepository = securityContextRepository;
         this.authenticationManager = authenticationManager;
         this.requestMatcher = requestMatcher;
     }
@@ -101,7 +109,8 @@ public class RestAuthenticationFilter extends OncePerRequestFilter {
             log.info("Authenticating user: {}", form.username);
 
             Authentication authentication = authenticationManager.authenticate(token);
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+            setAuthentication(request, response, authentication);
+
             request.setAttribute(LOGIN_FORM_JSON, formValues.formJson());
 
             successHandler.ifPresent(sh -> sh.onAuthenticationSuccess(request, response, authentication));
@@ -111,15 +120,21 @@ public class RestAuthenticationFilter extends OncePerRequestFilter {
 
             chain.doFilter(request, response);
         } catch (AuthenticationException ex) {
-            handleLoginFailure(request, response, ex, form);
+            onException(request, response, ex, form);
         }
     }
 
-    private void handleLoginFailure(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception, LoginForm form)
-            throws IOException {
+    private void setAuthentication(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(authentication);
+        securityContextRepository.saveContext(context, request, response);
+    }
+
+    private void onException(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception, LoginForm form) throws IOException {
         LogUtil.logAuthenticationFailure(log, form, exception);
-        SecurityContextHolder.getContext().setAuthentication(null);
+        setAuthentication(request, response, null);
         loginExceptionHandler.handle(request, response, exception);
         rememberMeServices.ifPresent(rms -> rms.loginFail(request, response));
     }
+
 }
