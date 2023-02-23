@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [12.0.0] - 2023-02-23
+- Upgrade to Spring Boot 3.0.2
+- Upgrade to JDK 17
+
 ## [11.0.0] - 2021-12-23
 - Upgrade: from spring-boot 2.5 to 2.6
 - Now throwing an Exception in the RequestAuthorizationCustomizer's customize method so that
