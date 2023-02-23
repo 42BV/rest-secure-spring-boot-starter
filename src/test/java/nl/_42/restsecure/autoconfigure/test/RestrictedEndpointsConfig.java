@@ -2,7 +2,6 @@ package nl._42.restsecure.autoconfigure.test;
 
 import nl._42.restsecure.autoconfigure.RequestAuthorizationCustomizer;
 import nl._42.restsecure.autoconfigure.authentication.RegisteredUser;
-
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -11,7 +10,7 @@ public class RestrictedEndpointsConfig extends AbstractUserDetailsServiceConfig 
 
     @Bean
     public RequestAuthorizationCustomizer requestAuthorizationCustomizer() {
-        return urlRegistry -> urlRegistry.antMatchers("/test/forbidden").hasRole("UNKNOWN");
+        return urlRegistry -> urlRegistry.requestMatchers("/test/forbidden").hasRole("UNKNOWN");
     }
 
     @Override

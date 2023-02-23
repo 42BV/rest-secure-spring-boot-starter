@@ -10,7 +10,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppContextSetup;
 
-import javax.servlet.ServletContext;
+import jakarta.servlet.ServletContext;
 
 import nl._42.restsecure.autoconfigure.AbstractApplicationContextTest;
 import nl._42.restsecure.autoconfigure.test.ActiveUserConfig;
