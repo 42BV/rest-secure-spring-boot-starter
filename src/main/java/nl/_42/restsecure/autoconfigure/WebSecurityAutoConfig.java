@@ -1,19 +1,11 @@
 package nl._42.restsecure.autoconfigure;
 
-import lombok.extern.slf4j.Slf4j;
-import nl._42.restsecure.autoconfigure.authentication.AbstractRestAuthenticationSuccessHandler;
-import nl._42.restsecure.autoconfigure.authentication.AbstractUserDetailsService;
-import nl._42.restsecure.autoconfigure.authentication.AuthenticationController;
-import nl._42.restsecure.autoconfigure.authentication.AuthenticationResultProvider;
-import nl._42.restsecure.autoconfigure.authentication.DefaultAuthenticationResultProvider;
-import nl._42.restsecure.autoconfigure.authentication.DefaultUserProvider;
-import nl._42.restsecure.autoconfigure.authentication.RegisteredUser;
-import nl._42.restsecure.autoconfigure.authentication.UserProvider;
-import nl._42.restsecure.autoconfigure.authentication.mfa.MfaAuthenticationProvider;
-import nl._42.restsecure.autoconfigure.errorhandling.DefaultLoginAuthenticationExceptionHandler;
-import nl._42.restsecure.autoconfigure.errorhandling.GenericErrorHandler;
-import nl._42.restsecure.autoconfigure.errorhandling.LoginAuthenticationExceptionHandler;
-import nl._42.restsecure.autoconfigure.errorhandling.RestAccessDeniedHandler;
+import static org.springframework.http.HttpMethod.DELETE;
+import static org.springframework.security.web.csrf.CookieCsrfTokenRepository.withHttpOnlyFalse;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
@@ -46,11 +38,20 @@ import org.springframework.security.web.csrf.CsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.springframework.http.HttpMethod.DELETE;
-import static org.springframework.security.web.csrf.CookieCsrfTokenRepository.withHttpOnlyFalse;
+import lombok.extern.slf4j.Slf4j;
+import nl._42.restsecure.autoconfigure.authentication.AbstractRestAuthenticationSuccessHandler;
+import nl._42.restsecure.autoconfigure.authentication.AbstractUserDetailsService;
+import nl._42.restsecure.autoconfigure.authentication.AuthenticationController;
+import nl._42.restsecure.autoconfigure.authentication.AuthenticationResultProvider;
+import nl._42.restsecure.autoconfigure.authentication.DefaultAuthenticationResultProvider;
+import nl._42.restsecure.autoconfigure.authentication.DefaultUserProvider;
+import nl._42.restsecure.autoconfigure.authentication.RegisteredUser;
+import nl._42.restsecure.autoconfigure.authentication.UserProvider;
+import nl._42.restsecure.autoconfigure.authentication.mfa.MfaAuthenticationProvider;
+import nl._42.restsecure.autoconfigure.errorhandling.DefaultLoginAuthenticationExceptionHandler;
+import nl._42.restsecure.autoconfigure.errorhandling.GenericErrorHandler;
+import nl._42.restsecure.autoconfigure.errorhandling.LoginAuthenticationExceptionHandler;
+import nl._42.restsecure.autoconfigure.errorhandling.RestAccessDeniedHandler;
 
 /**
  * Auto-configures Spring Web Security with a customized UserDetailsService for internal users storage or with crowd-integration-springsecurity for external crowd authentication.
@@ -261,7 +262,10 @@ public class WebSecurityAutoConfig {
 
     private CsrfTokenRequestAttributeHandler csrfRequestHandler() {
         CsrfTokenRequestAttributeHandler csrfTokenHandler = new CsrfTokenRequestAttributeHandler();
-        csrfTokenHandler.setCsrfRequestAttributeName("_csrf");
+        // By setting the csrfRequestAttributeName to null, the CsrfToken must first be loaded to determine what attribute name to use.
+        // This causes the CsrfToken to be loaded on every request.
+        // This disables deferred loading CsrfToken.
+        csrfTokenHandler.setCsrfRequestAttributeName(null);
         return csrfTokenHandler;
     }
 
