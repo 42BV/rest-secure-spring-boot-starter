@@ -58,7 +58,7 @@ Spring boot autoconfig for spring security in a REST environment
     <dependency>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-security</artifactId>
-    </dependency>`
+    </dependency>
 </dependencies>
 ```
 
