@@ -1,11 +1,7 @@
 package nl._42.restsecure.autoconfigure.errorhandling;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
-import java.io.IOException;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
 import nl._42.restsecure.autoconfigure.authentication.mfa.MfaAuthenticationProvider;
-
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -15,7 +11,10 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
+
+import static org.assertj.core.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class DefaultLoginAuthenticationExceptionHandlerTest {
 
@@ -32,7 +31,7 @@ class DefaultLoginAuthenticationExceptionHandlerTest {
                     new InsufficientAuthenticationException(MfaAuthenticationProvider.SERVER_MFA_CODE_REQUIRED_ERROR));
 
             assertEquals(HttpStatus.UNAUTHORIZED.value(), response.getStatus());
-            assertEquals("{\"errorCode\":\"SERVER.MFA_CODE_REQUIRED_ERROR\"}", response.getContentAsString());
+            assertThat(response.getContentAsString()).contains("\"errorCode\":\"SERVER.MFA_CODE_REQUIRED_ERROR\"");
         }
 
         @Test
@@ -52,9 +51,9 @@ class DefaultLoginAuthenticationExceptionHandlerTest {
             assertEquals(HttpStatus.UNAUTHORIZED.value(), response1.getStatus());
             assertEquals(HttpStatus.UNAUTHORIZED.value(), response2.getStatus());
             assertEquals(HttpStatus.UNAUTHORIZED.value(), response3.getStatus());
-            assertEquals("{\"errorCode\":\"SERVER.LOGIN_FAILED_ERROR\"}", response1.getContentAsString());
-            assertEquals("{\"errorCode\":\"SERVER.LOGIN_FAILED_ERROR\"}", response2.getContentAsString());
-            assertEquals("{\"errorCode\":\"SERVER.LOGIN_FAILED_ERROR\"}", response3.getContentAsString());
+            assertThat(response1.getContentAsString()).contains("\"errorCode\":\"SERVER.LOGIN_FAILED_ERROR\"");
+            assertThat(response2.getContentAsString()).contains("\"errorCode\":\"SERVER.LOGIN_FAILED_ERROR\"");
+            assertThat(response3.getContentAsString()).contains("\"errorCode\":\"SERVER.LOGIN_FAILED_ERROR\"");
         }
 
     }

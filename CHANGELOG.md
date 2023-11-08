@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [12.2.0]
+- Upgrade to Spring Boot 3.1.5
+- Error response in RFC-7807 format
+- Added maven wrapper
+
 ## [12.0.0] - 2023-02-23
 - Upgrade to Spring Boot 3.0.2
 - Upgrade to JDK 17

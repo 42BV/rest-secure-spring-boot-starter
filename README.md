@@ -1,6 +1,5 @@
 [![Build Status](https://github.com/42BV/rest-secure-spring-boot-starter/workflows/Java%20CI%20with%20Maven/badge.svg)](https://github.com/42BV/rest-secure-spring-boot-starter/actions?query=workflow%3A%22Java+CI+with+Maven%22)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/fc6f224a2c0e40a893521b320637ad3e)](https://www.codacy.com/gh/42BV/rest-secure-spring-boot-starter/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=42BV/rest-secure-spring-boot-starter&amp;utm_campaign=Badge_Grade)
-[![BCH compliance](https://bettercodehub.com/edge/badge/42BV/rest-secure-spring-boot-starter?branch=master)](https://bettercodehub.com/)
 [![codecov](https://codecov.io/gh/42BV/rest-secure-spring-boot-starter/branch/master/graph/badge.svg)](https://codecov.io/gh/42BV/rest-secure-spring-boot-starter)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/nl.42/rest-secure-spring-boot-starter/badge.svg)](https://maven-badges.herokuapp.com/maven-central/nl.42/rest-secure-spring-boot-starter)
 [![Javadoc](https://www.javadoc.io/badge/nl.42/rest-secure-spring-boot-starter.svg)](https://www.javadoc.io/doc/nl.42/rest-secure-spring-boot-starter)
@@ -448,7 +447,7 @@ class CustomSecurity {
 ### Errorhandling
 
 - For handling AuthenticationException's during login, a DefaultLoginAuthenticationExceptionHandler bean is created. AuthenticationExceptions during login will
-  all result in a http response with status 401 with json body:
+  all result in a http response with status 401 with RFC-7807 json body and custom property:
 
 ```
 { errorCode: 'SERVER.LOGIN_FAILED_ERROR' }
@@ -478,8 +477,7 @@ public class CustomLoginExceptionHandler implements LoginAuthenticationException
 ```
 
 - An `@ExceptionHandler` method for handling the method security `AccessDeniedExcption` is added to a `@RestControllerAdvice` with `@Order(0)`. This way all
-  custom `@ControllerAdvice` with `@ExceptionHandler` methods with default order will be processed hereafter. The http response will have a http status 403 with
-  a json body:
+  custom `@ControllerAdvice` with `@ExceptionHandler` methods with default order will be processed hereafter. The http response will have a http status 403 with RFC-7807 json body and custom property:
 
 ```
 { errroCode: 'SERVER.ACCESS_DENIED_ERROR' }
@@ -489,15 +487,15 @@ If you want to handle this exception yourself, you can provide an `@ExceptionHan
 a higher precedence (value less than zero!):
 
 - Following error situations are not customizable:
-    * Authentication errors when trying to access a url for which authentication is required:  
+    * Authentication errors when trying to access an url for which authentication is required:  
       Http status: 401  
-      Response body: `{ errorCode: 'SERVER.AUTHENTICATE_ERROR' }`
-    * Authorization errors when trying to access a url that needs a specific authority:  
+      Response RFC-7807 json body and custom property: `{ errorCode: 'SERVER.AUTHENTICATE_ERROR' }`
+    * Authorization errors when trying to access an url that needs a specific authority:  
       Http status: 403  
-      Response body: `{ errorCode: 'SERVER.ACCESS_DENIED_ERROR' }`
+      Response RFC-7807 json body and custom property: `{ errorCode: 'SERVER.ACCESS_DENIED_ERROR' }`
     * Invalid session (e.g. timeout or after logout):  
       Http status: 401  
-      Response body: `{ errorCode: 'SERVER.SESSION_INVALID_ERROR' }`
+      Response RFC-7807 json body and custom property: `{ errorCode: 'SERVER.SESSION_INVALID_ERROR' }`
 
 ### Successful authentication handling
 
