@@ -13,6 +13,14 @@
 export MAVEN_OPTS="--add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/java.text=ALL-UNNAMED --add-opens=java.desktop/java.awt.font=ALL-UNNAMED"
 ```
 
+  For gpg problems (inappropriate ioctl for device)
+
+```shell
+export GPG_TTY=$(tty)
+```
+
+Then, run this command to prepare the release.
+
 `$ mvn release:prepare`
 
 4. Perform the release:  
