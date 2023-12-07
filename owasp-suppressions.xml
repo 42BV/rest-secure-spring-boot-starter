@@ -3,7 +3,11 @@
     <!-- Every time you update Spring Boot, check if there are suppressions that are no longer necessary
     (these unused suppressions will be listed in the logging of the owasp dependency check plugin). -->
     <suppress>
-        <notes>logback-core-1.4.11</notes>
+        <notes>logback-core-1.4.11 waiting for spring update</notes>
         <cve>CVE-2023-6378</cve>
+    </suppress>
+    <suppress>
+        <notes>jackson-databind-2.15.3 waiting for spring update</notes>
+        <cve>CVE-2023-35116</cve>
     </suppress>
 </suppressions>
