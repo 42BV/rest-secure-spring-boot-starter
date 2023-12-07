@@ -44,7 +44,7 @@ Spring boot autoconfig for spring security in a REST environment
     <dependency>
         <groupId>nl.42</groupId>
         <artifactId>rest-secure-spring-boot-starter</artifactId>
-        <version>12.1.0</version>
+        <version>12.3.0</version>
     </dependency>
     <dependency>
         <groupId>org.springframework.boot</groupId>
