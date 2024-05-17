@@ -6,6 +6,21 @@ import static org.springframework.security.web.csrf.CookieCsrfTokenRepository.wi
 import java.util.ArrayList;
 import java.util.List;
 
+import lombok.extern.slf4j.Slf4j;
+import nl._42.restsecure.autoconfigure.authentication.AbstractRestAuthenticationSuccessHandler;
+import nl._42.restsecure.autoconfigure.authentication.AbstractUserDetailsService;
+import nl._42.restsecure.autoconfigure.authentication.AuthenticationController;
+import nl._42.restsecure.autoconfigure.authentication.AuthenticationResultProvider;
+import nl._42.restsecure.autoconfigure.authentication.DefaultAuthenticationResultProvider;
+import nl._42.restsecure.autoconfigure.authentication.DefaultUserProvider;
+import nl._42.restsecure.autoconfigure.authentication.RegisteredUser;
+import nl._42.restsecure.autoconfigure.authentication.UserProvider;
+import nl._42.restsecure.autoconfigure.authentication.mfa.MfaAuthenticationProvider;
+import nl._42.restsecure.autoconfigure.errorhandling.DefaultLoginAuthenticationExceptionHandler;
+import nl._42.restsecure.autoconfigure.errorhandling.GenericErrorHandler;
+import nl._42.restsecure.autoconfigure.errorhandling.LoginAuthenticationExceptionHandler;
+import nl._42.restsecure.autoconfigure.errorhandling.RestAccessDeniedHandler;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
@@ -38,21 +53,6 @@ import org.springframework.security.web.csrf.CsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
-import lombok.extern.slf4j.Slf4j;
-import nl._42.restsecure.autoconfigure.authentication.AbstractRestAuthenticationSuccessHandler;
-import nl._42.restsecure.autoconfigure.authentication.AbstractUserDetailsService;
-import nl._42.restsecure.autoconfigure.authentication.AuthenticationController;
-import nl._42.restsecure.autoconfigure.authentication.AuthenticationResultProvider;
-import nl._42.restsecure.autoconfigure.authentication.DefaultAuthenticationResultProvider;
-import nl._42.restsecure.autoconfigure.authentication.DefaultUserProvider;
-import nl._42.restsecure.autoconfigure.authentication.RegisteredUser;
-import nl._42.restsecure.autoconfigure.authentication.UserProvider;
-import nl._42.restsecure.autoconfigure.authentication.mfa.MfaAuthenticationProvider;
-import nl._42.restsecure.autoconfigure.errorhandling.DefaultLoginAuthenticationExceptionHandler;
-import nl._42.restsecure.autoconfigure.errorhandling.GenericErrorHandler;
-import nl._42.restsecure.autoconfigure.errorhandling.LoginAuthenticationExceptionHandler;
-import nl._42.restsecure.autoconfigure.errorhandling.RestAccessDeniedHandler;
-
 /**
  * Auto-configures Spring Web Security with a customized UserDetailsService for internal users storage or with crowd-integration-springsecurity for external crowd authentication.
  * Spring Method Security is enabled: You can make use of `@PreAuthorize` and `@PostAuthorize`.
@@ -67,6 +67,7 @@ import nl._42.restsecure.autoconfigure.errorhandling.RestAccessDeniedHandler;
 @EnableWebSecurity
 @EnableMethodSecurity
 public class WebSecurityAutoConfig {
+
     private final RestAccessDeniedHandler accessDeniedHandler;
 
     private AbstractRestAuthenticationSuccessHandler<? extends RegisteredUser> authenticationSuccessHandler;
@@ -179,7 +180,7 @@ public class WebSecurityAutoConfig {
         }
         if (userDetailsService == null && authProviders.isEmpty()) {
             throw new IllegalStateException(
-                "Cannot configure security; either a UserDetailsService or AuthenticationProvider bean must be present."
+                    "Cannot configure security; either a UserDetailsService or AuthenticationProvider bean must be present."
             );
         }
 
@@ -187,7 +188,8 @@ public class WebSecurityAutoConfig {
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http, LoginAuthenticationExceptionHandler exceptionHandler, AuthenticationManager authenticationManager) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http, LoginAuthenticationExceptionHandler exceptionHandler, AuthenticationManager authenticationManager)
+            throws Exception {
         SecurityContextRepository securityContextRepository = securityContextRepository();
 
         RestAuthenticationFilter filter = new RestAuthenticationFilter(exceptionHandler, securityContextRepository, authenticationManager);
@@ -195,32 +197,32 @@ public class WebSecurityAutoConfig {
         filter.setRememberMeServices(rememberMeServices);
 
         http
-            .securityContext(securityContext ->
-                securityContext.securityContextRepository(securityContextRepository)
-            )
-            .authenticationManager(authenticationManager)
-            .setSharedObject(AuthenticationManager.class, authenticationManager);
+                .securityContext(securityContext ->
+                        securityContext.securityContextRepository(securityContextRepository)
+                )
+                .authenticationManager(authenticationManager)
+                .setSharedObject(AuthenticationManager.class, authenticationManager);
 
         AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry urlRegistry =
-            http
-                .addFilterBefore(filter, AnonymousAuthenticationFilter.class)
-                .authorizeHttpRequests()
-                .requestMatchers("/authentication").permitAll();
+                http
+                        .addFilterBefore(filter, AnonymousAuthenticationFilter.class)
+                        .authorizeHttpRequests()
+                        .requestMatchers("/authentication").permitAll();
 
         customize(urlRegistry)
-            .anyRequest().fullyAuthenticated()
-            .and()
+                .anyRequest().fullyAuthenticated()
+                .and()
                 .exceptionHandling()
-                    .accessDeniedHandler(accessDeniedHandler)
-                    .authenticationEntryPoint(accessDeniedHandler)
-            .and()
+                .accessDeniedHandler(accessDeniedHandler)
+                .authenticationEntryPoint(accessDeniedHandler)
+                .and()
                 .logout()
-                    .logoutRequestMatcher(new AntPathRequestMatcher("/authentication", DELETE.name()))
-                    .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler())
-            .and()
+                .logoutRequestMatcher(new AntPathRequestMatcher("/authentication", DELETE.name()))
+                .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler())
+                .and()
                 .csrf()
-                    .csrfTokenRequestHandler(csrfRequestHandler())
-                    .csrfTokenRepository(csrfTokenRepository());
+                .csrfTokenRequestHandler(csrfRequestHandler())
+                .csrfTokenRepository(csrfTokenRepository());
 
         customize(http);
 
@@ -230,8 +232,8 @@ public class WebSecurityAutoConfig {
     @Bean
     public DelegatingSecurityContextRepository securityContextRepository() {
         return new DelegatingSecurityContextRepository(
-            new RequestAttributeSecurityContextRepository(),
-            new HttpSessionSecurityContextRepository()
+                new RequestAttributeSecurityContextRepository(),
+                new HttpSessionSecurityContextRepository()
         );
     }
 

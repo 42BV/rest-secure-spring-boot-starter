@@ -1,10 +1,16 @@
 package nl._42.restsecure.autoconfigure;
 
+import static org.springframework.http.HttpMethod.POST;
+
+import java.io.IOException;
+import java.util.Optional;
+
 import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
 import lombok.extern.slf4j.Slf4j;
 import nl._42.restsecure.autoconfigure.authentication.AbstractRestAuthenticationSuccessHandler;
 import nl._42.restsecure.autoconfigure.authentication.mfa.MfaAuthenticationToken;
@@ -12,7 +18,9 @@ import nl._42.restsecure.autoconfigure.errorhandling.LogUtil;
 import nl._42.restsecure.autoconfigure.errorhandling.LoginAuthenticationExceptionHandler;
 import nl._42.restsecure.autoconfigure.form.FormValues;
 import nl._42.restsecure.autoconfigure.form.LoginForm;
+import nl._42.restsecure.autoconfigure.utils.CachedBodyHttpServletRequest;
 import nl._42.restsecure.autoconfigure.utils.FormUtil;
+
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
@@ -24,11 +32,6 @@ import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
-
-import java.io.IOException;
-import java.util.Optional;
-
-import static org.springframework.http.HttpMethod.POST;
 
 /**
  * Handles the login POST request. Tries to Authenticate the given user credentials using the auto configured {@link AuthenticationManager}.
@@ -58,9 +61,9 @@ public class RestAuthenticationFilter extends OncePerRequestFilter {
      * @param authenticationManager authentication manager
      */
     public RestAuthenticationFilter(
-        LoginAuthenticationExceptionHandler loginExceptionHandler,
-        SecurityContextRepository securityContextRepository,
-        AuthenticationManager authenticationManager) {
+            LoginAuthenticationExceptionHandler loginExceptionHandler,
+            SecurityContextRepository securityContextRepository,
+            AuthenticationManager authenticationManager) {
         this(loginExceptionHandler, securityContextRepository, authenticationManager, DEFAULT_MATCHER);
     }
 
@@ -72,10 +75,10 @@ public class RestAuthenticationFilter extends OncePerRequestFilter {
      * @param requestMatcher        request matcher to test if the filter should be applied
      */
     public RestAuthenticationFilter(
-        LoginAuthenticationExceptionHandler loginExceptionHandler,
-        SecurityContextRepository securityContextRepository,
-        AuthenticationManager authenticationManager,
-        RequestMatcher requestMatcher
+            LoginAuthenticationExceptionHandler loginExceptionHandler,
+            SecurityContextRepository securityContextRepository,
+            AuthenticationManager authenticationManager,
+            RequestMatcher requestMatcher
     ) {
         this.loginExceptionHandler = loginExceptionHandler;
         this.securityContextRepository = securityContextRepository;
@@ -101,7 +104,8 @@ public class RestAuthenticationFilter extends OncePerRequestFilter {
     }
 
     private void doLogin(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
-        FormValues<LoginForm> formValues = FormUtil.getFormFromRequest(request, LoginForm.class);
+        CachedBodyHttpServletRequest cachedRequest = new CachedBodyHttpServletRequest(request);
+        FormValues<LoginForm> formValues = FormUtil.getFormFromRequest(cachedRequest, LoginForm.class);
         LoginForm form = formValues.form();
         AbstractAuthenticationToken token = new MfaAuthenticationToken(form.username, form.password, form.verificationCode);
 
@@ -109,18 +113,18 @@ public class RestAuthenticationFilter extends OncePerRequestFilter {
             log.info("Authenticating user: {}", form.username);
 
             Authentication authentication = authenticationManager.authenticate(token);
-            setAuthentication(request, response, authentication);
+            setAuthentication(cachedRequest, response, authentication);
 
-            request.setAttribute(LOGIN_FORM_JSON, formValues.formJson());
+            cachedRequest.setAttribute(LOGIN_FORM_JSON, formValues.formJson());
 
-            successHandler.ifPresent(sh -> sh.onAuthenticationSuccess(request, response, authentication));
+            successHandler.ifPresent(sh -> sh.onAuthenticationSuccess(cachedRequest, response, authentication));
             if (form.rememberMe) {
-                rememberMeServices.ifPresent(rms -> rms.loginSuccess(request, response, authentication));
+                rememberMeServices.ifPresent(rms -> rms.loginSuccess(cachedRequest, response, authentication));
             }
 
-            chain.doFilter(request, response);
+            chain.doFilter(cachedRequest, response);
         } catch (AuthenticationException ex) {
-            onException(request, response, ex, form);
+            onException(cachedRequest, response, ex, form);
         }
     }
 

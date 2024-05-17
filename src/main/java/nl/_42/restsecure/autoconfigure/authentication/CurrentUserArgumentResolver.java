@@ -1,14 +1,14 @@
 package nl._42.restsecure.autoconfigure.authentication;
 
+import java.util.Objects;
+import java.util.Optional;
+
 import org.springframework.core.MethodParameter;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
-
-import java.util.Objects;
-import java.util.Optional;
 
 public final class CurrentUserArgumentResolver implements HandlerMethodArgumentResolver {
 
