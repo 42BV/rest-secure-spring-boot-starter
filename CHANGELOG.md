@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+- Fixed #37: No longer logging SERVER_MFA_CODE_REQUIRED_ERROR at WARN-level by default, lowering cognitive load in logs. 
+
 ## [12.3.0] - 2023-12-07
 - Upgrade to Spring Boot 3.2.0
 - Made the AuthenticationManager in the WebSecurityAutoConfig conditional.
