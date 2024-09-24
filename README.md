@@ -23,7 +23,7 @@ Spring boot autoconfig for spring security in a REST environment
   pattern. Implemented by using the [CsrfTokenRepository](https://docs.spring.io/spring-security/site/docs/current/reference/html/csrf.html#csrf-cookie).
 - The @CurrentUser annotation may be used to annotate a controller method argument to inject the current custom user.
 - Note the UserResolver spring bean that is added to your appication context, conveniently get the current logged in user from the SecurityContext!
-- This auto configuration does not make assumptions of how you implement the "authorities" of a User. Spring Security can interpret your authorities by looking
+- This autoconfiguration does not make assumptions of how you implement the "authorities" of a User. Spring Security can interpret your authorities by looking
   at a prefix; if you prefix an authority with "ROLE_", the framework provides a specific role-checking-api. But you can always use the more generic
   authority-checking-api.
     * For instance if you want to make use of "roles" and the Spring Security "hasRole(..)"-api methods, you must prefix your roles with the default "ROLE_".
@@ -44,7 +44,7 @@ Spring boot autoconfig for spring security in a REST environment
     <dependency>
         <groupId>nl.42</groupId>
         <artifactId>rest-secure-spring-boot-starter</artifactId>
-        <version>12.3.0</version>
+        <version>13.0.0</version>
     </dependency>
     <dependency>
         <groupId>org.springframework.boot</groupId>
@@ -232,7 +232,7 @@ Below you'll find more detailed requirements of each endpoint:
 
 ### Using a custom User domain object
 
-To use a custom User object we should implement the `RegisteredUser` interface (using the email fields as username):
+To use a custom User object we should implement the `RegisteredUser` interface (using the email field as username):
 
  ```java
 
@@ -264,7 +264,7 @@ public class User implements RegisteredUser {
 }
  ```
 
-If your custom User domain object has custom properties for `accountExpired`, `accountLocked`, `credentialsExpired` or `userEnabled`,
+If your custom User domain object has custom properties for `accountExpired`, `accountLocked`, `credentialsExpired` or `enabled`,
 you should override the corresponding default RegisteredUser methods. These methods are checked during a successful authentication, by
 default they are all valid.
 
