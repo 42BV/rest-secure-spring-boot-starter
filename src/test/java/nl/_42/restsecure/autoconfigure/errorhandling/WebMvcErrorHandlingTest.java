@@ -10,10 +10,10 @@ import nl._42.restsecure.autoconfigure.test.RestrictedEndpointsConfig;
 
 import org.junit.jupiter.api.Test;
 
-public class WebMvcErrorHandlingTest extends AbstractApplicationContextTest {
+class WebMvcErrorHandlingTest extends AbstractApplicationContextTest {
 
     @Test
-    public void forbiddenEndpoint_shouldFail_whenAdmin() throws Exception {
+    void forbiddenEndpoint_shouldFail_whenAdmin() throws Exception {
         getWebClient(RestrictedEndpointsConfig.class)
                 .perform(get("/test/preauthorized"))
                 .andExpect(status().isForbidden())

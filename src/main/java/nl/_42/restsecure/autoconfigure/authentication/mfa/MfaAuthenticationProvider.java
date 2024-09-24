@@ -42,7 +42,7 @@ public class MfaAuthenticationProvider extends DaoAuthenticationProvider {
             this.verificationChecks = List.of(new MfaTotpVerificationCheck(mfaValidationService));
         } else {
             Assert.isTrue(this.verificationChecks != null && !this.verificationChecks.isEmpty(), "At least one verification check must be provided");
-            if (verificationChecks.stream().noneMatch(check -> check instanceof MfaTotpVerificationCheck)) {
+            if (verificationChecks.stream().noneMatch(MfaTotpVerificationCheck.class::isInstance)) {
                 verificationChecks = new ArrayList<>(verificationChecks); // Ensure we are a mutable list.
                 verificationChecks.add(new MfaTotpVerificationCheck(mfaValidationService));
             }
@@ -55,29 +55,28 @@ public class MfaAuthenticationProvider extends DaoAuthenticationProvider {
 
         if (userDetails instanceof UserDetailsAdapter<? extends RegisteredUser> userDetailsAdapter) {
             if (userDetailsAdapter.isMfaConfigured()) {
-                MfaAuthenticationToken mfaAuthenticationToken = (MfaAuthenticationToken) authentication;
-                // If no code supplied, indicate a code is needed.
-                if (mfaAuthenticationToken.getVerificationCode() == null || mfaAuthenticationToken.getVerificationCode().equals("")) {
-                    throw new InsufficientAuthenticationException(SERVER_MFA_CODE_REQUIRED_ERROR);
-                }
-
-                boolean verificationSucceeded = false;
-
-                for (MfaVerificationCheck verificationCheck : verificationChecks) {
-                    if (verificationCheck.validate(userDetailsAdapter.user(), mfaAuthenticationToken)) {
-                        verificationSucceeded = true;
-                        break;
-                    }
-                }
-
-                if (!verificationSucceeded) {
-                    throw new IllegalStateException(
-                            "At least one verification check must either have succeeded or thrown an AuthenticationException. Check the verifications passed to .setVerificationChecks() for any unmatched scenarios.");
-                }
-                // If mfa is mandatory for this user, but not setup, indicate it must be setup first.
+                executeMfaVerificationSteps((MfaAuthenticationToken) authentication, userDetailsAdapter);
             } else if (userDetailsAdapter.isMfaMandatory()) {
                 authentication.setDetails(DETAILS_MFA_SETUP_REQUIRED);
             }
+        }
+    }
+
+    private void executeMfaVerificationSteps(MfaAuthenticationToken mfaAuthenticationToken, UserDetailsAdapter<? extends RegisteredUser> userDetailsAdapter) {
+        // If no code supplied, indicate a code is needed.
+        if (mfaAuthenticationToken.getVerificationCode() == null || mfaAuthenticationToken.getVerificationCode().isEmpty()) {
+            throw new InsufficientAuthenticationException(SERVER_MFA_CODE_REQUIRED_ERROR);
+        }
+        boolean verificationSucceeded = false;
+        for (MfaVerificationCheck verificationCheck : verificationChecks) {
+            if (verificationCheck.validate(userDetailsAdapter.user(), mfaAuthenticationToken)) {
+                verificationSucceeded = true;
+                break;
+            }
+        }
+        if (!verificationSucceeded) {
+            throw new IllegalStateException(
+                    "At least one verification check must either have succeeded or thrown an AuthenticationException. Check the verifications passed to .setVerificationChecks() for any unmatched scenarios.");
         }
     }
 

@@ -1,5 +1,10 @@
 package nl._42.restsecure.autoconfigure;
 
+import static org.springframework.http.HttpMethod.POST;
+
+import java.io.IOException;
+import java.util.Optional;
+
 import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -13,6 +18,7 @@ import nl._42.restsecure.autoconfigure.errorhandling.LoginAuthenticationExceptio
 import nl._42.restsecure.autoconfigure.form.FormValues;
 import nl._42.restsecure.autoconfigure.form.LoginForm;
 import nl._42.restsecure.autoconfigure.utils.FormUtil;
+
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
@@ -24,11 +30,6 @@ import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
-
-import java.io.IOException;
-import java.util.Optional;
-
-import static org.springframework.http.HttpMethod.POST;
 
 /**
  * Handles the login POST request. Tries to Authenticate the given user credentials using the auto configured {@link AuthenticationManager}.
@@ -49,7 +50,7 @@ public class RestAuthenticationFilter extends OncePerRequestFilter {
     private final RequestMatcher requestMatcher;
 
     private Optional<RememberMeServices> rememberMeServices = Optional.empty();
-    private Optional<AbstractRestAuthenticationSuccessHandler> successHandler = Optional.empty();
+    private Optional<AbstractRestAuthenticationSuccessHandler<?>> successHandler = Optional.empty();
 
     /**
      * Creates an authentication filter with a default Ant path matcher on POST /authentication and a default ObjectMapper.

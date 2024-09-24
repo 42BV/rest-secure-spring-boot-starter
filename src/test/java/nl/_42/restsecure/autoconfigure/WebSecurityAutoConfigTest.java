@@ -16,6 +16,7 @@ import nl._42.restsecure.autoconfigure.test.NullAuthenticationProviderConfig;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.BeanCreationException;
+import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -73,6 +74,8 @@ class WebSecurityAutoConfigTest extends AbstractApplicationContextTest {
     void autoConfig_shouldConfigureSecurity_withProvider() {
         loadApplicationContext(AuthenticationProviderConfig.class);
         this.context.refresh();
+
+        assertNotNull(context.getBean(AuthenticationProvider.class));
     }
 
     @Test

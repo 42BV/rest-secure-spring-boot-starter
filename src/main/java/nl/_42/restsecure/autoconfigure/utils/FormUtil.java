@@ -1,14 +1,16 @@
 package nl._42.restsecure.autoconfigure.utils;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.servlet.http.HttpServletRequest;
-import nl._42.restsecure.autoconfigure.form.FormValues;
-import nl._42.restsecure.autoconfigure.form.LoginForm;
-import org.apache.commons.io.IOUtils;
-
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+
+import jakarta.servlet.http.HttpServletRequest;
+import nl._42.restsecure.autoconfigure.form.FormValues;
+import nl._42.restsecure.autoconfigure.form.LoginForm;
+
+import org.apache.commons.io.IOUtils;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class FormUtil {
 
@@ -27,7 +29,7 @@ public class FormUtil {
         } catch (IOException ioe) {
             throw new IllegalStateException("Could not use reader", ioe);
         } catch (NoSuchMethodException | InvocationTargetException | InstantiationException | IllegalAccessException e) {
-            throw new RuntimeException("Could not find of make the default constructor", e);
+            throw new IllegalStateException("Could not find or instantiate with default constructor", e);
         }
     }
 }

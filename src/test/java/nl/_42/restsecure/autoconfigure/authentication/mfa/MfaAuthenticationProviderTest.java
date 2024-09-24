@@ -65,16 +65,16 @@ class MfaAuthenticationProviderTest {
             @Test
             @DisplayName("should throw if userDetailsService or mfaValidationService have not been set")
             void shouldThrowForMissingDependencies() {
-                MfaAuthenticationProvider provider = new MfaAuthenticationProvider();
-                IllegalArgumentException e = assertThrows(IllegalArgumentException.class, provider::doAfterPropertiesSet);
+                MfaAuthenticationProvider mfaProvider = new MfaAuthenticationProvider();
+                IllegalArgumentException e = assertThrows(IllegalArgumentException.class, mfaProvider::doAfterPropertiesSet);
                 assertEquals("A UserDetailsService must be set", e.getMessage());
 
-                provider.setUserDetailsService(new InMemoryUserDetailService());
-                e = assertThrows(IllegalArgumentException.class, provider::doAfterPropertiesSet);
+                mfaProvider.setUserDetailsService(new InMemoryUserDetailService());
+                e = assertThrows(IllegalArgumentException.class, mfaProvider::doAfterPropertiesSet);
                 assertEquals("A MfaValidationService must be set", e.getMessage());
 
-                provider.setMfaValidationService(new MockMfaValidationService());
-                assertDoesNotThrow(provider::doAfterPropertiesSet);
+                mfaProvider.setMfaValidationService(new MockMfaValidationService());
+                assertDoesNotThrow(mfaProvider::doAfterPropertiesSet);
             }
         }
 
@@ -219,20 +219,20 @@ class MfaAuthenticationProviderTest {
             @Test
             @DisplayName("should throw if null is passed to setVerificationChecks")
             void shouldThrow_ForNullChecks() {
-                MfaAuthenticationProvider provider = new MfaAuthenticationProvider();
-                provider.setUserDetailsService(inMemoryUserDetailService);
-                provider.setPasswordEncoder(NoOpPasswordEncoder.getInstance());
-                provider.setMfaValidationService(mockMfaValidationService);
-                provider.setVerificationChecks(null);
-                IllegalArgumentException e = assertThrows(IllegalArgumentException.class, provider::doAfterPropertiesSet);
+                MfaAuthenticationProvider mfaProvider = new MfaAuthenticationProvider();
+                mfaProvider.setUserDetailsService(inMemoryUserDetailService);
+                mfaProvider.setPasswordEncoder(NoOpPasswordEncoder.getInstance());
+                mfaProvider.setMfaValidationService(mockMfaValidationService);
+                mfaProvider.setVerificationChecks(null);
+                IllegalArgumentException e = assertThrows(IllegalArgumentException.class, mfaProvider::doAfterPropertiesSet);
                 assertEquals("At least one verification check must be provided", e.getMessage());
 
-                provider.setVerificationChecks(new ArrayList<>());
-                e = assertThrows(IllegalArgumentException.class, provider::doAfterPropertiesSet);
+                mfaProvider.setVerificationChecks(new ArrayList<>());
+                e = assertThrows(IllegalArgumentException.class, mfaProvider::doAfterPropertiesSet);
                 assertEquals("At least one verification check must be provided", e.getMessage());
 
-                provider.setVerificationChecks(List.of(new MfaTotpVerificationCheck(mockMfaValidationService)));
-                assertDoesNotThrow(provider::doAfterPropertiesSet);
+                mfaProvider.setVerificationChecks(List.of(new MfaTotpVerificationCheck(mockMfaValidationService)));
+                assertDoesNotThrow(mfaProvider::doAfterPropertiesSet);
             }
 
             @Test

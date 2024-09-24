@@ -20,10 +20,10 @@ import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.web.servlet.RequestBuilder;
 
-public class AccessDeniedHandlerTest extends AbstractApplicationContextTest {
+class AccessDeniedHandlerTest extends AbstractApplicationContextTest {
 
     @Test
-    public void forbiddenEndpoint_shouldFail_whenAdmin() throws Exception {
+    void forbiddenEndpoint_shouldFail_whenAdmin() throws Exception {
         getWebClient(RestrictedEndpointsConfig.class)
                 .perform(get("/test/forbidden"))
                 .andExpect(status().isForbidden())
@@ -31,7 +31,7 @@ public class AccessDeniedHandlerTest extends AbstractApplicationContextTest {
     }
 
     @Test
-    public void currentUser_shouldFail_withInvalidSession_whenNotLoggedIn() throws Exception {
+    void currentUser_shouldFail_withInvalidSession_whenNotLoggedIn() throws Exception {
         loadApplicationContext(ActiveUserConfig.class);
         webAppContextSetup(context)
                 .apply(springSecurity())
@@ -52,7 +52,7 @@ public class AccessDeniedHandlerTest extends AbstractApplicationContextTest {
     }
 
     @Test
-    public void currentUser_shouldFail_withValidSession_whenNotLoggedIn() throws Exception {
+    void currentUser_shouldFail_withValidSession_whenNotLoggedIn() throws Exception {
         loadApplicationContext(ActiveUserConfig.class);
         webAppContextSetup(context)
                 .apply(springSecurity())
