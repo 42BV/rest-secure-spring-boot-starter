@@ -1,8 +1,8 @@
 [![Build Status](https://github.com/42BV/rest-secure-spring-boot-starter/actions/workflows/maven.yml/badge.svg)](https://github.com/42BV/rest-secure-spring-boot-starter/actions?query=workflow%3A%22Java+CI+with+Maven%22)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/fc6f224a2c0e40a893521b320637ad3e)](https://app.codacy.com/gh/42BV/rest-secure-spring-boot-starter/dashboard)
 [![codecov](https://codecov.io/gh/42BV/rest-secure-spring-boot-starter/branch/master/graph/badge.svg)](https://codecov.io/gh/42BV/rest-secure-spring-boot-starter)
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/nl.42/rest-secure-spring-boot-starter/badge.svg)](https://maven-badges.herokuapp.com/maven-central/nl.42/rest-secure-spring-boot-starter)
-[![Javadoc](https://www.javadoc.io/badge/nl.42/rest-secure-spring-boot-starter.svg)](https://www.javadoc.io/doc/nl.42/rest-secure-spring-boot-starter)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/nl.42/rest-secure-spring-boot-starter/badge.svg)](https://central.sonatype.com/artifact/nl.42/rest-secure-spring-boot-starter)
+[![Javadoc](https://javadoc.io/badge2/nl.42/rest-secure-spring-boot-starter/javadoc.svg)](https://www.javadoc.io/doc/nl.42/rest-secure-spring-boot-starter)
 [![Apache 2](http://img.shields.io/badge/license-Apache%202-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0)
 
 # rest-secure-spring-boot-starter
