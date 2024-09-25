@@ -242,11 +242,11 @@ public class WebSecurityAutoConfig {
     private HttpSecurity customize(HttpSecurity http) throws Exception {
         if (httpCustomizer != null) {
             log.info("Found HttpSecurityCustomizer bean in ApplicationContext, custom configuring of HttpSecurity object started.");
-            http = httpCustomizer.customize(http);
+            return httpCustomizer.customize(http);
         } else {
             log.info("No HttpSecurityCustomizer bean found in ApplicationContext, no custom configuring of HttpSecurity object.");
+            return http;
         }
-        return http;
     }
 
     private CsrfTokenRepository csrfTokenRepository() {
