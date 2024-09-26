@@ -7,3 +7,7 @@
 .DS_Store
 .factorypath
 .java-version
+
+#maven-release-plugin
+release.properties
+pom.xml.releaseBackup
