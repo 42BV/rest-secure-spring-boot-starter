@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [13.1.0]
+- The `totp-spring-boot-starter` dependency is now optional
+- If using the MFA functionality, add the dependency to your project
+
+## [13.0.1] - 2024-09-25
+- Codacy finding fixed
+
+## [13.0.0] - 2024-09-24
+- Upgrade to Spring Boot 3.3.4
+- Moved to Java 21
+- Internal code maintainability fixes
+
 ## [12.3.0] - 2023-12-07
 - Upgrade to Spring Boot 3.2.0
 - Made the AuthenticationManager in the WebSecurityAutoConfig conditional.

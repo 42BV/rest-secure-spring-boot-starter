@@ -44,7 +44,7 @@ Spring boot autoconfig for spring security in a REST environment
     <dependency>
         <groupId>nl.42</groupId>
         <artifactId>rest-secure-spring-boot-starter</artifactId>
-        <version>13.0.0</version>
+        <version>13.1.0</version>
     </dependency>
     <dependency>
         <groupId>org.springframework.boot</groupId>
@@ -57,6 +57,12 @@ Spring boot autoconfig for spring security in a REST environment
     <dependency>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-security</artifactId>
+    </dependency>
+    <!-- only add this dependency if using MFA -->
+    <dependency>
+        <groupId>dev.samstevens.totp</groupId>
+        <artifactId>totp-spring-boot-starter</artifactId>
+        <version>1.7.1</version>
     </dependency>
 </dependencies>
 ```

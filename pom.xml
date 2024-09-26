@@ -96,6 +96,7 @@
             <groupId>dev.samstevens.totp</groupId>
             <artifactId>totp-spring-boot-starter</artifactId>
             <version>${totp-spring-boot-starter.version}</version>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
