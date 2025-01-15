@@ -1,6 +1,14 @@
 package nl._42.restsecure.autoconfigure.authentication.mfa;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import static nl._42.restsecure.autoconfigure.authentication.mfa.MfaAuthenticationProvider.DETAILS_MFA_SETUP_REQUIRED;
+import static org.springframework.http.HttpStatus.FORBIDDEN;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.BiFunction;
+
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletRequest;
@@ -9,20 +17,15 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.Getter;
 import lombok.Setter;
+
 import org.springframework.http.ProblemDetail;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.util.Assert;
 import org.springframework.web.filter.GenericFilterBean;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.BiFunction;
-
-import static nl._42.restsecure.autoconfigure.authentication.mfa.MfaAuthenticationProvider.DETAILS_MFA_SETUP_REQUIRED;
-import static org.springframework.http.HttpStatus.FORBIDDEN;
-import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * A {@link GenericFilterBean} that denies requests when the user is obliged to set up MFA but hasn't done so.
@@ -48,8 +51,9 @@ public class MfaSetupRequiredFilter extends GenericFilterBean {
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         // We only perform this filter if the authentication contains the correct details.
-        if (!DETAILS_MFA_SETUP_REQUIRED.equals(SecurityContextHolder.getContext().getAuthentication().getDetails())) {
+        if (authentication == null || !DETAILS_MFA_SETUP_REQUIRED.equals(authentication.getDetails())) {
             continueWithFilterChain(request, response, chain);
             return;
         }

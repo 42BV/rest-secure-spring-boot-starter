@@ -10,6 +10,7 @@
     <appender-ref ref="STDOUT" />
   </root>
 
-  <logger name="org.springframework.test.web.servlet.result" level="DEBUG"/>
+  <logger name="org.springframework.security.web.DefaultSecurityFilterChain" level="debug" />
+  <logger name="org.springframework.test.web.servlet.result" level="debug"/>
     
 </configuration>

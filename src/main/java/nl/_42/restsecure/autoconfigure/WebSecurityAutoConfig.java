@@ -1,6 +1,8 @@
 package nl._42.restsecure.autoconfigure;
 
 import static org.springframework.http.HttpMethod.DELETE;
+import static org.springframework.security.config.Customizer.withDefaults;
+import static org.springframework.security.config.http.SessionCreationPolicy.ALWAYS;
 import static org.springframework.security.web.csrf.CookieCsrfTokenRepository.withHttpOnlyFalse;
 
 import java.util.ArrayList;
@@ -41,9 +43,9 @@ import org.springframework.security.config.annotation.web.configurers.AuthorizeH
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.AnonymousAuthenticationFilter;
 import org.springframework.security.web.authentication.RememberMeServices;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
+import org.springframework.security.web.authentication.logout.LogoutFilter;
 import org.springframework.security.web.context.DelegatingSecurityContextRepository;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.web.context.RequestAttributeSecurityContextRepository;
@@ -182,38 +184,27 @@ public class WebSecurityAutoConfig {
                 "Cannot configure security; either a UserDetailsService or AuthenticationProvider bean must be present."
             );
         }
-
         return auth.build();
     }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http, LoginAuthenticationExceptionHandler exceptionHandler, AuthenticationManager authenticationManager) throws Exception {
-        SecurityContextRepository securityContextRepository = securityContextRepository();
-
-        RestAuthenticationFilter filter = new RestAuthenticationFilter(exceptionHandler, securityContextRepository, authenticationManager);
-        filter.setAuthenticationSuccessHandler(authenticationSuccessHandler);
-        filter.setRememberMeServices(rememberMeServices);
-
-        http
-            .securityContext(securityContext ->
-                securityContext.securityContextRepository(securityContextRepository))
+        RestAuthenticationFilter restAuthenticationFilter = new RestAuthenticationFilter(exceptionHandler, authenticationManager);
+        http.with(new RestAuthenticationFilterConfigurer<>(restAuthenticationFilter, rememberMeServices, authenticationSuccessHandler), withDefaults())
+            .securityContext(scc -> scc.securityContextRepository(securityContextRepository()))
+            .addFilterAfter(restAuthenticationFilter, LogoutFilter.class)
+            .sessionManagement(smc -> smc.sessionCreationPolicy(ALWAYS))
             .authenticationManager(authenticationManager)
-            .setSharedObject(AuthenticationManager.class, authenticationManager);
-        http
-            .addFilterBefore(filter, AnonymousAuthenticationFilter.class)
             .authorizeHttpRequests(urlRegistry -> {
                 urlRegistry.requestMatchers("/authentication").permitAll();
                 customize(urlRegistry)
                         .anyRequest().fullyAuthenticated();
-            });
-        http
+            })
             .exceptionHandling(exceptionHandling -> exceptionHandling.accessDeniedHandler(accessDeniedHandler)
-                    .authenticationEntryPoint(accessDeniedHandler));
-        http
+                    .authenticationEntryPoint(accessDeniedHandler))
             .logout(logoutConfigurer -> logoutConfigurer.logoutRequestMatcher(
                     new AntPathRequestMatcher("/authentication", DELETE.name()))
-                    .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler()));
-        http
+                    .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler()))
             .csrf(csrfConfigurer -> csrfConfigurer.csrfTokenRequestHandler(csrfRequestHandler())
                     .csrfTokenRepository(csrfTokenRepository()));
         return customize(http)
@@ -221,10 +212,11 @@ public class WebSecurityAutoConfig {
     }
 
     @Bean
-    public DelegatingSecurityContextRepository securityContextRepository() {
+    @ConditionalOnMissingBean(SecurityContextRepository.class)
+    public SecurityContextRepository securityContextRepository() {
         return new DelegatingSecurityContextRepository(
-            new RequestAttributeSecurityContextRepository(),
-            new HttpSessionSecurityContextRepository()
+                new RequestAttributeSecurityContextRepository(),
+                new HttpSessionSecurityContextRepository()
         );
     }
 

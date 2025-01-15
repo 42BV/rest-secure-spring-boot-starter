@@ -65,6 +65,7 @@ class AuthenticationControllerTest extends AbstractApplicationContextTest {
     void authenticate_shouldSucceed_withCorrectCredentials() throws Exception {
         getWebClient(ActiveUserConfig.class, NoopPasswordEncoderConfig.class)
                 .perform(post("/authentication")
+                        .with(anonymous())
                         .content("{\"username\": \"custom\", \"password\": \"password\"}"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("authorities[0]").value("ROLE_ADMIN"))

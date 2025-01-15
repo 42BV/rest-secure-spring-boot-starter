@@ -44,7 +44,7 @@ Spring boot autoconfig for spring security in a REST environment
     <dependency>
         <groupId>nl.42</groupId>
         <artifactId>rest-secure-spring-boot-starter</artifactId>
-        <version>13.1.0</version>
+        <version>13.1.1</version>
     </dependency>
     <dependency>
         <groupId>org.springframework.boot</groupId>
@@ -437,7 +437,7 @@ A verification check should behave as following:
 
 ### Remember me (single sign on)
 
-- Register a `RememberMeServices` bean, this will be picked up automatically and used in the login filter
+- Register a `RememberMeServices` bean, this will be picked up automatically and used in the login- and logout filters
 
 ```java
 
