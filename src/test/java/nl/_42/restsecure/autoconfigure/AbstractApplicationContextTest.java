@@ -11,6 +11,7 @@ import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppC
 
 import dev.samstevens.totp.spring.autoconfigure.TotpAutoConfiguration;
 import nl._42.restsecure.autoconfigure.authentication.ArgumentResolverConfig;
+import nl._42.restsecure.autoconfigure.authentication.RegisteredUser;
 import nl._42.restsecure.autoconfigure.authentication.UserDetailsAdapter;
 
 import org.junit.jupiter.api.AfterEach;
@@ -19,6 +20,7 @@ import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration;
 import org.springframework.mock.web.MockServletContext;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
 
 public abstract class AbstractApplicationContextTest {
@@ -33,13 +35,22 @@ public abstract class AbstractApplicationContextTest {
     }
 
     protected MockMvc getWebClient(Class<?>... appConfig) {
+        return webClient(user().build(), appConfig);
+    }
+
+    protected MockMvc getWebClientWithoutUser(Class<?>... appConfig) {
+        return webClient(null, appConfig);
+    }
+
+    private MockMvc webClient(RegisteredUser defaultUser, Class<?>... appConfig) {
         loadApplicationContext(appConfig);
+        MockHttpServletRequestBuilder defaultRequest = get("/")
+                .contentType(APPLICATION_JSON)
+                .with(csrf());
+        if (defaultUser != null) defaultRequest.with(user(new UserDetailsAdapter<>(defaultUser)));
         return webAppContextSetup(context)
                 .apply(springSecurity())
-                .defaultRequest(get("/")
-                        .contentType(APPLICATION_JSON)
-                        .with(csrf())
-                        .with(user(new UserDetailsAdapter<>(user().build()))))
+                .defaultRequest(defaultRequest)
                 .alwaysDo(log())
                 .build();
     }

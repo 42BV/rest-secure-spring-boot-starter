@@ -3,13 +3,16 @@ package nl._42.restsecure.autoconfigure.authentication;
 import static nl._42.restsecure.autoconfigure.errorhandling.DefaultLoginAuthenticationExceptionHandler.SERVER_LOGIN_FAILED_ERROR;
 import static nl._42.restsecure.autoconfigure.test.RememberMeServicesConfig.REMEMBER_ME_HEADER;
 import static nl._42.restsecure.autoconfigure.test.RestAuthenticationSuccessHandlerConfig.AUTHENTICATION_SUCCESS_HEADER;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.anonymous;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import jakarta.servlet.http.HttpSession;
 import nl._42.restsecure.autoconfigure.AbstractApplicationContextTest;
 import nl._42.restsecure.autoconfigure.test.AccountExpiredUserConfig;
 import nl._42.restsecure.autoconfigure.test.AccountLockedUserConfig;
@@ -23,6 +26,8 @@ import nl._42.restsecure.autoconfigure.test.RememberMeServicesConfig;
 import nl._42.restsecure.autoconfigure.test.RestAuthenticationSuccessHandlerConfig;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.mock.web.MockHttpSession;
+import org.springframework.test.web.servlet.MockMvc;
 
 class AuthenticationControllerTest extends AbstractApplicationContextTest {
 
@@ -70,6 +75,47 @@ class AuthenticationControllerTest extends AbstractApplicationContextTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("authorities[0]").value("ROLE_ADMIN"))
                 .andExpect(jsonPath("username").value("username"));
+    }
+
+    @Test
+    void authenticate_shouldChangeSessionId_toPreventSessionFixationAttack() throws Exception {
+        MockMvc client = getWebClientWithoutUser(ActiveUserConfig.class, NoopPasswordEncoderConfig.class);
+
+        HttpSession session = client.perform(get("/test/unguarded"))
+            .andExpect(status().isOk())
+            .andReturn().getRequest().getSession();
+        // a new session should be created on first anonymous endpoint call
+        String initialSessionId = session.getId();
+        assertThat(initialSessionId).isNotBlank();
+        assertThat(session.isNew()).isTrue();
+
+        session = client.perform(post("/authentication")
+                .session((MockHttpSession) session)
+                .content("{\"username\": \"custom\", \"password\": \"password\"}"))
+                .andExpect(status().isOk())
+                .andReturn().getRequest().getSession();
+        // session will be reused, but the sessionId must have been changed after login
+        String loggedInSessionId = session.getId();
+        assertThat(loggedInSessionId).isNotBlank().isNotEqualTo(initialSessionId);
+        assertThat(session.isNew()).isFalse();
+
+        session = client.perform(get("/users/me")
+                .session((MockHttpSession) session))
+                .andExpect(status().isOk())
+                .andReturn().getRequest().getSession();
+        // the session and its id remains unchanged during subsequent requests
+        String unchangedSessionId = session.getId();
+        assertThat(unchangedSessionId).isNotBlank().isEqualTo(loggedInSessionId);
+        assertThat(session.isNew()).isFalse();
+
+        session = client.perform(delete("/authentication")
+                .session((MockHttpSession) session))
+                .andExpect(status().isOk())
+                .andReturn().getRequest().getSession();
+        // a new session will be created after logout
+        String loggoutSessionId = session.getId();
+        assertThat(loggoutSessionId).isNotBlank().isNotEqualTo(loggedInSessionId);
+        assertThat(session.isNew()).isTrue();
     }
 
     @Test

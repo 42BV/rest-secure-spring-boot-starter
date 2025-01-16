@@ -17,4 +17,9 @@ public class TestController {
     public void restrictedMethod() {
         // Intentionally left without implementation because the test will never reach this.
     }
+
+    @GetMapping("/unguarded")
+    public void unguardedMethod() {
+        // Only used to check session creation
+    }
 }
