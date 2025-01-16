@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
+## [13.2.0]
+- Session fixation protection fixed 
+- Added session creation policy `ALWAYS` to default configuration
+- RestAuthenticationFilter now has a specific Customizer to be able to make use of shared objects within the HttpSecurity config
 
 ## [13.1.0]
 - The `totp-spring-boot-starter` dependency is now optional
