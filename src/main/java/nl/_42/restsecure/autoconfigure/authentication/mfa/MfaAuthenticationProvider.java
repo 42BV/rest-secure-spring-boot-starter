@@ -6,7 +6,6 @@ import java.util.List;
 import nl._42.restsecure.autoconfigure.authentication.RegisteredUser;
 import nl._42.restsecure.autoconfigure.authentication.UserDetailsAdapter;
 
-import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.core.AuthenticationException;
@@ -65,7 +64,7 @@ public class MfaAuthenticationProvider extends DaoAuthenticationProvider {
     private void executeMfaVerificationSteps(MfaAuthenticationToken mfaAuthenticationToken, UserDetailsAdapter<? extends RegisteredUser> userDetailsAdapter) {
         // If no code supplied, indicate a code is needed.
         if (mfaAuthenticationToken.getVerificationCode() == null || mfaAuthenticationToken.getVerificationCode().isEmpty()) {
-            throw new InsufficientAuthenticationException(SERVER_MFA_CODE_REQUIRED_ERROR);
+            throw new MfaRequiredException(SERVER_MFA_CODE_REQUIRED_ERROR);
         }
         boolean verificationSucceeded = false;
         for (MfaVerificationCheck verificationCheck : verificationChecks) {
