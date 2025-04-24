@@ -3,6 +3,11 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
+## [14.0.0]
+- Added support for Email-based MFA as an alternative to TOTP-based MFA
+- Extended RegisteredUser interface with getMfaType() and getMfaEmail() methods
+- Added spring-boot-starter-mail as optional dependency for email MFA
+
 ## [13.2.0]
 - Session fixation protection fixed 
 - Added session creation policy `ALWAYS` to default configuration

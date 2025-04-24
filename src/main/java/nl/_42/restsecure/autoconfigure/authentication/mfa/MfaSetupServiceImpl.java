@@ -7,6 +7,7 @@ import dev.samstevens.totp.qr.QrData;
 import dev.samstevens.totp.qr.QrDataFactory;
 import dev.samstevens.totp.qr.QrGenerator;
 import dev.samstevens.totp.secret.SecretGenerator;
+import nl._42.restsecure.autoconfigure.authentication.mfa.email.EmailCodeService;
 
 /**
  * Service which contains logic to set up MFA authentication
@@ -17,12 +18,19 @@ public class MfaSetupServiceImpl implements MfaSetupService {
     private final QrDataFactory qrDataFactory;
     private final QrGenerator qrGenerator;
     private final String issuer;
+    private final EmailCodeService emailCodeService;
 
     public MfaSetupServiceImpl(SecretGenerator secretGenerator, QrDataFactory qrDataFactory, QrGenerator qrGenerator, String issuer) {
+        this(secretGenerator, qrDataFactory, qrGenerator, issuer, null);
+    }
+    
+    public MfaSetupServiceImpl(SecretGenerator secretGenerator, QrDataFactory qrDataFactory, QrGenerator qrGenerator, 
+                             String issuer, EmailCodeService emailCodeService) {
         this.secretGenerator = secretGenerator;
         this.qrDataFactory = qrDataFactory;
         this.qrGenerator = qrGenerator;
         this.issuer = issuer;
+        this.emailCodeService = emailCodeService;
     }
 
     /**
@@ -71,5 +79,19 @@ public class MfaSetupServiceImpl implements MfaSetupService {
         } catch (QrGenerationException e) {
             throw new MfaException("Unable to generate QR code", e);
         }
+    }
+    
+    @Override
+    public void setupEmailMfa(String email) {
+        if (emailCodeService == null) {
+            throw new MfaException("EmailCodeService is not configured");
+        }
+        
+        if (email == null || email.isEmpty()) {
+            throw new MfaException("Email address cannot be empty");
+        }
+        
+        // Send a test verification code to confirm the setup
+        emailCodeService.generateAndSendCode(email);
     }
 }

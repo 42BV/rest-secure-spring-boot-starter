@@ -2,6 +2,7 @@ package nl._42.restsecure.autoconfigure.authentication;
 
 import java.util.Set;
 
+import nl._42.restsecure.autoconfigure.authentication.mfa.MfaType;
 import org.springframework.security.core.Authentication;
 
 /**
@@ -43,6 +44,14 @@ public interface RegisteredUser {
     }
 
     default String getMfaSecretKey() {
+        return null;
+    }
+    
+    default MfaType getMfaType() {
+        return isMfaConfigured() ? MfaType.TOTP : MfaType.NONE;
+    }
+    
+    default String getMfaEmail() {
         return null;
     }
 

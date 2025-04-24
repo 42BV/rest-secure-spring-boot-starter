@@ -18,7 +18,9 @@ Spring boot autoconfig for spring security in a REST environment
     * GET `/authentication/current` - to obtain the current logged in user
     * DELETE `/authentication` - to logout the current logged in user
 - Remember me support
-- Support for two-factor authentication (2FA).
+- Support for multiple two-factor authentication (2FA) methods:
+  * Time-based One-Time Password (TOTP) using authenticator apps
+  * Email-based verification codes
 - CSRF protection by the [double submit cookie](https://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF)_Prevention_Cheat_Sheet#Double_Submit_Cookie)
   pattern. Implemented by using the [CsrfTokenRepository](https://docs.spring.io/spring-security/site/docs/current/reference/html/csrf.html#csrf-cookie).
 - The @CurrentUser annotation may be used to annotate a controller method argument to inject the current custom user.
@@ -104,8 +106,11 @@ class CustomSecurity {
 
 ## Setup for multi-factor authentication (MFA, 2FA)
 
-Rest-secure optionally supports multi-factor authentication using Time-based One-Time Password (TOTP).
-This allows requiring users to enter a verification code to sign in (e.g. from Google Authenticator, Microsoft authenticator or similar apps)
+Rest-secure optionally supports multi-factor authentication using either Time-based One-Time Password (TOTP) or Email-based verification codes.
+
+TOTP-based MFA allows requiring users to enter a verification code to sign in (e.g. from Google Authenticator, Microsoft authenticator or similar apps).
+
+Email-based MFA allows users to receive a verification code via email that they must enter to complete the login process.
 
 To setup multi-factor authentication, follow the following steps:
 
@@ -123,14 +128,32 @@ To setup multi-factor authentication, follow the following steps:
 @Configuration
 class CustomSecurity {
     @Bean
-    public MfaAuthenticationProvider mfaAuthenticationProvider(SpringUserDetailsService userDetailsService, PasswordEncoder passwordEncoder,
-            MfaValidationService mfaValidationService) {
+    public MfaAuthenticationProvider mfaAuthenticationProvider(SpringUserDetailsService userDetailsService, 
+                                                             PasswordEncoder passwordEncoder,
+                                                             MfaValidationService mfaValidationService) {
         MfaAuthenticationProvider authenticationProvider = new MfaAuthenticationProvider();
         authenticationProvider.setUserDetailsService(userDetailsService);
         authenticationProvider.setPasswordEncoder(passwordEncoder);
         authenticationProvider.setMfaValidationService(mfaValidationService);
         return authenticationProvider;
     }
+}
+```
+
+If you want to use Email-based MFA, you'll also need to inject the `EmailCodeService`:
+
+```java
+@Bean
+public MfaAuthenticationProvider mfaAuthenticationProvider(SpringUserDetailsService userDetailsService, 
+                                                         PasswordEncoder passwordEncoder,
+                                                         MfaValidationService mfaValidationService,
+                                                         EmailCodeService emailCodeService) {
+    MfaAuthenticationProvider authenticationProvider = new MfaAuthenticationProvider();
+    authenticationProvider.setUserDetailsService(userDetailsService);
+    authenticationProvider.setPasswordEncoder(passwordEncoder);
+    authenticationProvider.setMfaValidationService(mfaValidationService);
+    authenticationProvider.setEmailCodeService(emailCodeService);
+    return authenticationProvider;
 }
 ```
 
@@ -143,8 +166,10 @@ following methods:
 
 - `isMfaConfigured()`: Indicates whether this user has successfully configured MFA. The user *must* have entered at least one valid verification code in order
   to configure MFA!
-- `getMfaSecretKey()`: Contains the secret key to validate the MFA against. This key may *never* be exposed on endpoints!
+- `getMfaSecretKey()`: Contains the secret key to validate the TOTP-based MFA against. This key may *never* be exposed on endpoints!
 - `isMfaMandatory()`: Indicates whether this user is obliged to use MFA. Can be a check based on user roles, or if MFA is always required simply return `true`
+- `getMfaType()`: Returns the type of MFA configured for this user (NONE, TOTP, EMAIL). Default implementation returns TOTP if MFA is configured, otherwise NONE.
+- `getMfaEmail()`: For Email-based MFA, returns the email address to send verification codes to. Default implementation returns null.
 
 ### If (some) users are mandatory to use MFA: Configure the filter for mandatory MFA authentication (IMPORTANT!)
 
@@ -185,23 +210,55 @@ Forgetting to add this filter will **NOT** enforce the mandatory MFA authenticat
 
 ### Add issuer name to the application config
 
-Add the name of the application for display in the authenticator app to `application.yml`:
+Add configuration to `application.yml` depending on which MFA method you want to use:
 
+For TOTP-based MFA:
 ```yaml
 totp:
   issuer: Your Application Name Goes Here
 ```
 
+For Email-based MFA:
+```yaml
+spring:
+  mail:
+    host: smtp.example.com
+    port: 587
+    username: your-username
+    password: your-password
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+
+rest-secure:
+  mfa:
+    email:
+      enabled: true
+      code-length: 6
+      code-validity-seconds: 300
+      email-subject: "Your verification code"
+      email-from: "security@example.com"
+      email-template: "Your verification code is: {code}"
+```
+
 ### Implementing the configuration and validation endpoints
 
-Finally, your application needs to implement 3 endpoints to let users perform MFA configuration:
+Finally, your application needs to implement endpoints to let users perform MFA configuration:
 
+For TOTP-based MFA:
 - Request MFA activation code (QR code) (should call `mfaSetupService.generateSecret()`, store the secret key and
   call `mfaSetupService.generateQrCode(secret, label)`).
     - The `label` will appear in the user's authenticator app and must be something like the user's username or email address.
 - Configure MFA authentication (the user supplies a valid authentication code, verify it using `mfaValidationService.validateMfaCode(secret, code)` and
-  set `isMfaConfigured` to true to confirm using MFA)
-- Disable MFA authentication (optional), removes `mfaSecretKey` and `isMfaConfigured` for this User.
+  set `isMfaConfigured` to true and `mfaType` to TOTP to confirm using MFA)
+
+For Email-based MFA:
+- Setup Email MFA (should call `mfaSetupService.setupEmailMfa(email)`, which will send a verification code to the user's email)
+- Configure Email MFA (the user supplies the verification code they received, verify it using `emailCodeService.verifyCode(email, code)` and
+  set `isMfaConfigured` to true and `mfaType` to EMAIL to confirm using MFA)
+
+For all MFA types:
+- Disable MFA authentication (optional), resets MFA configuration for the user
 
 ### Requirements of the configuration and validation endpoints
 
@@ -225,6 +282,17 @@ Below you'll find more detailed requirements of each endpoint:
 - This endpoint may only be called when the user is signed in (and thus has entered a valid MFA code...)
     - Optionally, you can require the user to enter another MFA code when disabling MFA.
 
+### Dependencies for Email-based MFA
+
+If you want to use Email-based MFA, add the following dependency to your project:
+
+```xml
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-mail</artifactId>
+</dependency>
+```
+
 ### Overriding any of the provided beans
 
 - By default, a `BcryptPasswordEncoder` bean is added to the security config for password matching. Use this bean when you are encrypting passwords for your
@@ -233,6 +301,10 @@ Below you'll find more detailed requirements of each endpoint:
 - The `MfaValidationService` and `MfaSetupService` beans are automatically created by `rest-secure-spring-boot-starter`.
     - If you want to override these beans, you can provide a custom `MfaValidationService` or `MfaSetupService` implementation by adding it to your
       Spring `ApplicationContext`.
+- For Email-based MFA, the following beans are provided:
+    - `EmailCodeRepository`: Default implementation is `InMemoryEmailCodeRepository`. In a clustered environment, consider using `CacheBackedEmailCodeRepository` which requires a `CacheManager` bean.
+    - `EmailCodeService`: If you need custom email formatting or delivery, you can provide your own implementation.
+    - `MfaEmailVerificationCheck`: Validates email verification codes during login.
 
 ## Customization
 

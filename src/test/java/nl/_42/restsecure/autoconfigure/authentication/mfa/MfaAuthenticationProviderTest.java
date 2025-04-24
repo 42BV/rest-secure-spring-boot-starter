@@ -25,7 +25,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -197,18 +196,18 @@ class MfaAuthenticationProviderTest {
             }
 
             @Test
-            @DisplayName("should throw InsufficientAuthenticationException if the code is missing")
+            @DisplayName("should throw MfaRequiredException if the code is missing")
             void shouldThrowIfCodeMissing() {
                 User user = new UserWithMfa("username", "password", "secret-key", false, "Hoi");
                 inMemoryUserDetailService.register(user);
                 mockMfaValidationService.register("secret-key", "123456");
 
                 MfaAuthenticationToken nullToken = new MfaAuthenticationToken("username", "password", null);
-                InsufficientAuthenticationException e = assertThrows(InsufficientAuthenticationException.class, () -> provider.authenticate(nullToken));
+                MfaRequiredException e = assertThrows(MfaRequiredException.class, () -> provider.authenticate(nullToken));
                 assertEquals("SERVER.MFA_CODE_REQUIRED_ERROR", e.getMessage());
 
                 MfaAuthenticationToken emptyStringToken = new MfaAuthenticationToken("username", "password", "");
-                InsufficientAuthenticationException e2 = assertThrows(InsufficientAuthenticationException.class, () -> provider.authenticate(emptyStringToken));
+                MfaRequiredException e2 = assertThrows(MfaRequiredException.class, () -> provider.authenticate(emptyStringToken));
                 assertEquals("SERVER.MFA_CODE_REQUIRED_ERROR", e2.getMessage());
             }
         }

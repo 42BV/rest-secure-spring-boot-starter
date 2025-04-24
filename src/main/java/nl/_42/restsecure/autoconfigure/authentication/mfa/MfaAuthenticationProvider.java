@@ -5,6 +5,7 @@ import java.util.List;
 
 import nl._42.restsecure.autoconfigure.authentication.RegisteredUser;
 import nl._42.restsecure.autoconfigure.authentication.UserDetailsAdapter;
+import nl._42.restsecure.autoconfigure.authentication.mfa.email.EmailCodeService;
 
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -13,7 +14,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.util.Assert;
 
 /**
- * An {@link DaoAuthenticationProvider} that supports Multi-Factor authentication (MFA, 2FA) using Time-based One-Time-Password (TOTP).
+ * An {@link DaoAuthenticationProvider} that supports Multi-Factor authentication (MFA, 2FA) using Time-based One-Time-Password (TOTP)
+ * or email-based verification codes.
  */
 public class MfaAuthenticationProvider extends DaoAuthenticationProvider {
 
@@ -23,6 +25,7 @@ public class MfaAuthenticationProvider extends DaoAuthenticationProvider {
     private boolean customVerificationStepsRegistered = false;
     private List<MfaVerificationCheck> verificationChecks;
     private MfaValidationService mfaValidationService;
+    private EmailCodeService emailCodeService;
 
     public void setVerificationChecks(List<MfaVerificationCheck> verificationChecks) {
         this.customVerificationStepsRegistered = true;
@@ -31,6 +34,10 @@ public class MfaAuthenticationProvider extends DaoAuthenticationProvider {
 
     public void setMfaValidationService(MfaValidationService mfaValidationService) {
         this.mfaValidationService = mfaValidationService;
+    }
+    
+    public void setEmailCodeService(EmailCodeService emailCodeService) {
+        this.emailCodeService = emailCodeService;
     }
 
     @Override
@@ -53,8 +60,24 @@ public class MfaAuthenticationProvider extends DaoAuthenticationProvider {
         super.additionalAuthenticationChecks(userDetails, authentication);
 
         if (userDetails instanceof UserDetailsAdapter<? extends RegisteredUser> userDetailsAdapter) {
+            RegisteredUser user = userDetailsAdapter.user();
+            
             if (userDetailsAdapter.isMfaConfigured()) {
-                executeMfaVerificationSteps((MfaAuthenticationToken) authentication, userDetailsAdapter);
+                MfaAuthenticationToken mfaAuthentication = (MfaAuthenticationToken) authentication;
+                String verificationCode = mfaAuthentication.getVerificationCode();
+                
+                // For email MFA, send verification code if not provided
+                if ((verificationCode == null || verificationCode.isEmpty()) && 
+                    user.getMfaType() == MfaType.EMAIL && 
+                    emailCodeService != null) {
+                    
+                    String email = user.getMfaEmail();
+                    if (email != null && !email.isEmpty()) {
+                        emailCodeService.generateAndSendCode(email);
+                    }
+                }
+                
+                executeMfaVerificationSteps(mfaAuthentication, userDetailsAdapter);
             } else if (userDetailsAdapter.isMfaMandatory()) {
                 authentication.setDetails(DETAILS_MFA_SETUP_REQUIRED);
             }
