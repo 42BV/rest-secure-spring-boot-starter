@@ -94,4 +94,21 @@ public class MfaSetupServiceImpl implements MfaSetupService {
         // Send a test verification code to confirm the setup
         emailCodeService.generateAndSendCode(email);
     }
+    
+    @Override
+    public boolean verifyEmailMfaSetup(String email, String code) {
+        if (emailCodeService == null) {
+            throw new MfaException("EmailCodeService is not configured");
+        }
+        
+        if (email == null || email.isEmpty()) {
+            throw new MfaException("Email address cannot be empty");
+        }
+        
+        if (code == null || code.isEmpty()) {
+            throw new MfaException("Verification code cannot be empty");
+        }
+        
+        return emailCodeService.verifyCode(email, code);
+    }
 }

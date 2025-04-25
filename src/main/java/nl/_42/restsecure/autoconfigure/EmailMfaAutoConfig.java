@@ -8,10 +8,12 @@ import nl._42.restsecure.autoconfigure.authentication.mfa.email.EmailMfaProperti
 import nl._42.restsecure.autoconfigure.authentication.mfa.email.InMemoryEmailCodeRepository;
 import nl._42.restsecure.autoconfigure.authentication.mfa.email.MfaEmailVerificationCheck;
 
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.condition.SearchStrategy;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cache.CacheManager;
 import org.springframework.context.annotation.Bean;
@@ -34,6 +36,15 @@ public class EmailMfaAutoConfig {
     @Bean
     @ConditionalOnMissingBean
     @ConditionalOnProperty(prefix = "rest-secure.mfa.email", name = "enabled", havingValue = "true")
+    @ConditionalOnBean(name = "cacheBackedEmailCodeRepository", value = EmailCodeRepository.class, search = SearchStrategy.ANCESTORS)
+    public boolean useCacheEmailRepo() {
+        // This is a marker bean to indicate we're using the cache-backed repository
+        return true;
+    }
+    
+    @Bean
+    @ConditionalOnProperty(prefix = "rest-secure.mfa.email", name = "enabled", havingValue = "true")
+    @ConditionalOnMissingBean(name = "useCacheEmailRepo")
     public EmailCodeRepository inMemoryEmailCodeRepository() {
         return new InMemoryEmailCodeRepository();
     }

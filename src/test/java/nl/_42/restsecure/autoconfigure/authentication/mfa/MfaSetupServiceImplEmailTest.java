@@ -1,7 +1,10 @@
 package nl._42.restsecure.autoconfigure.authentication.mfa;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import dev.samstevens.totp.qr.QrDataFactory;
 import dev.samstevens.totp.qr.QrGenerator;
@@ -75,6 +78,72 @@ class MfaSetupServiceImplEmailTest {
         assertThrows(MfaException.class, () -> {
             // When
             service.setupEmailMfa("user@example.com");
+        });
+    }
+    
+    @Test
+    void verifyEmailMfaSetup_valid() {
+        // Given
+        String email = "user@example.com";
+        String code = "123456";
+        when(emailCodeService.verifyCode(email, code)).thenReturn(true);
+        
+        // When
+        boolean result = service.verifyEmailMfaSetup(email, code);
+        
+        // Then
+        assertTrue(result);
+        verify(emailCodeService).verifyCode(email, code);
+    }
+    
+    @Test
+    void verifyEmailMfaSetup_invalid() {
+        // Given
+        String email = "user@example.com";
+        String code = "123456";
+        when(emailCodeService.verifyCode(email, code)).thenReturn(false);
+        
+        // When
+        boolean result = service.verifyEmailMfaSetup(email, code);
+        
+        // Then
+        assertFalse(result);
+        verify(emailCodeService).verifyCode(email, code);
+    }
+    
+    @Test
+    void verifyEmailMfaSetup_withNullEmail() {
+        // Then
+        assertThrows(MfaException.class, () -> {
+            // When
+            service.verifyEmailMfaSetup(null, "123456");
+        });
+    }
+    
+    @Test
+    void verifyEmailMfaSetup_withEmptyEmail() {
+        // Then
+        assertThrows(MfaException.class, () -> {
+            // When
+            service.verifyEmailMfaSetup("", "123456");
+        });
+    }
+    
+    @Test
+    void verifyEmailMfaSetup_withNullCode() {
+        // Then
+        assertThrows(MfaException.class, () -> {
+            // When
+            service.verifyEmailMfaSetup("user@example.com", null);
+        });
+    }
+    
+    @Test
+    void verifyEmailMfaSetup_withEmptyCode() {
+        // Then
+        assertThrows(MfaException.class, () -> {
+            // When
+            service.verifyEmailMfaSetup("user@example.com", "");
         });
     }
 }
