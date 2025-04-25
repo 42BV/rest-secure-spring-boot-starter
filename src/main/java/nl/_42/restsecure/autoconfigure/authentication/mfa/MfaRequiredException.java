@@ -1,6 +1,8 @@
 package nl._42.restsecure.autoconfigure.authentication.mfa;
 
-public class MfaRequiredException extends RuntimeException {
+import org.springframework.security.core.AuthenticationException;
+
+public class MfaRequiredException extends AuthenticationException {
 
     public MfaRequiredException(String msg) {
         super(msg);
