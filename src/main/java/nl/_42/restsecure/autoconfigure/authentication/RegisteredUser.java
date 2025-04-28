@@ -10,6 +10,11 @@ import org.springframework.security.core.Authentication;
  */
 public interface RegisteredUser {
 
+    /**
+     * Can be useful when implementing own security checks
+     */
+    default String getUserId() {return null;}
+
     String getUsername();
 
     default String getPassword() {
