@@ -9,8 +9,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import lombok.RequiredArgsConstructor;
+import nl._42.restsecure.autoconfigure.authentication.mfa.MfaRequiredException;
 
-import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.security.core.AuthenticationException;
 
 @RequiredArgsConstructor
@@ -22,7 +22,7 @@ public class DefaultLoginAuthenticationExceptionHandler implements LoginAuthenti
     @Override
     public void handle(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws IOException {
         // If the MFA code is needed but not provided, indicate this so the client can trigger the MFA login procedure.
-        if (exception instanceof InsufficientAuthenticationException
+        if (exception instanceof MfaRequiredException
                 && exception.getMessage().equals(SERVER_MFA_CODE_REQUIRED_ERROR)) {
             errorHandler.respond(response, UNAUTHORIZED, SERVER_MFA_CODE_REQUIRED_ERROR);
         } else {

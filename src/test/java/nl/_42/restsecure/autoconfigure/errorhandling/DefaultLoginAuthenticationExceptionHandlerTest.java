@@ -2,6 +2,8 @@ package nl._42.restsecure.autoconfigure.errorhandling;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import nl._42.restsecure.autoconfigure.authentication.mfa.MfaAuthenticationProvider;
+import nl._42.restsecure.autoconfigure.authentication.mfa.MfaRequiredException;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -28,7 +30,7 @@ class DefaultLoginAuthenticationExceptionHandlerTest {
 
             MockHttpServletResponse response = new MockHttpServletResponse();
             handler.handle(new MockHttpServletRequest(), response,
-                    new InsufficientAuthenticationException(MfaAuthenticationProvider.SERVER_MFA_CODE_REQUIRED_ERROR));
+                    new MfaRequiredException(MfaAuthenticationProvider.SERVER_MFA_CODE_REQUIRED_ERROR));
 
             assertEquals(HttpStatus.UNAUTHORIZED.value(), response.getStatus());
             assertThat(response.getContentAsString()).contains("\"errorCode\":\"SERVER.MFA_CODE_REQUIRED_ERROR\"");
