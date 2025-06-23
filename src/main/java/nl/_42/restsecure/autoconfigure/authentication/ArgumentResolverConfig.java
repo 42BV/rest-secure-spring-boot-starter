@@ -12,7 +12,7 @@ public class ArgumentResolverConfig implements WebMvcConfigurer {
 
     private final UserResolver<RegisteredUser> userResolver;
 
-    public ArgumentResolverConfig(@Lazy UserResolver<RegisteredUser> userResolver) {
+    public ArgumentResolverConfig(UserResolver<RegisteredUser> userResolver) {
         this.userResolver = userResolver;
     }
 
