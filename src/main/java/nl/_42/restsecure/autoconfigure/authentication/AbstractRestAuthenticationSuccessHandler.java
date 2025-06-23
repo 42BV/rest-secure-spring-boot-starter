@@ -15,7 +15,6 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
  */
 public abstract class AbstractRestAuthenticationSuccessHandler<T extends RegisteredUser> implements AuthenticationSuccessHandler {
 
-    @Lazy
     @Autowired
     private UserResolver<T> userResolver;
 
