@@ -6,16 +6,18 @@ import static org.springframework.security.core.context.SecurityContextHolder.ge
 
 import java.util.Optional;
 
-import lombok.RequiredArgsConstructor;
-
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.stereotype.Component;
 
 @Component
-@RequiredArgsConstructor
 public class UserResolver<T extends RegisteredUser> {
 
     private final UserProvider provider;
+    
+    public UserResolver(@Lazy UserProvider provider) {
+        this.provider = provider;
+    }
 
     public Optional<T> resolve() {
         return ofNullable(getContext().getAuthentication())
