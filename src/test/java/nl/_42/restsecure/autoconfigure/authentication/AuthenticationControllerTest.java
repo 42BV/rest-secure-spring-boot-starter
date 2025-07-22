@@ -130,7 +130,7 @@ class AuthenticationControllerTest extends AbstractApplicationContextTest {
     }
 
     @Test
-    void rememberMe_shouldFail_afterFailedAutentication() throws Exception {
+    void rememberMe_shouldFail_afterFailedAuthentication() throws Exception {
         getWebClient(ActiveUserConfig.class, NoopPasswordEncoderConfig.class, RememberMeServicesConfig.class)
                 .perform(post("/authentication")
                         .content("{\"username\": \"custom\", \"password\": \"wrong\"}"))
@@ -140,7 +140,7 @@ class AuthenticationControllerTest extends AbstractApplicationContextTest {
     }
 
     @Test
-    void successHanlder_shouldBeCalled_afterSuccessfulAuthentication() throws Exception {
+    void successHandler_shouldBeCalled_afterSuccessfulAuthentication() throws Exception {
         getWebClient(ActiveUserConfig.class, NoopPasswordEncoderConfig.class, RestAuthenticationSuccessHandlerConfig.class)
                 .perform(post("/authentication")
                         .content("{\"username\": \"custom\", \"password\": \"password\"}"))
@@ -151,7 +151,7 @@ class AuthenticationControllerTest extends AbstractApplicationContextTest {
     }
 
     @Test
-    void successHanlder_shouldNotBeCalled_afterFailedAuthentication() throws Exception {
+    void successHandler_shouldNotBeCalled_afterFailedAuthentication() throws Exception {
         getWebClient(ActiveUserConfig.class, NoopPasswordEncoderConfig.class, RestAuthenticationSuccessHandlerConfig.class)
                 .perform(post("/authentication")
                         .content("{\"username\": \"custom\", \"password\": \"wrong\"}"))
@@ -161,7 +161,7 @@ class AuthenticationControllerTest extends AbstractApplicationContextTest {
     }
 
     @Test
-    void authenticate_shouldFail_withCorrectCredentials_butBrcyptPasswordEncoder() throws Exception {
+    void authenticate_shouldFail_withCorrectCredentials_butBcryptPasswordEncoder() throws Exception {
         getWebClient(ActiveUserConfig.class)
                 .perform(post("/authentication")
                         .content("{\"username\": \"custom\", \"password\": \"password\"}"))
