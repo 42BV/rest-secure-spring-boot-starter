@@ -3,6 +3,7 @@ package nl._42.restsecure.autoconfigure.authentication.mfa;
 import java.util.ArrayList;
 import java.util.List;
 
+import lombok.Setter;
 import nl._42.restsecure.autoconfigure.authentication.RegisteredUser;
 import nl._42.restsecure.autoconfigure.authentication.UserDetailsAdapter;
 
@@ -10,6 +11,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.util.Assert;
 
 /**
@@ -22,15 +24,24 @@ public class MfaAuthenticationProvider extends DaoAuthenticationProvider {
 
     private boolean customVerificationStepsRegistered = false;
     private List<MfaVerificationCheck> verificationChecks;
+
+    @Setter
     private MfaValidationService mfaValidationService;
+
+    /**
+     * Use {@link MfaAuthenticationProvider#MfaAuthenticationProvider(UserDetailsService)}.
+     */
+    @Deprecated
+    public MfaAuthenticationProvider() {
+    }
+
+    public MfaAuthenticationProvider(UserDetailsService userDetailsService) {
+        super(userDetailsService);
+    }
 
     public void setVerificationChecks(List<MfaVerificationCheck> verificationChecks) {
         this.customVerificationStepsRegistered = true;
         this.verificationChecks = verificationChecks;
-    }
-
-    public void setMfaValidationService(MfaValidationService mfaValidationService) {
-        this.mfaValidationService = mfaValidationService;
     }
 
     @Override
