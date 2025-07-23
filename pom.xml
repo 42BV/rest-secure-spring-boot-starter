@@ -163,7 +163,7 @@
                     <version>${maven-release-plugin.version}</version>
                     <configuration>
                         <mavenExecutorId>forked-path</mavenExecutorId>
-                        <useReleaseProfile>false</useReleaseProfile>
+                        <useReleaseProfile>true</useReleaseProfile>
                         <releaseProfiles>release</releaseProfiles>
                         <goals>deploy</goals>
                     </configuration>
