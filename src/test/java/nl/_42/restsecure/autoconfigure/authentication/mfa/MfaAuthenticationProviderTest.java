@@ -25,7 +25,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -52,10 +51,8 @@ class MfaAuthenticationProviderTest {
         void setup() throws Exception {
             inMemoryUserDetailService = new InMemoryUserDetailService();
             mockMfaValidationService = new MockMfaValidationService();
-            provider = new MfaAuthenticationProvider();
-            provider.setUserDetailsService(inMemoryUserDetailService);
+            provider = new MfaAuthenticationProvider(inMemoryUserDetailService, mockMfaValidationService);
             provider.setPasswordEncoder(NoOpPasswordEncoder.getInstance());
-            provider.setMfaValidationService(mockMfaValidationService);
             provider.afterPropertiesSet();
         }
 
@@ -65,15 +62,15 @@ class MfaAuthenticationProviderTest {
             @Test
             @DisplayName("should throw if userDetailsService or mfaValidationService have not been set")
             void shouldThrowForMissingDependencies() {
-                MfaAuthenticationProvider mfaProvider = new MfaAuthenticationProvider();
+                MfaAuthenticationProvider mfaProvider = new MfaAuthenticationProvider(null, null);
                 IllegalArgumentException e = assertThrows(IllegalArgumentException.class, mfaProvider::doAfterPropertiesSet);
                 assertEquals("A UserDetailsService must be set", e.getMessage());
 
-                mfaProvider.setUserDetailsService(new InMemoryUserDetailService());
+                mfaProvider = new MfaAuthenticationProvider(new InMemoryUserDetailService(), null);
                 e = assertThrows(IllegalArgumentException.class, mfaProvider::doAfterPropertiesSet);
                 assertEquals("A MfaValidationService must be set", e.getMessage());
 
-                mfaProvider.setMfaValidationService(new MockMfaValidationService());
+                mfaProvider = new MfaAuthenticationProvider(new InMemoryUserDetailService(), new MockMfaValidationService());
                 assertDoesNotThrow(mfaProvider::doAfterPropertiesSet);
             }
         }
@@ -219,10 +216,8 @@ class MfaAuthenticationProviderTest {
             @Test
             @DisplayName("should throw if null is passed to setVerificationChecks")
             void shouldThrow_ForNullChecks() {
-                MfaAuthenticationProvider mfaProvider = new MfaAuthenticationProvider();
-                mfaProvider.setUserDetailsService(inMemoryUserDetailService);
+                MfaAuthenticationProvider mfaProvider = new MfaAuthenticationProvider(inMemoryUserDetailService, mockMfaValidationService);
                 mfaProvider.setPasswordEncoder(NoOpPasswordEncoder.getInstance());
-                mfaProvider.setMfaValidationService(mockMfaValidationService);
                 mfaProvider.setVerificationChecks(null);
                 IllegalArgumentException e = assertThrows(IllegalArgumentException.class, mfaProvider::doAfterPropertiesSet);
                 assertEquals("At least one verification check must be provided", e.getMessage());
@@ -437,7 +432,7 @@ class MfaAuthenticationProviderTest {
 
     @Test
     void supports() {
-        assertTrue(new MfaAuthenticationProvider().supports(MfaAuthenticationToken.class));
-        assertFalse(new MfaAuthenticationProvider().supports(UsernamePasswordAuthenticationToken.class));
+        assertTrue(new MfaAuthenticationProvider(null, null).supports(MfaAuthenticationToken.class));
+        assertFalse(new MfaAuthenticationProvider(null, null).supports(UsernamePasswordAuthenticationToken.class));
     }
 }

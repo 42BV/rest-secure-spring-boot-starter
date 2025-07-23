@@ -22,9 +22,7 @@ public class ActiveUserAndMfaConfig extends AbstractUserDetailsServiceConfig {
     @Bean
     public MfaAuthenticationProvider mfaAuthenticationProvider(PasswordEncoder passwordEncoder, UserDetailsService userDetailsService,
             MfaValidationService mfaValidationService) {
-        MfaAuthenticationProvider authenticationProvider = new MfaAuthenticationProvider();
-        authenticationProvider.setMfaValidationService(mfaValidationService);
-        authenticationProvider.setUserDetailsService(userDetailsService);
+        MfaAuthenticationProvider authenticationProvider = new MfaAuthenticationProvider(userDetailsService, mfaValidationService);
         authenticationProvider.setPasswordEncoder(passwordEncoder);
         return authenticationProvider;
     }

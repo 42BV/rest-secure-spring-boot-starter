@@ -3,7 +3,6 @@ package nl._42.restsecure.autoconfigure.authentication.mfa;
 import java.util.ArrayList;
 import java.util.List;
 
-import lombok.Setter;
 import nl._42.restsecure.autoconfigure.authentication.RegisteredUser;
 import nl._42.restsecure.autoconfigure.authentication.UserDetailsAdapter;
 
@@ -25,18 +24,11 @@ public class MfaAuthenticationProvider extends DaoAuthenticationProvider {
     private boolean customVerificationStepsRegistered = false;
     private List<MfaVerificationCheck> verificationChecks;
 
-    @Setter
-    private MfaValidationService mfaValidationService;
+    private final MfaValidationService mfaValidationService;
 
-    /**
-     * Use {@link MfaAuthenticationProvider#MfaAuthenticationProvider(UserDetailsService)}.
-     */
-    @Deprecated
-    public MfaAuthenticationProvider() {
-    }
-
-    public MfaAuthenticationProvider(UserDetailsService userDetailsService) {
+    public MfaAuthenticationProvider(UserDetailsService userDetailsService, MfaValidationService mfaValidationService) {
         super(userDetailsService);
+        this.mfaValidationService = mfaValidationService;
     }
 
     public void setVerificationChecks(List<MfaVerificationCheck> verificationChecks) {

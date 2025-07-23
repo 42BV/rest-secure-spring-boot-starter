@@ -2,6 +2,7 @@ package nl._42.restsecure.autoconfigure.test;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 import nl._42.restsecure.autoconfigure.authentication.AbstractRestAuthenticationSuccessHandler;
 import nl._42.restsecure.autoconfigure.authentication.RegisteredUser;
 import nl._42.restsecure.autoconfigure.authentication.UserResolver;
@@ -11,15 +12,12 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 @Configuration
+@RequiredArgsConstructor
 public class RestAuthenticationSuccessHandlerConfig<T extends RegisteredUser> {
 
     public static final String AUTHENTICATION_SUCCESS_HEADER = "AuthenticationSuccessful";
 
     private final UserResolver<T> userResolver;
-
-    public RestAuthenticationSuccessHandlerConfig(UserResolver<T> userResolver) {
-        this.userResolver = userResolver;
-    }
 
     @Bean
     public AbstractRestAuthenticationSuccessHandler<T> successHandler() {
