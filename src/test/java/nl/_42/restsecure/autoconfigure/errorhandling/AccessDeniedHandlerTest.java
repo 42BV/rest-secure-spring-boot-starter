@@ -5,6 +5,7 @@ import static nl._42.restsecure.autoconfigure.errorhandling.RestAccessDeniedHand
 import static nl._42.restsecure.autoconfigure.errorhandling.RestAccessDeniedHandler.SERVER_SESSION_INVALID_ERROR;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.log;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -17,6 +18,7 @@ import nl._42.restsecure.autoconfigure.test.ActiveUserConfig;
 import nl._42.restsecure.autoconfigure.test.RestrictedEndpointsConfig;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.web.servlet.RequestBuilder;
 
@@ -28,6 +30,17 @@ class AccessDeniedHandlerTest extends AbstractApplicationContextTest {
                 .perform(get("/test/forbidden"))
                 .andExpect(status().isForbidden())
                 .andExpect(jsonPath("errorCode").value(SERVER_ACCESS_DENIED_ERROR));
+    }
+
+    @Test
+    void forbiddenEndpoint_shouldFail_andNotThrowExceptions_whenIllegalRequestContentSent() throws Exception {
+        getWebClient(RestrictedEndpointsConfig.class)
+            .perform(post("/test/forbidden")
+                .accept(MediaType.APPLICATION_JSON)
+                .content("<?php echo(md5(\"Hello World!\"));") // simulate illegal request content, commonly sent by bots / spammers.
+            )
+            .andExpect(status().isForbidden())
+            .andExpect(jsonPath("errorCode").value(SERVER_ACCESS_DENIED_ERROR));
     }
 
     @Test
