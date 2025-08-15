@@ -5,6 +5,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import nl._42.restsecure.autoconfigure.form.FormValues;
 import nl._42.restsecure.autoconfigure.form.LoginForm;
 
@@ -12,6 +13,7 @@ import org.apache.commons.io.IOUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+@Slf4j
 public class FormUtil {
 
     private FormUtil() {throw new IllegalStateException("Utility class");}
@@ -20,14 +22,23 @@ public class FormUtil {
         ObjectMapper objectMapper = new ObjectMapper();
         try {
             String formJson = IOUtils.toString(request.getReader());
-            Constructor<T> ctor = clazz.getConstructor();
-            T form = ctor.newInstance();
+            T form;
             if (!formJson.isEmpty()) {
                 form = objectMapper.readValue(formJson, clazz);
+            } else {
+                form = instantiateForm(clazz);
             }
             return new FormValues<>(formJson, form);
         } catch (IOException ioe) {
-            throw new IllegalStateException("Could not use reader", ioe);
+            log.warn("Could not use reader", ioe);
+            return new FormValues<>("", instantiateForm(clazz));
+        }
+    }
+
+    private static <T extends LoginForm> T instantiateForm(Class<T> clazz) {
+        try {
+            Constructor<T> ctor = clazz.getConstructor();
+            return ctor.newInstance();
         } catch (NoSuchMethodException | InvocationTargetException | InstantiationException | IllegalAccessException e) {
             throw new IllegalStateException("Could not find or instantiate with default constructor", e);
         }
