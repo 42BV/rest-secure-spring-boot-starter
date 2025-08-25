@@ -3,6 +3,24 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
+
+## [14.1.0] - 2025-08-25
+- FormUtil: Do not throw for invalid request body
+  - When a HTTP request with an invalid request body (XML, HTML) is sent through either `RestAuthenticationFilter` or `RestAccessDeniedHandler`, FormUtil would fail with an `IllegalStateException`.
+  - This often happens by automated / bot requests, thus should not lead to an exception.
+  - Instead of throwing an exception, FormUtil now logs a warning and returns an empty form.
+
+## [14.0.0] - 2025-07-23
+
+- Removed `@Lazy` annotations from UserResolver references
+  - To improve compatibility with Spring Native, various `@Lazy` annotations were removed, as they would interfere with Spring Native's proxy detection.
+- Added constructor with `UserDetailsService` to `MFAProvider`
+  - Added constructor in `MfaAuthenticationProvider` to pass the `userDetailsService` to its super class, because calling `setUserDetailsService` has been deprecated by Spring.
+  - Fixed broken test setup in `RestAuthenticationSuccessHandlerConfig`
+- Added GitHub Actions workflow for publishing to Maven Central
+  - Adds the `release-action`, which can be manually started to publish a new version to Maven Central.
+
+
 ## [13.2.1]
 - FIX: Removed unnecessary warn logs that are part of the login flow
 
