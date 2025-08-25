@@ -48,7 +48,7 @@
         <maven.compiler.release>21</maven.compiler.release>
         <logback.version>1.5.18</logback.version>
 
-        <spring-boot.version>3.5.4</spring-boot.version>
+        <spring-boot.version>3.5.5</spring-boot.version>
         <totp-spring-boot-starter.version>1.7.1</totp-spring-boot-starter.version>
         <commons-io.version>2.20.0</commons-io.version>
 
