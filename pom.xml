@@ -46,7 +46,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <maven.compiler.release>21</maven.compiler.release>
-        <logback.version>1.5.18</logback.version>
+        <logback.version>1.5.19</logback.version>
 
         <spring-boot.version>3.5.5</spring-boot.version>
         <totp-spring-boot-starter.version>1.7.1</totp-spring-boot-starter.version>
