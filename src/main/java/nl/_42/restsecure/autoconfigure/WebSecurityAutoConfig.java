@@ -27,7 +27,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration;
+import org.springframework.boot.webmvc.autoconfigure.WebMvcAutoConfiguration;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -53,7 +53,7 @@ import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 
 /**
  * Auto-configures Spring Web Security with a customized UserDetailsService for internal users storage or with crowd-integration-springsecurity for external crowd authentication.
@@ -203,7 +203,7 @@ public class WebSecurityAutoConfig {
             .exceptionHandling(exceptionHandling -> exceptionHandling.accessDeniedHandler(accessDeniedHandler)
                     .authenticationEntryPoint(accessDeniedHandler))
             .logout(logoutConfigurer -> logoutConfigurer.logoutRequestMatcher(
-                    new AntPathRequestMatcher("/authentication", DELETE.name()))
+                    PathPatternRequestMatcher.withDefaults().matcher(DELETE, "/authentication"))
                     .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler()))
             .csrf(csrfConfigurer -> csrfConfigurer.csrfTokenRequestHandler(csrfRequestHandler())
                     .csrfTokenRepository(csrfTokenRepository()));

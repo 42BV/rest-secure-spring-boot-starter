@@ -8,10 +8,10 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import nl._42.restsecure.autoconfigure.form.FormValues;
 import nl._42.restsecure.autoconfigure.form.LoginForm;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 
 import org.apache.commons.io.IOUtils;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Slf4j
 public class FormUtil {
@@ -29,8 +29,8 @@ public class FormUtil {
                 form = instantiateForm(clazz);
             }
             return new FormValues<>(formJson, form);
-        } catch (IOException ioe) {
-            log.warn("Could not use reader", ioe);
+        } catch (JacksonException | IOException e) {
+            log.warn("Could not use reader", e);
             return new FormValues<>("", instantiateForm(clazz));
         }
     }

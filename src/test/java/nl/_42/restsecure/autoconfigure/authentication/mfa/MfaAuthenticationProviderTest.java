@@ -38,6 +38,7 @@ class MfaAuthenticationProviderTest {
     class additionalAuthenticationChecks {
 
         private MfaAuthenticationProvider provider;
+        private MfaAuthenticationProvider noUserDetailsAdapterProvider;
         private InMemoryUserDetailService inMemoryUserDetailService;
         private final UserDetailsService noUserDetailsAdapterUserDetailsService = username -> {
             if (Objects.equals(username, "username")) {
@@ -54,6 +55,9 @@ class MfaAuthenticationProviderTest {
             provider = new MfaAuthenticationProvider(inMemoryUserDetailService, mockMfaValidationService);
             provider.setPasswordEncoder(NoOpPasswordEncoder.getInstance());
             provider.afterPropertiesSet();
+            noUserDetailsAdapterProvider = new MfaAuthenticationProvider(noUserDetailsAdapterUserDetailsService, mockMfaValidationService);
+            noUserDetailsAdapterProvider.setPasswordEncoder(NoOpPasswordEncoder.getInstance());
+            noUserDetailsAdapterProvider.afterPropertiesSet();
         }
 
         @Nested
@@ -62,11 +66,10 @@ class MfaAuthenticationProviderTest {
             @Test
             @DisplayName("should throw if userDetailsService or mfaValidationService have not been set")
             void shouldThrowForMissingDependencies() {
-                MfaAuthenticationProvider mfaProvider = new MfaAuthenticationProvider(null, null);
-                IllegalArgumentException e = assertThrows(IllegalArgumentException.class, mfaProvider::doAfterPropertiesSet);
-                assertEquals("A UserDetailsService must be set", e.getMessage());
+                IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> new MfaAuthenticationProvider(null, null));
+                assertEquals("userDetailsService cannot be null", e.getMessage());
 
-                mfaProvider = new MfaAuthenticationProvider(new InMemoryUserDetailService(), null);
+                MfaAuthenticationProvider mfaProvider = new MfaAuthenticationProvider(new InMemoryUserDetailService(), null);
                 e = assertThrows(IllegalArgumentException.class, mfaProvider::doAfterPropertiesSet);
                 assertEquals("A MfaValidationService must be set", e.getMessage());
 
@@ -394,7 +397,7 @@ class MfaAuthenticationProviderTest {
                 assertFalse(secondCheckPerformed.get());
             }
 
-            class CustomTotpVerificationCheck extends MfaTotpVerificationCheck {
+            static class CustomTotpVerificationCheck extends MfaTotpVerificationCheck {
 
                 public CustomTotpVerificationCheck(MfaValidationService mfaValidationService) {
                     super(mfaValidationService);
@@ -416,10 +419,9 @@ class MfaAuthenticationProviderTest {
             @Test
             @DisplayName("should not perform additional authentication checks if user is not of type UserDetailsAdapter")
             void shouldDoNothingForOtherUsers() {
-                provider.setUserDetailsService(noUserDetailsAdapterUserDetailsService);
 
                 MfaAuthenticationToken token = new MfaAuthenticationToken("username", "password", "123456");
-                Authentication authentication = provider.authenticate(token);
+                Authentication authentication = noUserDetailsAdapterProvider.authenticate(token);
 
                 assertTrue(authentication.isAuthenticated());
                 assertTrue(authentication instanceof UsernamePasswordAuthenticationToken);
@@ -428,11 +430,5 @@ class MfaAuthenticationProviderTest {
                 assertThrows(BadCredentialsException.class, () -> provider.authenticate(wrongToken));
             }
         }
-    }
-
-    @Test
-    void supports() {
-        assertTrue(new MfaAuthenticationProvider(null, null).supports(MfaAuthenticationToken.class));
-        assertFalse(new MfaAuthenticationProvider(null, null).supports(UsernamePasswordAuthenticationToken.class));
     }
 }

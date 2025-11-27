@@ -3,6 +3,7 @@ package nl._42.restsecure.autoconfigure.authentication.mfa;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -11,18 +12,16 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import nl._42.restsecure.autoconfigure.AbstractApplicationContextTest;
 import nl._42.restsecure.autoconfigure.authentication.InMemoryUserDetailService;
 import nl._42.restsecure.autoconfigure.test.MockMfaAuthenticationConfig;
+import tools.jackson.databind.ObjectMapper;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 import org.springframework.test.web.servlet.MockMvc;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 class MfaSetupRequiredFilterTest extends AbstractApplicationContextTest {
 
@@ -66,7 +65,7 @@ class MfaSetupRequiredFilterTest extends AbstractApplicationContextTest {
     class filter {
         @Test
         void shouldAllowRequest_whenExcludedByUrl() throws Exception {
-            filter.getExcludedRequests().add(new AntPathRequestMatcher("/users/**", HttpMethod.GET.name()));
+            filter.getExcludedRequests().add(PathPatternRequestMatcher.withDefaults().matcher(GET, "/users/**"));
 
             webClient
                     .perform(get("/users/me")

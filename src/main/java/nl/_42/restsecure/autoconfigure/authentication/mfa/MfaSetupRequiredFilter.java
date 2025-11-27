@@ -17,6 +17,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.Getter;
 import lombok.Setter;
+import tools.jackson.databind.ObjectMapper;
 
 import org.springframework.http.ProblemDetail;
 import org.springframework.security.core.Authentication;
@@ -24,8 +25,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.util.Assert;
 import org.springframework.web.filter.GenericFilterBean;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * A {@link GenericFilterBean} that denies requests when the user is obliged to set up MFA but hasn't done so.

@@ -19,6 +19,7 @@ import nl._42.restsecure.autoconfigure.form.FormValues;
 import nl._42.restsecure.autoconfigure.form.LoginForm;
 import nl._42.restsecure.autoconfigure.utils.FormUtil;
 
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
@@ -34,7 +35,7 @@ import org.springframework.security.web.context.DelegatingSecurityContextReposit
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.web.context.RequestAttributeSecurityContextRepository;
 import org.springframework.security.web.context.SecurityContextRepository;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 /**
@@ -49,7 +50,9 @@ import org.springframework.web.filter.OncePerRequestFilter;
 public class RestAuthenticationFilter extends OncePerRequestFilter {
 
     public static final String LOGIN_FORM_JSON = "loginFormJson";
-    private static final AntPathRequestMatcher DEFAULT_MATCHER = new AntPathRequestMatcher("/authentication", POST.name());
+    // NEW (Spring Security 7)
+    private static final PathPatternRequestMatcher DEFAULT_MATCHER =
+            PathPatternRequestMatcher.withDefaults().matcher(POST, "/authentication");
 
     private final LoginAuthenticationExceptionHandler loginExceptionHandler;
     private final AuthenticationManager authenticationManager;

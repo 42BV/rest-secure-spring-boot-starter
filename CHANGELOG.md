@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [15.0.0] - 2025-11-27
+- Added support for Spring Boot 4
+
 ## [14.1.0] - 2025-08-25
 - FormUtil: Do not throw for invalid request body
   - When a HTTP request with an invalid request body (XML, HTML) is sent through either `RestAuthenticationFilter` or `RestAccessDeniedHandler`, FormUtil would fail with an `IllegalStateException`.

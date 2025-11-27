@@ -21,6 +21,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.web.servlet.RequestBuilder;
+import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 
 class AccessDeniedHandlerTest extends AbstractApplicationContextTest {
 
@@ -39,6 +40,7 @@ class AccessDeniedHandlerTest extends AbstractApplicationContextTest {
                 .accept(MediaType.APPLICATION_JSON)
                 .content("<?php echo(md5(\"Hello World!\"));") // simulate illegal request content, commonly sent by bots / spammers.
             )
+                .andDo(MockMvcResultHandlers.print())
             .andExpect(status().isForbidden())
             .andExpect(jsonPath("errorCode").value(SERVER_ACCESS_DENIED_ERROR));
     }
