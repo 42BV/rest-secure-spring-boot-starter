@@ -9,6 +9,25 @@ public class DefaultAuthenticationResultProvider implements AuthenticationResult
 
     @Override
     public AuthenticationResult toResult(HttpServletRequest request, HttpServletResponse response, RegisteredUser user) {
+        if (user == null) {
+            return new AuthenticationResult() {
+
+                @Override
+                public boolean isAuthenticated() {
+                    return false;
+                }
+
+                @Override
+                public String getUsername() {
+                    return null;
+                }
+
+                @Override
+                public Set<String> getAuthorities() {
+                    return Set.of();
+                }
+            };
+        }
         return new AuthenticationResult() {
 
             @Override

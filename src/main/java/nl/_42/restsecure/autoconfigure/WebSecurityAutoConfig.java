@@ -196,7 +196,7 @@ public class WebSecurityAutoConfig {
             .sessionManagement(smc -> smc.sessionCreationPolicy(ALWAYS))
             .authenticationManager(authenticationManager)
             .authorizeHttpRequests(urlRegistry -> {
-                urlRegistry.requestMatchers("/authentication").permitAll();
+                urlRegistry.requestMatchers("/authentication", "/authentication/current").permitAll();
                 customize(urlRegistry)
                         .anyRequest().fullyAuthenticated();
             })

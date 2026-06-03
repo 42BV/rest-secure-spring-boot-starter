@@ -14,10 +14,12 @@ public interface AuthenticationResultProvider<T extends RegisteredUser> {
 
     /**
      * Translates the given {@link RegisteredUser} implementation to an {@link AuthenticationResult}.
+     * Implementations must handle the {@code user == null} case (anonymous request) and return an
+     * {@link AuthenticationResult} with {@link AuthenticationResult#isAuthenticated()} returning {@code false}.
      *
      * @param request  {@link HttpServletRequest}
      * @param response {@link HttpServletResponse}
-     * @param user     {@link RegisteredUser}
+     * @param user     {@link RegisteredUser}, or {@code null} when no user is logged in
      * @return {@link AuthenticationResult}
      */
     AuthenticationResult toResult(HttpServletRequest request, HttpServletResponse response, T user);

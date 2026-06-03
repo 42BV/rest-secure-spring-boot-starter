@@ -32,7 +32,7 @@ public class AuthenticationController {
     }
 
     @GetMapping("/current")
-    public AuthenticationResult current(HttpServletRequest request, HttpServletResponse response, @CurrentUser RegisteredUser user) {
+    public AuthenticationResult current(HttpServletRequest request, HttpServletResponse response, @CurrentUser(required = false) RegisteredUser user) {
         return provider.toResult(request, response, user);
     }
 }

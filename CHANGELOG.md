@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+- **BREAKING:** `GET /authentication/current` now returns `200 OK` for anonymous callers instead of `401 Unauthorized`.
+  - The response body always includes an `authenticated` boolean discriminator. When not logged in, the body is `{ "authenticated": false, "username": null, "authorities": [] }`. When logged in, the existing fields are returned alongside `"authenticated": true`.
+  - `AuthenticationResult` interface gains a default `isAuthenticated()` method (returns `true` by default; override to `false` for anonymous results).
+  - `AuthenticationResultProvider.toResult(...)` may now be called with a `null` user — implementations must handle this case and return an `AuthenticationResult` with `isAuthenticated() == false`.
+  - The endpoint is now `permitAll()` in the default security configuration; consumers no longer need to whitelist it themselves.
+  - Rationale: removes spurious 401 noise from logs for legitimate anonymous bootstrap calls (e.g. SPAs loaded inside iframes or public form pages) and gives `current()` proper REST semantics — it's a query about auth state, not a request for a protected resource.
+
 ## [15.0.0] - 2025-11-27
 - Added support for Spring Boot 4
 

@@ -46,7 +46,7 @@ class AccessDeniedHandlerTest extends AbstractApplicationContextTest {
     }
 
     @Test
-    void currentUser_shouldFail_withInvalidSession_whenNotLoggedIn() throws Exception {
+    void protectedEndpoint_shouldFail_withInvalidSession_whenNotLoggedIn() throws Exception {
         loadApplicationContext(ActiveUserConfig.class);
         webAppContextSetup(context)
                 .apply(springSecurity())
@@ -54,7 +54,7 @@ class AccessDeniedHandlerTest extends AbstractApplicationContextTest {
                 .perform(new RequestBuilder() {
                     @Override
                     public MockHttpServletRequest buildRequest(ServletContext servletContext) {
-                        MockHttpServletRequest request = get("/authentication/current")
+                        MockHttpServletRequest request = get("/some-protected-path")
                                 .buildRequest(servletContext);
                         request.setRequestedSessionId("sessionid");
                         request.setRequestedSessionIdValid(false);
@@ -67,7 +67,7 @@ class AccessDeniedHandlerTest extends AbstractApplicationContextTest {
     }
 
     @Test
-    void currentUser_shouldFail_withValidSession_whenNotLoggedIn() throws Exception {
+    void protectedEndpoint_shouldFail_withValidSession_whenNotLoggedIn() throws Exception {
         loadApplicationContext(ActiveUserConfig.class);
         webAppContextSetup(context)
                 .apply(springSecurity())
@@ -75,7 +75,7 @@ class AccessDeniedHandlerTest extends AbstractApplicationContextTest {
                 .perform(new RequestBuilder() {
                     @Override
                     public MockHttpServletRequest buildRequest(ServletContext servletContext) {
-                        MockHttpServletRequest request = get("/authentication/current")
+                        MockHttpServletRequest request = get("/some-protected-path")
                                 .buildRequest(servletContext);
                         request.setRequestedSessionId("sessionid");
                         request.setRequestedSessionIdValid(true);

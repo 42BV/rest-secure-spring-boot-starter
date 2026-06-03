@@ -323,17 +323,29 @@ And get returned by our global `/authentication` endpoints.
 ### Customizing the authentication endpoints
 
 - The 2 authentication endpoints will return the following json by default:
-    * POST /authentication and GET /authentication/current:
+    * POST /authentication and GET /authentication/current (when logged in):
 
 ```
 {
-    username: 'peter@email.com', 
+    authenticated: true,
+    username: 'peter@email.com',
     authorities: ['ROLE_USER']
 }
 ```
 
+- GET /authentication/current is accessible to anonymous callers. When no user is logged in, the endpoint returns 200 OK with:
+
+```
+{
+    authenticated: false,
+    username: null,
+    authorities: []
+}
+```
+
 - The json returned for /authentication and /authentication/current can be customized by implementing the `AuthenticationResultProvider` and adding it
-  as `Bean` to the Spring `ApplicationContext`:
+  as `Bean` to the Spring `ApplicationContext`. Implementations must handle the `user == null` case (anonymous request) and return an `AuthenticationResult`
+  with `isAuthenticated()` returning `false`:
 
 ```java
 
@@ -343,6 +355,9 @@ public class UserResultProvider implements AuthenticationResultProvider<User> {
 
     @Override
     public UserResult toResult(HttpServletRequest request, HttpServletResponse response, User user) {
+        if (user == null) {
+            return UserResult.anonymous();
+        }
         UserResult result = beanMapper.map(user, UserResult.class);
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         result.restorable = authentication instanceof LoginAsAuthentication;

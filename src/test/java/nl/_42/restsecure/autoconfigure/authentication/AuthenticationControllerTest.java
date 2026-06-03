@@ -32,11 +32,14 @@ import org.springframework.test.web.servlet.MockMvc;
 class AuthenticationControllerTest extends AbstractApplicationContextTest {
 
     @Test
-    void currentUser_shouldFail_whenNotLoggedIn() throws Exception {
+    void currentUser_shouldReturnAnonymousResult_whenNotLoggedIn() throws Exception {
         getWebClient(ActiveUserConfig.class)
                 .perform(get("/authentication/current")
                         .with(anonymous()))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("authenticated").value(false))
+                .andExpect(jsonPath("username").isEmpty())
+                .andExpect(jsonPath("authorities").isEmpty());
     }
 
     @Test
@@ -44,6 +47,7 @@ class AuthenticationControllerTest extends AbstractApplicationContextTest {
         getWebClient(ActiveUserConfig.class)
                 .perform(get("/authentication/current"))
                 .andExpect(status().isOk())
+                .andExpect(jsonPath("authenticated").value(true))
                 .andExpect(jsonPath("authorities[0]").value("ROLE_ADMIN"))
                 .andExpect(jsonPath("username").value("username"));
     }
