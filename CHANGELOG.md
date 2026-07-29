@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## [16.1.0]
+## [16.1.0] - 2026-07-29
 - Method security denials for users that are not fully authenticated now return `401` instead of `403`.
   - `WebMvcErrorHandler` (the `@RestControllerAdvice` handling the method security `AccessDeniedException`) now checks the current authentication with an `AuthenticationTrustResolver`. Fully authenticated users still receive `403` with `{ errorCode: 'SERVER.ACCESS_DENIED_ERROR' }`; anonymous and remember-me users now receive `401` with `{ errorCode: 'SERVER.AUTHENTICATE_ERROR' }` (or `{ errorCode: 'SERVER.SESSION_TIMEOUT_ERROR' }` when the requested session is no longer valid).
   - This aligns method-security error responses with the equivalent security-filter-chain responses of `RestAccessDeniedHandler`. Previously an anonymous user reaching a `@PreAuthorize` method on an anonymously accessible URL would incorrectly get `403`.
