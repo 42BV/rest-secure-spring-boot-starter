@@ -497,12 +497,17 @@ public class CustomLoginExceptionHandler implements LoginAuthenticationException
 }
 ```
 
-- An `@ExceptionHandler` method for handling the method security `AccessDeniedExcption` is added to a `@RestControllerAdvice` with `@Order(0)`. This way all
-  custom `@ControllerAdvice` with `@ExceptionHandler` methods with default order will be processed hereafter. The http response will have a http status 403 with RFC-7807 json body and custom property:
+- An `@ExceptionHandler` method for handling the method security `AccessDeniedException` is added to a `@RestControllerAdvice` with `@Order(0)`. This way all
+  custom `@ControllerAdvice` with `@ExceptionHandler` methods with default order will be processed hereafter. When the current user is fully authenticated,
+  the http response will have a http status 403 with RFC-7807 json body and custom property:
 
 ```
-{ errroCode: 'SERVER.ACCESS_DENIED_ERROR' }
+{ errorCode: 'SERVER.ACCESS_DENIED_ERROR' }
 ```
+
+When the current user is not fully authenticated (anonymous or remember-me), the http response will have a http status 401 with custom
+property `{ errorCode: 'SERVER.AUTHENTICATE_ERROR' }`, or `{ errorCode: 'SERVER.SESSION_TIMEOUT_ERROR' }` when the session of the request is no longer
+valid. This matches the behavior of the equivalent error situations on the security filter chain level (see below).
 
 If you want to handle this exception yourself, you can provide an `@ExceptionHandler` method within your custom `@ControllerAdvice` annotated with `@Order` with
 a higher precedence (value less than zero!):
@@ -516,7 +521,7 @@ a higher precedence (value less than zero!):
       Response RFC-7807 json body and custom property: `{ errorCode: 'SERVER.ACCESS_DENIED_ERROR' }`
     * Invalid session (e.g. timeout or after logout):  
       Http status: 401  
-      Response RFC-7807 json body and custom property: `{ errorCode: 'SERVER.SESSION_INVALID_ERROR' }`
+      Response RFC-7807 json body and custom property: `{ errorCode: 'SERVER.SESSION_TIMEOUT_ERROR' }`
 
 ### Successful authentication handling
 
