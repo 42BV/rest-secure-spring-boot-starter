@@ -5,6 +5,7 @@ import static nl._42.restsecure.autoconfigure.errorhandling.RestAccessDeniedHand
 import static nl._42.restsecure.autoconfigure.errorhandling.RestAccessDeniedHandler.SERVER_SESSION_INVALID_ERROR;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.log;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -43,6 +44,31 @@ class AccessDeniedHandlerTest extends AbstractApplicationContextTest {
                 .andDo(MockMvcResultHandlers.print())
             .andExpect(status().isForbidden())
             .andExpect(jsonPath("errorCode").value(SERVER_ACCESS_DENIED_ERROR));
+    }
+
+    @Test
+    void forbiddenEndpoint_shouldFail_andNotThrowExceptions_whenMultipartSentWithoutCsrfToken() throws Exception {
+        loadApplicationContext(RestrictedEndpointsConfig.class);
+        webAppContextSetup(context)
+                .apply(springSecurity())
+                .build()
+                .perform(new RequestBuilder() {
+                    @Override
+                    public MockHttpServletRequest buildRequest(ServletContext servletContext) {
+                        // Simulate a bot posting a multipart login form (without CSRF token) to a protected path.
+                        MockHttpServletRequest request = multipart("/test/forbidden")
+                                .file("username", "admin".getBytes())
+                                .file("password", "admin".getBytes())
+                                .buildRequest(servletContext);
+                        // Tomcat consumes the input stream while parsing the multipart parts during the CSRF
+                        // token parameter lookup, so getReader() throws afterwards. Simulate that here.
+                        request.getInputStream();
+                        return request;
+                    }
+                })
+                .andDo(log())
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("errorCode").value(SERVER_ACCESS_DENIED_ERROR));
     }
 
     @Test

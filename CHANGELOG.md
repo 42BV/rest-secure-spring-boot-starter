@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+- FormUtil: Do not throw when the request body was already consumed or is multipart
+  - When the input stream of a `multipart/form-data` request was already consumed, `RestAccessDeniedHandler` failed with `IllegalStateException: getInputStream() has already been called for this request`. Tomcat consumes the input stream while parsing the multipart parts during the CSRF token parameter lookup, and `FormUtil` only caught `JacksonException` and `IOException`. The exception escaped the filter chain and the client received `500` instead of `403`
+  - `FormUtil` now skips reading the body for `multipart/*` content types (never a JSON login form) and catches `IllegalStateException` from `getReader()`, in both cases returning an empty form as it already did for invalid JSON bodies.
+
 ## [16.1.0] - 2026-07-29
 - Method security denials for users that are not fully authenticated now return `401` instead of `403`.
   - `WebMvcErrorHandler` (the `@RestControllerAdvice` handling the method security `AccessDeniedException`) now checks the current authentication with an `AuthenticationTrustResolver`. Fully authenticated users still receive `403` with `{ errorCode: 'SERVER.ACCESS_DENIED_ERROR' }`; anonymous and remember-me users now receive `401` with `{ errorCode: 'SERVER.AUTHENTICATE_ERROR' }` (or `{ errorCode: 'SERVER.SESSION_TIMEOUT_ERROR' }` when the requested session is no longer valid).
