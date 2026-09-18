@@ -47,7 +47,18 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <maven.compiler.release>21</maven.compiler.release>
 
-        <spring-boot.version>4.1.0</spring-boot.version>
+        <!-- Dependency overrides for OWASP fixes -->
+        <!-- Spring Boot 4.1.1 manages Tomcat 11.0.24, which is still affected by the CVEs fixed in Tomcat 11.0.25. -->
+        <tomcat.version>11.0.26</tomcat.version>
+        <!-- Spring Boot 4.1.1 manages Jackson 3.1.5, which is still affected by CVE-2026-68497, CVE-2026-68498,
+             CVE-2026-83557 and CVE-2026-19032 (all fixed in Jackson 3.1.6). -->
+        <jackson-bom.version>3.1.6</jackson-bom.version>
+        <!-- Spring Boot 4.1.1 manages Logback 1.5.38, which is still affected by CVE-2026-19880 (path traversal via
+             MDCBasedDiscriminator, fixed in Logback 1.6.3; there is no 1.5.x backport). Logback 1.6.x is a drop-in
+             replacement for 1.5.x and is the line managed by Spring Boot 4.2. -->
+        <logback.version>1.6.3</logback.version>
+
+        <spring-boot.version>4.1.1</spring-boot.version>
 
         <totp-spring-boot-starter.version>1.7.1</totp-spring-boot-starter.version>
         <commons-io.version>2.22.0</commons-io.version>
@@ -115,6 +126,41 @@
 
     <dependencyManagement>
         <dependencies>
+            <!-- Declared before the spring-boot-dependencies import so these versions take precedence over the BOM.
+                 Overriding the tomcat.version/jackson-bom.version/logback.version properties alone has no effect on an
+                 imported BOM. -->
+            <dependency>
+                <groupId>tools.jackson</groupId>
+                <artifactId>jackson-bom</artifactId>
+                <version>${jackson-bom.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>ch.qos.logback</groupId>
+                <artifactId>logback-classic</artifactId>
+                <version>${logback.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>ch.qos.logback</groupId>
+                <artifactId>logback-core</artifactId>
+                <version>${logback.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.tomcat.embed</groupId>
+                <artifactId>tomcat-embed-core</artifactId>
+                <version>${tomcat.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.tomcat.embed</groupId>
+                <artifactId>tomcat-embed-el</artifactId>
+                <version>${tomcat.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.tomcat.embed</groupId>
+                <artifactId>tomcat-embed-websocket</artifactId>
+                <version>${tomcat.version}</version>
+            </dependency>
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-dependencies</artifactId>
