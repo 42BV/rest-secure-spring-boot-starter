@@ -40,6 +40,10 @@
             <name>Jeroen van Schagen</name>
             <organization>42</organization>
         </developer>
+        <developer>
+            <name>Arjan Vlek</name>
+            <organization>42</organization>
+        </developer>
     </developers>
 
     <properties>

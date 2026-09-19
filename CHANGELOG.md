@@ -4,15 +4,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [16.1.1] - 2026-09-19
+- FormUtil: Do not throw when the request body was already consumed or is multipart
+  - When the input stream of a `multipart/form-data` request was already consumed, `RestAccessDeniedHandler` failed with `IllegalStateException: getInputStream() has already been called for this request`. Tomcat consumes the input stream while parsing the multipart parts during the CSRF token parameter lookup, and `FormUtil` only caught `JacksonException` and `IOException`. The exception escaped the filter chain and the client received `500` instead of `403`
+  - `FormUtil` now skips reading the body for `multipart/*` content types (never a JSON login form) and catches `IllegalStateException` from `getReader()`, in both cases returning an empty form as it already did for invalid JSON bodies.
 - Upgraded Spring Boot to 4.1.1 and overrode Tomcat to 11.0.26 to fix OWASP checks.
   - Removed the OWASP suppressions for the jackson-databind, logback, log4j and Tomcat CVEs that are fixed by these versions.
 - Overrode Jackson to 3.1.6 (CVE-2026-68497, CVE-2026-68498, CVE-2026-83557, CVE-2026-19032) and Logback to 1.6.3 (CVE-2026-19880) to fix OWASP checks.
   - Added an OWASP suppression for CVE-2026-47842, which is reported against spring-security 7.1.1 although 7.1.1 is the release that fixes it (false positive).
   - Added an OWASP suppression for CVE-2026-91776 and CVE-2026-91777 (jackson-databind DoS via polymorphic type ids / `@JsonIdentityInfo` forward references): fixed upstream but not yet released for Jackson 3.x, and not reachable through this starter.
-- FormUtil: Do not throw when the request body was already consumed or is multipart
-  - When the input stream of a `multipart/form-data` request was already consumed, `RestAccessDeniedHandler` failed with `IllegalStateException: getInputStream() has already been called for this request`. Tomcat consumes the input stream while parsing the multipart parts during the CSRF token parameter lookup, and `FormUtil` only caught `JacksonException` and `IOException`. The exception escaped the filter chain and the client received `500` instead of `403`
-  - `FormUtil` now skips reading the body for `multipart/*` content types (never a JSON login form) and catches `IllegalStateException` from `getReader()`, in both cases returning an empty form as it already did for invalid JSON bodies.
 
 ## [16.1.0] - 2026-07-29
 - Method security denials for users that are not fully authenticated now return `401` instead of `403`.
