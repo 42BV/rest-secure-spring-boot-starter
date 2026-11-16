@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+- Usernames are no longer logged at INFO or WARN: a username is personal data, often an email address.
+  - `RestAuthenticationFilter` logs `Authenticating user: <username>` at DEBUG instead of INFO (at INFO with an id when a `LoginLogIdResolver` is configured, see below), and logs a successful login at INFO: `Authentication succeeded`.
+  - A failed login is still logged at WARN, with the client address and without the username: `Authentication failure from <ip>! <reason>`. The DEBUG line keeps the username and the stacktrace.
+- New, optional: a non-sensitive identifier of the user in these log lines.
+  - `RegisteredUser.getLogId()` (default `null`): logged after a successful login, `Authentication succeeded for user <logId>`.
+  - A `LoginLogIdResolver` bean turns the username of a login attempt into such an identifier. With it, every attempt is logged at INFO again, as `Authenticating user <id>` (or `Authenticating an unknown user`), and a failure as `Authentication failure for user <id> from <ip>!` (or `for an unknown user`). It is called once per attempt; a resolver that throws does not break the login handling.
+  - `LogUtil.logAuthenticationFailure` has an overload with the request and the resolver; the existing signature still works.
+
 ## [16.1.1] - 2026-09-19
 - FormUtil: Do not throw when the request body was already consumed or is multipart
   - When the input stream of a `multipart/form-data` request was already consumed, `RestAccessDeniedHandler` failed with `IllegalStateException: getInputStream() has already been called for this request`. Tomcat consumes the input stream while parsing the multipart parts during the CSRF token parameter lookup, and `FormUtil` only caught `JacksonException` and `IOException`. The exception escaped the filter chain and the client received `500` instead of `403`

@@ -3,6 +3,7 @@ package nl._42.restsecure.autoconfigure;
 import static org.springframework.http.HttpMethod.POST;
 
 import java.io.IOException;
+import java.util.Optional;
 
 import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
@@ -12,6 +13,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import nl._42.restsecure.autoconfigure.authentication.LoginLogIdResolver;
+import nl._42.restsecure.autoconfigure.authentication.UserDetailsAdapter;
 import nl._42.restsecure.autoconfigure.authentication.mfa.MfaAuthenticationToken;
 import nl._42.restsecure.autoconfigure.errorhandling.LogUtil;
 import nl._42.restsecure.autoconfigure.errorhandling.LoginAuthenticationExceptionHandler;
@@ -62,6 +65,7 @@ public class RestAuthenticationFilter extends OncePerRequestFilter {
     private AuthenticationSuccessHandler successHandler = (request, response, authentication) -> {};
     private SessionAuthenticationStrategy sessionStrategy = new NullAuthenticatedSessionStrategy();
     private SecurityContextHolderStrategy securityContextHolderStrategy = SecurityContextHolder.getContextHolderStrategy();
+    private LoginLogIdResolver loginLogIdResolver;
 
     @Override
     public void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
@@ -76,18 +80,19 @@ public class RestAuthenticationFilter extends OncePerRequestFilter {
         FormValues<LoginForm> formValues = FormUtil.getFormFromRequest(request, LoginForm.class);
         LoginForm form = formValues.form();
         AbstractAuthenticationToken token = new MfaAuthenticationToken(form.username, form.password, form.verificationCode);
+        LoginLogIdResolver resolvedOnce = logAuthenticationAttempt(form);
         try {
-            log.info("Authenticating user: {}", form.username);
             Authentication authentication = authenticationManager.authenticate(token);
             onAuthenticationSuccess(request, response, authentication, formValues);
             chain.doFilter(request, response);
         } catch (AuthenticationException ex) {
-            onAuthenticationFail(request, response, ex, form);
+            onAuthenticationFail(request, response, ex, form, resolvedOnce);
         }
     }
 
     private void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication, FormValues<LoginForm> formValues)
             throws IOException, ServletException {
+        logAuthenticationSuccess(authentication);
         securityContextHolderStrategy.getContext().setAuthentication(authentication);
         securityContextRepository.saveContext(securityContextHolderStrategy.getContext(), request, response);
         sessionStrategy.onAuthentication(authentication, request, response);
@@ -98,8 +103,39 @@ public class RestAuthenticationFilter extends OncePerRequestFilter {
         }
     }
 
-    private void onAuthenticationFail(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception, LoginForm form) throws IOException {
-        LogUtil.logAuthenticationFailure(log, form, exception);
+    /**
+     * Logs the attempt at INFO with the log id of the user when a {@link LoginLogIdResolver} is configured, and only at
+     * DEBUG with the username otherwise: the username is personal data.
+     *
+     * @return a resolver that answers with the id resolved here, so a failure does not look the user up again; or
+     * {@code null} when there is no resolver
+     */
+    private LoginLogIdResolver logAuthenticationAttempt(LoginForm form) {
+        if (loginLogIdResolver == null || form.username == null) {
+            log.debug("Authenticating user: {}", form.username);
+            return null;
+        }
+        Optional<String> logId = LogUtil.resolveLogId(log, loginLogIdResolver, form.username);
+        if (logId.isPresent()) {
+            log.info("Authenticating user {}", logId.get());
+        } else {
+            log.info("Authenticating an unknown user");
+        }
+        return username -> logId;
+    }
+
+    private void logAuthenticationSuccess(Authentication authentication) {
+        String logId = authentication.getPrincipal() instanceof UserDetailsAdapter<?> adapter ? adapter.user().getLogId() : null;
+        if (logId != null) {
+            log.info("Authentication succeeded for user {}", logId);
+        } else {
+            log.info("Authentication succeeded");
+        }
+    }
+
+    private void onAuthenticationFail(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception, LoginForm form,
+            LoginLogIdResolver resolvedOnce) throws IOException {
+        LogUtil.logAuthenticationFailure(log, form, exception, request, resolvedOnce);
         securityContextHolderStrategy.clearContext();
         loginExceptionHandler.handle(request, response, exception);
         rememberMeServices.loginFail(request, response);

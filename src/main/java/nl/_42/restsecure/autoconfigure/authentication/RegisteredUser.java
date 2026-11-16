@@ -46,4 +46,16 @@ public interface RegisteredUser {
         return null;
     }
 
+    /**
+     * A non-sensitive identifier of this user for the log, such as its technical id. A successful login is logged at
+     * INFO as {@code Authentication succeeded for user <logId>}. The username is personal data (often an email
+     * address) and is never logged at INFO or WARN. Never return the username or anything else that identifies a
+     * person directly.
+     *
+     * @return the identifier, or {@code null} (the default) to log the login without a user
+     */
+    default String getLogId() {
+        return null;
+    }
+
 }
