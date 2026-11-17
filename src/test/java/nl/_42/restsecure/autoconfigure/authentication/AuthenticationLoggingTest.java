@@ -18,6 +18,7 @@ import ch.qos.logback.core.read.ListAppender;
 import nl._42.restsecure.autoconfigure.AbstractApplicationContextTest;
 import nl._42.restsecure.autoconfigure.RestAuthenticationFilter;
 import nl._42.restsecure.autoconfigure.test.ActiveUserConfig;
+import nl._42.restsecure.autoconfigure.test.AuthenticationProviderConfig;
 import nl._42.restsecure.autoconfigure.test.NoopPasswordEncoderConfig;
 
 import org.junit.jupiter.api.AfterEach;
@@ -125,6 +126,24 @@ class AuthenticationLoggingTest extends AbstractApplicationContextTest {
                 .andExpect(status().isOk());
 
         assertThat(lines()).containsExactly("INFO Authenticating user 7", "INFO Authentication succeeded for user 42");
+    }
+
+    @Test
+    void success_withPrincipalThatIsNoRegisteredUser_isLoggedWithoutUser() throws Exception {
+        getWebClient(AuthenticationProviderConfig.class)
+                .perform(post("/authentication").with(anonymous()).content(GOOD));
+
+        assertThat(lines()).contains("INFO Authentication succeeded");
+    }
+
+    @Test
+    void attempt_withResolverButWithoutUsername_isOnlyLoggedAtDebug() throws Exception {
+        CountingResolverConfig.calls.set(0);
+        getWebClient(ActiveUserConfig.class, NoopPasswordEncoderConfig.class, CountingResolverConfig.class)
+                .perform(post("/authentication").with(anonymous()).content("{\"password\": \"wrong\"}"));
+
+        assertThat(lines()).isEmpty();
+        assertThat(CountingResolverConfig.calls.get()).isZero();
     }
 
     @Test
