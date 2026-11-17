@@ -3,7 +3,6 @@ package nl._42.restsecure.autoconfigure.errorhandling;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
-import java.util.Optional;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
@@ -22,7 +21,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 
 /**
- * The username is personal data: a failed login is logged at WARN with a non-sensitive id at most, never the username.
+ * The username is personal data: a failed login is logged at WARN with the client address, never the username.
  */
 class LogUtilTest {
 
@@ -64,28 +63,22 @@ class LogUtilTest {
     }
 
     @Test
-    void failure_withoutRequestOrResolver_isLoggedWithoutUser() {
+    void failure_withoutRequest_isLoggedWithoutUser() {
         LogUtil.logAuthenticationFailure(logger, form("person@example.com"), new BadCredentialsException("Bad credentials"));
 
         assertThat(lines()).containsExactly("WARN Authentication failure! Bad credentials");
     }
 
     @Test
-    void failure_withResolverReturningNull_isLoggedAsUnknownUser() {
-        LogUtil.logAuthenticationFailure(logger, form("person@example.com"), new BadCredentialsException("Bad credentials"), null, username -> null);
+    void failure_withRequest_isLoggedWithClientAddress() {
+        LogUtil.logAuthenticationFailure(logger, form("person@example.com"), new BadCredentialsException("Bad credentials"),
+                new MockHttpServletRequest());
 
-        assertThat(lines()).containsExactly("WARN Authentication failure for an unknown user! Bad credentials");
+        assertThat(lines()).containsExactly("WARN Authentication failure from 127.0.0.1! Bad credentials");
     }
 
     @Test
-    void resolveLogId_withoutResolverOrUsername_isEmpty() {
-        assertThat(LogUtil.resolveLogId(logger, null, "person@example.com")).isEmpty();
-        assertThat(LogUtil.resolveLogId(logger, username -> Optional.of("7"), null)).isEmpty();
-        assertThat(LogUtil.resolveLogId(logger, username -> Optional.of("7"), "person@example.com")).contains("7");
-    }
-
-    @Test
-    void accessDeniedHandler_withoutResolver_logsWithClientAddressOnly() throws Exception {
+    void accessDeniedHandler_logsWithClientAddressOnly() throws Exception {
         RestAccessDeniedHandler handler = new RestAccessDeniedHandler(new GenericErrorHandler(JsonMapper.builder().build()));
         MockHttpServletRequest request = new MockHttpServletRequest("POST", "/test/forbidden");
         request.setContent("{\"username\": \"person@example.com\", \"password\": \"password\"}".getBytes());

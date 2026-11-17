@@ -15,7 +15,6 @@ import nl._42.restsecure.autoconfigure.authentication.AuthenticationController;
 import nl._42.restsecure.autoconfigure.authentication.AuthenticationResultProvider;
 import nl._42.restsecure.autoconfigure.authentication.DefaultAuthenticationResultProvider;
 import nl._42.restsecure.autoconfigure.authentication.DefaultUserProvider;
-import nl._42.restsecure.autoconfigure.authentication.LoginLogIdResolver;
 import nl._42.restsecure.autoconfigure.authentication.RegisteredUser;
 import nl._42.restsecure.autoconfigure.authentication.UserProvider;
 import nl._42.restsecure.autoconfigure.authentication.mfa.MfaAuthenticationProvider;
@@ -24,7 +23,6 @@ import nl._42.restsecure.autoconfigure.errorhandling.GenericErrorHandler;
 import nl._42.restsecure.autoconfigure.errorhandling.LoginAuthenticationExceptionHandler;
 import nl._42.restsecure.autoconfigure.errorhandling.RestAccessDeniedHandler;
 
-import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
@@ -190,10 +188,8 @@ public class WebSecurityAutoConfig {
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http, LoginAuthenticationExceptionHandler exceptionHandler, AuthenticationManager authenticationManager,
-            ObjectProvider<LoginLogIdResolver> loginLogIdResolver) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http, LoginAuthenticationExceptionHandler exceptionHandler, AuthenticationManager authenticationManager) throws Exception {
         RestAuthenticationFilter restAuthenticationFilter = new RestAuthenticationFilter(exceptionHandler, authenticationManager);
-        restAuthenticationFilter.setLoginLogIdResolver(loginLogIdResolver.getIfAvailable());
         http.with(new RestAuthenticationFilterConfigurer<>(restAuthenticationFilter, rememberMeServices, authenticationSuccessHandler), withDefaults())
             .securityContext(scc -> scc.securityContextRepository(securityContextRepository()))
             .addFilterAfter(restAuthenticationFilter, LogoutFilter.class)

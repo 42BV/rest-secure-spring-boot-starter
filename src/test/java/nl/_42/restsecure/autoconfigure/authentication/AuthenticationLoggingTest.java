@@ -7,9 +7,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
@@ -18,7 +16,6 @@ import ch.qos.logback.core.read.ListAppender;
 import nl._42.restsecure.autoconfigure.AbstractApplicationContextTest;
 import nl._42.restsecure.autoconfigure.RestAuthenticationFilter;
 import nl._42.restsecure.autoconfigure.test.ActiveUserConfig;
-import nl._42.restsecure.autoconfigure.test.AuthenticationProviderConfig;
 import nl._42.restsecure.autoconfigure.test.NoopPasswordEncoderConfig;
 
 import org.junit.jupiter.api.AfterEach;
@@ -28,7 +25,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 
 /**
- * The username is personal data: a login is logged at INFO or WARN with a non-sensitive id at most, never the username.
+ * The username is personal data: a login is logged at INFO or WARN with the log id of the user at most, never the
+ * username, and logging never breaks a login.
  */
 class AuthenticationLoggingTest extends AbstractApplicationContextTest {
 
@@ -78,7 +76,16 @@ class AuthenticationLoggingTest extends AbstractApplicationContextTest {
     }
 
     @Test
-    void failure_withoutResolver_isLoggedWithClientAddressOnly() throws Exception {
+    void success_withFailingLogId_stillLogsInTheUser() throws Exception {
+        getWebClient(FailingLogIdUserConfig.class, NoopPasswordEncoderConfig.class)
+                .perform(post("/authentication").with(anonymous()).content(GOOD))
+                .andExpect(status().isOk());
+
+        assertThat(lines()).containsExactly("INFO Authentication succeeded");
+    }
+
+    @Test
+    void failure_isLoggedWithClientAddressOnly() throws Exception {
         getWebClient(ActiveUserConfig.class, NoopPasswordEncoderConfig.class)
                 .perform(post("/authentication").with(anonymous()).content(WRONG))
                 .andExpect(status().isUnauthorized());
@@ -86,74 +93,31 @@ class AuthenticationLoggingTest extends AbstractApplicationContextTest {
         assertThat(lines()).containsExactly("WARN Authentication failure from 127.0.0.1! Bad credentials");
     }
 
-    @Test
-    void failure_withResolver_isLoggedWithTheResolvedId() throws Exception {
-        getWebClient(ActiveUserConfig.class, NoopPasswordEncoderConfig.class, KnownUserResolverConfig.class)
-                .perform(post("/authentication").with(anonymous()).content(WRONG))
-                .andExpect(status().isUnauthorized());
+    private static RegisteredUser user(String logId, boolean failing) {
+        return new RegisteredUser() {
+            @Override
+            public String getUsername() {
+                return "person@example.com";
+            }
 
-        assertThat(lines()).containsExactly(
-                "INFO Authenticating user 7",
-                "WARN Authentication failure for user 7 from 127.0.0.1! Bad credentials");
-    }
+            @Override
+            public String getPassword() {
+                return "password";
+            }
 
-    @Test
-    void failure_withResolverThatFindsNoUser_isLoggedAsUnknownUser() throws Exception {
-        getWebClient(ActiveUserConfig.class, NoopPasswordEncoderConfig.class, UnknownUserResolverConfig.class)
-                .perform(post("/authentication").with(anonymous()).content(WRONG))
-                .andExpect(status().isUnauthorized());
+            @Override
+            public Set<String> getAuthorities() {
+                return Collections.singleton("ROLE_ADMIN");
+            }
 
-        assertThat(lines()).containsExactly(
-                "INFO Authenticating an unknown user",
-                "WARN Authentication failure for an unknown user from 127.0.0.1! Bad credentials");
-    }
-
-    @Test
-    void failure_withFailingResolver_isStillLogged() throws Exception {
-        getWebClient(ActiveUserConfig.class, NoopPasswordEncoderConfig.class, FailingResolverConfig.class)
-                .perform(post("/authentication").with(anonymous()).content(WRONG))
-                .andExpect(status().isUnauthorized());
-
-        assertThat(lines()).containsExactly(
-                "INFO Authenticating an unknown user",
-                "WARN Authentication failure for an unknown user from 127.0.0.1! Bad credentials");
-    }
-
-    @Test
-    void success_withResolverAndLogId_logsTheAttemptAndTheSuccessWithIds() throws Exception {
-        getWebClient(LogIdUserConfig.class, NoopPasswordEncoderConfig.class, KnownUserResolverConfig.class)
-                .perform(post("/authentication").with(anonymous()).content(GOOD))
-                .andExpect(status().isOk());
-
-        assertThat(lines()).containsExactly("INFO Authenticating user 7", "INFO Authentication succeeded for user 42");
-    }
-
-    @Test
-    void success_withPrincipalThatIsNoRegisteredUser_isLoggedWithoutUser() throws Exception {
-        getWebClient(AuthenticationProviderConfig.class)
-                .perform(post("/authentication").with(anonymous()).content(GOOD));
-
-        assertThat(lines()).contains("INFO Authentication succeeded");
-    }
-
-    @Test
-    void attempt_withResolverButWithoutUsername_isOnlyLoggedAtDebug() throws Exception {
-        CountingResolverConfig.calls.set(0);
-        getWebClient(ActiveUserConfig.class, NoopPasswordEncoderConfig.class, CountingResolverConfig.class)
-                .perform(post("/authentication").with(anonymous()).content("{\"password\": \"wrong\"}"));
-
-        assertThat(lines()).isEmpty();
-        assertThat(CountingResolverConfig.calls.get()).isZero();
-    }
-
-    @Test
-    void resolver_isCalledOncePerAttempt() throws Exception {
-        CountingResolverConfig.calls.set(0);
-        getWebClient(ActiveUserConfig.class, NoopPasswordEncoderConfig.class, CountingResolverConfig.class)
-                .perform(post("/authentication").with(anonymous()).content(WRONG))
-                .andExpect(status().isUnauthorized());
-
-        assertThat(CountingResolverConfig.calls.get()).isEqualTo(1);
+            @Override
+            public String getLogId() {
+                if (failing) {
+                    throw new IllegalStateException("no id");
+                }
+                return logId;
+            }
+        };
     }
 
     // No @Configuration: registered only by the tests that name it, never picked up by component scanning.
@@ -163,67 +127,21 @@ class AuthenticationLoggingTest extends AbstractApplicationContextTest {
             return new AbstractUserDetailsService<>() {
                 @Override
                 public RegisteredUser findUserByUsername(String username) {
-                    return new RegisteredUser() {
-                        @Override
-                        public String getUsername() {
-                            return username;
-                        }
-
-                        @Override
-                        public String getPassword() {
-                            return "password";
-                        }
-
-                        @Override
-                        public Set<String> getAuthorities() {
-                            return Collections.singleton("ROLE_ADMIN");
-                        }
-
-                        @Override
-                        public String getLogId() {
-                            return "42";
-                        }
-                    };
+                    return user("42", false);
                 }
             };
         }
     }
 
     // No @Configuration: registered only by the tests that name it, never picked up by component scanning.
-    static class KnownUserResolverConfig {
+    static class FailingLogIdUserConfig {
         @Bean
-        public LoginLogIdResolver loginLogIdResolver() {
-            return username -> Optional.of("7");
-        }
-    }
-
-    // No @Configuration: registered only by the tests that name it, never picked up by component scanning.
-    static class UnknownUserResolverConfig {
-        @Bean
-        public LoginLogIdResolver loginLogIdResolver() {
-            return username -> Optional.empty();
-        }
-    }
-
-    // No @Configuration: registered only by the tests that name it, never picked up by component scanning.
-    static class FailingResolverConfig {
-        @Bean
-        public LoginLogIdResolver loginLogIdResolver() {
-            return username -> {
-                throw new IllegalStateException("database down");
-            };
-        }
-    }
-
-    // No @Configuration: registered only by the tests that name it, never picked up by component scanning.
-    static class CountingResolverConfig {
-        static final AtomicInteger calls = new AtomicInteger();
-
-        @Bean
-        public LoginLogIdResolver loginLogIdResolver() {
-            return username -> {
-                calls.incrementAndGet();
-                return Optional.of("7");
+        public AbstractUserDetailsService<RegisteredUser> userDetailsService() {
+            return new AbstractUserDetailsService<>() {
+                @Override
+                public RegisteredUser findUserByUsername(String username) {
+                    return user(null, true);
+                }
             };
         }
     }
