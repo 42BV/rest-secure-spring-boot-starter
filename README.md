@@ -320,6 +320,35 @@ public class UserController {
 
 And get returned by our global `/authentication` endpoints.
 
+### Logging logins without personal data
+
+A username is personal data (often an email address), so the starter never logs it at INFO or WARN; only at DEBUG.
+A successful login is logged at INFO, a failed one at WARN with the client address:
+
+```
+INFO  Authentication succeeded
+WARN  Authentication failure from 203.0.113.7! Bad credentials
+```
+
+To see *which* user logged in, return a non-sensitive identifier, such as the technical id, from `getLogId()`:
+
+```java
+public class User implements RegisteredUser {
+    @Override
+    public String getLogId() {
+        return String.valueOf(id);
+    }
+}
+```
+
+```
+INFO  Authentication succeeded for user 42
+```
+
+Never return the username, or a plain hash of it: an email address is easy to find back from its hash. If reading the
+id fails, the login still succeeds and the line is logged without it. Behind a proxy, the client address is the proxy's
+unless `server.forward-headers-strategy` is set.
+
 ### Customizing the authentication endpoints
 
 - The 2 authentication endpoints will return the following json by default:

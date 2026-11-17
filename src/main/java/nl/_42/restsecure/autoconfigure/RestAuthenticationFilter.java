@@ -12,6 +12,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import nl._42.restsecure.autoconfigure.authentication.RegisteredUser;
+import nl._42.restsecure.autoconfigure.authentication.UserDetailsAdapter;
 import nl._42.restsecure.autoconfigure.authentication.mfa.MfaAuthenticationToken;
 import nl._42.restsecure.autoconfigure.errorhandling.LogUtil;
 import nl._42.restsecure.autoconfigure.errorhandling.LoginAuthenticationExceptionHandler;
@@ -77,7 +79,7 @@ public class RestAuthenticationFilter extends OncePerRequestFilter {
         LoginForm form = formValues.form();
         AbstractAuthenticationToken token = new MfaAuthenticationToken(form.username, form.password, form.verificationCode);
         try {
-            log.info("Authenticating user: {}", form.username);
+            log.debug("Authenticating user: {}", form.username);
             Authentication authentication = authenticationManager.authenticate(token);
             onAuthenticationSuccess(request, response, authentication, formValues);
             chain.doFilter(request, response);
@@ -88,6 +90,7 @@ public class RestAuthenticationFilter extends OncePerRequestFilter {
 
     private void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication, FormValues<LoginForm> formValues)
             throws IOException, ServletException {
+        logAuthenticationSuccess(authentication);
         securityContextHolderStrategy.getContext().setAuthentication(authentication);
         securityContextRepository.saveContext(securityContextHolderStrategy.getContext(), request, response);
         sessionStrategy.onAuthentication(authentication, request, response);
@@ -98,8 +101,28 @@ public class RestAuthenticationFilter extends OncePerRequestFilter {
         }
     }
 
+    /**
+     * Logs a successful login at INFO with {@link RegisteredUser#getLogId()}, never with the username (personal data).
+     * Logging never breaks the login: when the log id cannot be read, the line is logged without it.
+     */
+    private void logAuthenticationSuccess(Authentication authentication) {
+        String logId = null;
+        try {
+            if (authentication.getPrincipal() instanceof UserDetailsAdapter<?> adapter) {
+                logId = adapter.user().getLogId();
+            }
+        } catch (RuntimeException e) {
+            log.debug("Could not read the log id of the user", e);
+        }
+        if (logId != null) {
+            log.info("Authentication succeeded for user {}", logId);
+        } else {
+            log.info("Authentication succeeded");
+        }
+    }
+
     private void onAuthenticationFail(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception, LoginForm form) throws IOException {
-        LogUtil.logAuthenticationFailure(log, form, exception);
+        LogUtil.logAuthenticationFailure(log, form, exception, request);
         securityContextHolderStrategy.clearContext();
         loginExceptionHandler.handle(request, response, exception);
         rememberMeServices.loginFail(request, response);

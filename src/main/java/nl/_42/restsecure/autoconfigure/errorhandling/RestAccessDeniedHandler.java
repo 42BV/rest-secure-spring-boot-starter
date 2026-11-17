@@ -45,7 +45,7 @@ public class RestAccessDeniedHandler implements AccessDeniedHandler, Authenticat
     @Override
     public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException exception) throws IOException {
         FormValues<LoginForm> formValues = FormUtil.getFormFromRequest(request, LoginForm.class);
-        LogUtil.logAuthenticationFailure(log, formValues.form(), exception);
+        LogUtil.logAuthenticationFailure(log, formValues.form(), exception, request);
         errorHandler.respond(response, FORBIDDEN, SERVER_ACCESS_DENIED_ERROR);
     }
 
@@ -56,7 +56,7 @@ public class RestAccessDeniedHandler implements AccessDeniedHandler, Authenticat
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws IOException {
         FormValues<LoginForm> formValues = FormUtil.getFormFromRequest(request, LoginForm.class);
-        LogUtil.logAuthenticationFailure(log, formValues.form(), exception);
+        LogUtil.logAuthenticationFailure(log, formValues.form(), exception, request);
         String errorCode = request.isRequestedSessionIdValid()
                 ? SERVER_AUTHENTICATE_ERROR
                 : SERVER_SESSION_INVALID_ERROR;
